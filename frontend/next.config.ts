@@ -26,7 +26,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/zk-api/:path*",
-        destination: "http://127.0.0.1:8787/:path*",
+        destination: `${(process.env.ZKCTF_API_URL ?? "http://127.0.0.1:8787").replace(/\/$/, "")}/:path*`,
       },
     ];
   },
