@@ -89,13 +89,15 @@ export function Header() {
               </svg>
             )}
           </button>
-          {ready ? (
-            <WalletMultiButton />
-          ) : (
-            <span className="inline-flex h-10 items-center rounded-full bg-cream px-4 text-xs font-semibold text-ink">
-              Connect
-            </span>
-          )}
+          <div className="zk-wallet shrink-0">
+            {ready ? (
+              <WalletMultiButton />
+            ) : (
+              <span className="inline-flex h-9 items-center whitespace-nowrap rounded-full bg-cream px-3 text-xs font-semibold text-ink md:h-10 md:px-4">
+                Connect
+              </span>
+            )}
+          </div>
           <button
             type="button"
             className="flex size-10 items-center justify-center rounded-full border border-cream/15 md:hidden"
