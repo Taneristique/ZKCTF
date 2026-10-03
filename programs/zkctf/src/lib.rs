@@ -630,6 +630,27 @@ mod tests {
         assert_eq!(e.try_to_vec().unwrap().len(), ENTRY_SPACE);
     }
 
+    fn unhex<const N: usize>(s: &str) -> [u8; N] {
+        let mut out = [0u8; N];
+        for (i, b) in out.iter_mut().enumerate() {
+            *b = u8::from_str_radix(&s[2 * i..2 * i + 2], 16).unwrap();
+        }
+        out
+    }
+
+    /// Real snarkjs proof from circuits/scripts/fixture.mjs (regenerate after a new zkey).
+    #[test]
+    fn groth16_fixture_verifies() {
+        let l: Vec<&str> = include_str!("../tests/fixtures/groth16.txt").lines().collect();
+        let (a, b, c) = (unhex::<64>(l[0]), unhex::<128>(l[1]), unhex::<64>(l[2]));
+        let (h, commit, p) = (unhex::<32>(l[3]), unhex::<32>(l[4]), unhex::<32>(l[5]));
+        assert_eq!(verify_groth16(&a, &b, &c, &pack_publics(&h, &commit, &p)), Ok(()));
+
+        let mut other = p;
+        other[31] ^= 1;
+        assert!(verify_groth16(&a, &b, &c, &pack_publics(&h, &commit, &other)).is_err());
+    }
+
     #[test]
     fn mark_solved_is_linear() {
         let mut m = 0u8;
