@@ -3,7 +3,8 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createCommitment, playerCommitment, fromHex, hex32 } from "./relation.mjs";
 
-const circuitRoot = join(dirname(fileURLToPath(import.meta.url)), "../../circuits");
+const circuitRoot =
+  process.env.ZKCTF_CIRCUITS_DIR ?? join(dirname(fileURLToPath(import.meta.url)), "../../circuits");
 
 export function artifactsReady() {
   return (

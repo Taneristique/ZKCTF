@@ -8,7 +8,7 @@ ZKCTF is a platform for profitable on-chain capture-the-flag puzzles powered by 
 Not “another Solana CTF app.” Structural locks: [STRUCTURAL_LOCKS.md](STRUCTURAL_LOCKS.md).
 
 - Play: weekly curated official puzzles after this week’s 5 USDC entry · on-chain `submit` + `split_pot`.
-- Learn: `/learn` serves `content/lessons/published/*.json`. Lessons and membership never write the race board or pot.
+- Learn: `/learn` serves `backend/content/lessons/published/*.json`. Lessons and membership never write the race board or pot.
 - **Ops (AI keys, weekly bot, USDC, deploy):** [docs/OPS.md](docs/OPS.md)
 - How it works: [frontend docs](frontend/components/DocsView.tsx) and [protocol/README.md](protocol/README.md).
 - Implementer math: [protocol/zkctf.md](protocol/zkctf.md).
@@ -34,10 +34,10 @@ cd backend && node ../scripts/weekly-challenge-bot.mjs
 # 1. AI draft (needs OPENROUTER_API_KEY=sk-or-…; --blank for an empty template)
 node scripts/lesson.mjs draft --track security --case "Wormhole 2022"
 node scripts/lesson.mjs draft --track math --topic "ECDSA nonce reuse"
-# 2. Edit content/lessons/drafts/<file>.json: fact-check the case + sources, solve the exercise yourself
-node scripts/lesson.mjs check content/lessons/drafts/<file>.json
+# 2. Edit backend/content/lessons/drafts/<file>.json: fact-check the case + sources, solve the exercise yourself
+node scripts/lesson.mjs check backend/content/lessons/drafts/<file>.json
 # 3. Publish under your name (optionally schedule with --at ISO-date; Founding members see it 24h earlier)
-node scripts/lesson.mjs publish content/lessons/drafts/<file>.json --editor "Your Name"
+node scripts/lesson.mjs publish backend/content/lessons/drafts/<file>.json --editor "Your Name"
 node scripts/lesson.mjs list
 ```
 
@@ -75,6 +75,17 @@ cd backend && TREASURY_USDC_ATA=... node ../scripts/settle-round.mjs
 ### Editor (rust-analyzer)
 
 Install the recommended **rust-analyzer** extension (`.vscode/extensions.json`). `rust-toolchain.toml` pins rustc 1.79 for `cargo build-sbf` and installs the `rust-analyzer`, `rust-src`, `clippy` and `rustfmt` components. The editor runs rust-analyzer against toolchain 1.93.1 (`rustup toolchain install 1.93.1 -c rust-analyzer rust-src`), because the 1.79 proc-macro server is too old for current rust-analyzer releases.
+
+## Deploy (Railway)
+
+Two services from this repo. `backend/` is self-contained (API + lessons), `frontend/` proxies `/zk-api` to it.
+
+| Service | Root Directory | Variables | Extra |
+| --- | --- | --- | --- |
+| API (`api.zkctf.com`) | `/backend` (builds `backend/Dockerfile`) | `AUTHORITY_KEYPAIR_JSON`, `ZKCTF_PROGRAM_ID`, `SOLANA_RPC`, `USDC_MINT`, `TREASURY_WALLET`, `ZKCTF_DATA_DIR=/data` | Volume at `/data` |
+| Web (`zkctf.com`) | `/frontend` | `ZKCTF_API_URL=https://api.zkctf.com`, `NEXT_PUBLIC_SOLANA_RPC`, `NEXT_PUBLIC_PROGRAM_ID` | Redeploy after changing `ZKCTF_API_URL` (read at build time) |
+
+`AUTHORITY_KEYPAIR_JSON` is the keypair array (`[12,34,…]`); keep it only in the host's secret variables.
 
 ## License
 

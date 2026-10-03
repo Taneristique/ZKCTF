@@ -1,7 +1,7 @@
 /**
  * Weekly Academy lessons: AI-drafted, human-reviewed, published by the host.
- * Source of truth is content/lessons/published/*.json (versioned with the repo).
- * Drafts live in content/lessons/drafts/ and are never served.
+ * Source of truth is backend/content/lessons/published/*.json (versioned with the repo).
+ * Drafts live in backend/content/lessons/drafts/ and are never served.
  */
 import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 import { FOUNDING } from "./membership.js";
 
 export const LESSONS_DIR =
-  process.env.ZKCTF_LESSONS_DIR ?? join(dirname(fileURLToPath(import.meta.url)), "../../content/lessons");
+  process.env.ZKCTF_LESSONS_DIR ?? join(dirname(fileURLToPath(import.meta.url)), "../content/lessons");
 const PUBLISHED = join(LESSONS_DIR, "published");
 
 export const TRACKS = {
