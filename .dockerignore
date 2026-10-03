@@ -9,7 +9,10 @@ backend/data
 backend/content/lessons/drafts
 target
 vendor
-circuits
+circuits/build
+circuits/build-o2
+circuits/keccak
+circuits/keccak256-circom
 programs
 docs
 protocol
