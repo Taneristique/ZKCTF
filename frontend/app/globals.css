@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-cream: var(--cream);
+  --color-teal: #147a72;
+}
+
+:root {
+  --ink: #0a0c10;
+  --cream: #f4efe6;
+}
+
+html.light {
+  --ink: #f4efe6;
+  --cream: #16141a;
+}
+
+html,
+body {
+  min-height: 100%;
+  background: var(--color-ink);
+  color: var(--color-cream);
+}
+
+body {
+  font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+}
+
+.docs-view section[id] {
+  scroll-margin-top: 6rem;
+}
+
+.wallet-adapter-button {
+  background: var(--color-cream) !important;
+  color: var(--color-ink) !important;
+  border-radius: 9999px !important;
+  height: 2.5rem !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  padding: 0 1rem !important;
+}
+
+@media (max-width: 767px) {
+  .wallet-adapter-button {
+    height: 2.25rem !important;
+    max-width: 8.5rem;
+    overflow: hidden;
+    font-size: 0.75rem !important;
+    padding: 0 0.75rem !important;
+  }
+}
+
+.wallet-adapter-modal-wrapper {
+  background: color-mix(in srgb, var(--color-ink) 72%, transparent) !important;
+}
+
+.wallet-adapter-modal {
+  background: color-mix(in srgb, var(--color-ink) 92%, var(--color-cream)) !important;
+  color: var(--color-cream) !important;
+}
+
+html.light .wallet-adapter-modal-list .wallet-adapter-button {
+  background: #16141a !important;
+  color: #f4efe6 !important;
+}
+
+.docs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.docs-table th,
+.docs-table td {
+  border-bottom: 1px solid color-mix(in srgb, var(--color-cream) 12%, transparent);
+  padding: 0.7rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.docs-table th {
+  color: color-mix(in srgb, var(--color-cream) 45%, transparent);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.docs-table td:first-child,
+.docs-table th:first-child {
+  padding-left: 0;
+}
+
+.docs-pre {
+  overflow-x: auto;
+  border-radius: 1.25rem;
+  border: 1px solid color-mix(in srgb, var(--color-cream) 12%, transparent);
+  background: color-mix(in srgb, var(--color-cream) 4%, var(--color-ink));
+  padding: 1rem 1.1rem;
+  font-size: 0.75rem;
+  line-height: 1.65;
+}
