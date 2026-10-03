@@ -21,4 +21,4 @@ id.json
 
 *.tsbuildinfo
 next-env.d.ts
-content/lessons/drafts/*.published
+backend/content/lessons/drafts/*.published

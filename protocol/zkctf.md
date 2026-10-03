@@ -463,7 +463,7 @@ Code: `programs/zkctf/src/payout.rs`.
 
 The Seat PDA (`["seat", wallet]`) is the **Academy membership**. It does not open the official round.
 Checkout is one transaction built by the host and signed by the member: (1) create the treasury USDC ATA idempotently, (2) SPL `Transfer` of the plan price from the member's USDC ATA to the treasury ATA, (3) `mint_seat` co-signed by the config authority. The authority signature covers the whole message, so the seat cannot be minted without the transfer. Plans: 1 / 3 / 12 months at 10 / 27 / 90 USDC. `tier = 1` marks a **Founding member** (first `FOUNDING_SEATS` = 100 seats, counted on-chain with `getProgramAccounts` on seat size + tier byte). Founding members pay `FOUNDING_DISCOUNT_BPS` (50%) less on every renewal and see lessons `FOUNDING_EARLY_HOURS` (24h) early. `slots` / `prompts_used` are unused (0).
-Academy lessons: weekly, two tracks (cybersecurity: reproduced real incidents; math for cybersecurity). AI drafts, a human editor reviews and publishes (`scripts/lesson.mjs`), content lives in `content/lessons/published/`. Lesson flags are checked off-chain by the host.
+Academy lessons: weekly, two tracks (cybersecurity: reproduced real incidents; math for cybersecurity). AI drafts, a human editor reviews and publishes (`scripts/lesson.mjs`), content lives in `backend/content/lessons/published/`. Lesson flags are checked off-chain by the host.
 
 ### 12.1 Prestige and scope (locked)
 

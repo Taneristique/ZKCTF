@@ -1,0 +1,23 @@
+{
+  "id": "2026-w40-wormhole-sysvar-spoof",
+  "week": "2026-W40",
+  "track": "security",
+  "title": "Wormhole 2022: the account nobody checked",
+  "summary": "A Solana bridge minted 120,000 wETH it never received because one instruction trusted an account it was handed instead of checking its address. We rebuild the bug in miniature and fix it.",
+  "case": {
+    "name": "Wormhole bridge exploit",
+    "date": "2022-02-02",
+    "impact": "~120,000 wETH (~$320M at the time) minted without collateral",
+    "sources": [
+      "https://wormholecrypto.medium.com/wormhole-incident-report-02-02-22-ad9b8f21eec6"
+    ]
+  },
+  "authors": {
+    "ai": "draft assisted by an LLM",
+    "human": "ZKCTF editor"
+  },
+  "reviewed": true,
+  "status": "published",
+  "teaser": false,
+  "publishedAt": "2026-10-03T12:00:00.000Z"
+}

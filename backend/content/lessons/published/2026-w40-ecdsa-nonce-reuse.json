@@ -1,0 +1,23 @@
+{
+  "id": "2026-w40-ecdsa-nonce-reuse",
+  "week": "2026-W40",
+  "track": "math",
+  "title": "One nonce, two signatures, no secret: ECDSA nonce reuse",
+  "summary": "In 2010 Sony signed PlayStation 3 updates with the same ECDSA nonce every time, and the private signing key fell out with high-school algebra mod n. We do the same algebra on small numbers.",
+  "case": {
+    "name": "PlayStation 3 ECDSA key recovery (fail0verflow)",
+    "date": "2010-12-29",
+    "impact": "Sony's console code-signing private key recovered; anyone could sign software the PS3 would trust",
+    "sources": [
+      "https://fahrplan.events.ccc.de/congress/2010/Fahrplan/events/4087.en.html"
+    ]
+  },
+  "authors": {
+    "ai": "draft assisted by an LLM",
+    "human": "ZKCTF editor"
+  },
+  "reviewed": true,
+  "status": "published",
+  "teaser": false,
+  "publishedAt": "2026-10-03T12:00:00.000Z"
+}

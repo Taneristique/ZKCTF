@@ -4,11 +4,11 @@
  *
  *   node scripts/lesson.mjs draft --track security --case "Wormhole 2022" [--topic "account validation"]
  *   node scripts/lesson.mjs draft --track math --topic "ECDSA nonce reuse" --blank
- *   node scripts/lesson.mjs check  content/lessons/drafts/<file>.json
- *   node scripts/lesson.mjs publish content/lessons/drafts/<file>.json --editor "Your Name" [--at 2026-10-10T12:00:00Z]
+ *   node scripts/lesson.mjs check  backend/content/lessons/drafts/<file>.json
+ *   node scripts/lesson.mjs publish backend/content/lessons/drafts/<file>.json --editor "Your Name" [--at 2026-10-10T12:00:00Z]
  *   node scripts/lesson.mjs list
  *
- * Drafts are never served. Only `publish` (after your review) moves a lesson to content/lessons/published/.
+ * Drafts are never served. Only `publish` (after your review) moves a lesson to backend/content/lessons/published/.
  */
 import { createRequire } from "node:module";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
@@ -24,7 +24,7 @@ try {
   /* optional */
 }
 
-const LESSONS = join(ROOT, "content/lessons");
+const LESSONS = join(BACKEND, "content/lessons");
 const DRAFTS = join(LESSONS, "drafts");
 const PUBLISHED = join(LESSONS, "published");
 const TRACKS = ["security", "math"];

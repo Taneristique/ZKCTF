@@ -61,14 +61,14 @@ NEXT_PUBLIC_PROGRAM_ID=34Kut3tQ4HTJMF2gVvnT6shhmenPE6463xnGk5sxDtz7
 
 ## 3. Weekly lessons (AI draft → human review → publish)
 
-**Script:** `scripts/lesson.mjs`. **Content:** `content/lessons/published/*.json` (served), `content/lessons/drafts/` (never served).
+**Script:** `scripts/lesson.mjs`. **Content:** `backend/content/lessons/published/*.json` (served), `backend/content/lessons/drafts/` (never served).
 
 ```bash
 node scripts/lesson.mjs draft --track security --case "Wormhole 2022"   # AI draft (or --blank)
 node scripts/lesson.mjs draft --track math --topic "ECDSA nonce reuse"
 # edit the draft: fact-check the incident + sources, solve the exercise yourself, fix wording
-node scripts/lesson.mjs check content/lessons/drafts/<file>.json
-node scripts/lesson.mjs publish content/lessons/drafts/<file>.json --editor "Your Name" [--at 2026-10-10T12:00:00Z]
+node scripts/lesson.mjs check backend/content/lessons/drafts/<file>.json
+node scripts/lesson.mjs publish backend/content/lessons/drafts/<file>.json --editor "Your Name" [--at 2026-10-10T12:00:00Z]
 node scripts/lesson.mjs list
 ```
 
