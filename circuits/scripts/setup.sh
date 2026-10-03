@@ -16,8 +16,8 @@ NEED=16
 C=${CONSTRAINTS:-200000}
 while [ $((2 ** NEED)) -lt $((C + 1)) ]; do NEED=$((NEED + 1)); done
 [ "$NEED" -lt 18 ] && NEED=18
-PTAU="$OUT/pot${NEED}_final.ptau"
-URL="https://storage.googleapis.com/zkevm/ptau/powersOfTau28_hez_final_${NEED}.ptau"
+PTAU="$OUT/ppot_0080_${NEED}.ptau"
+URL="https://pse-trusted-setup-ppot.s3.eu-central-1.amazonaws.com/pot28_0080/ppot_0080_${NEED}.ptau"
 if [ ! -f "$PTAU" ]; then
   echo "== download ptau $NEED =="
   curl -L --fail -o "$PTAU" "$URL"

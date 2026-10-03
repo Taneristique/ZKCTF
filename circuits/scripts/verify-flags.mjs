@@ -42,3 +42,4 @@ try {
 }
 if (!threw) throw new Error("c≠s must not prove");
 console.log("groth16: c=s verify=1; c≠s no π");
+process.exit(0);

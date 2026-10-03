@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as snarkjs from "snarkjs";
-import { buildBn128, unstringifyBigInts } from "ffjavascript";
+import { buildBn128, utils } from "ffjavascript";
 import {
   createCommitment,
   playerCommitment,
@@ -11,6 +11,7 @@ import {
   publicSignals,
 } from "../lib/relation.mjs";
 
+const { unstringifyBigInts } = utils;
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 export async function proveRelation({ flag, delta, nonce, pubkey32 }) {

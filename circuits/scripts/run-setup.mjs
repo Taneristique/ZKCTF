@@ -5,7 +5,9 @@ import * as snarkjs from "snarkjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const r1cs = join(root, "build/relation.r1cs");
-const ptau = join(root, "build/pot19_final.ptau");
+// PSE perpetual powers of tau (prepared for phase 2), 2^19:
+// https://pse-trusted-setup-ppot.s3.eu-central-1.amazonaws.com/pot28_0080/ppot_0080_19.ptau
+const ptau = join(root, process.env.PTAU ?? "build/ppot_0080_19.ptau");
 const z0 = join(root, "build/relation_0000.zkey");
 const zkey = join(root, "build/relation.zkey");
 const vkey = join(root, "build/verification_key.json");
@@ -14,11 +16,11 @@ const logger = {
   info: (...a) => console.log(new Date().toISOString(), ...a),
   warn: (...a) => console.warn(new Date().toISOString(), ...a),
   error: (...a) => console.error(new Date().toISOString(), ...a),
-  debug: () => {},
+  debug: (...a) => process.env.SETUP_DEBUG && console.log(new Date().toISOString(), ...a),
 };
 
 if (!existsSync(r1cs) || !existsSync(ptau)) {
-  throw new Error("need build/relation.r1cs and build/pot19_final.ptau");
+  throw new Error(`need build/relation.r1cs and ${ptau}`);
 }
 
 if (!existsSync(z0)) {
