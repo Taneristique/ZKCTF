@@ -1,0 +1,15 @@
+{
+  "name": "zkctf-circuits",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "setup": "bash scripts/setup.sh",
+    "test": "node scripts/test-relation.mjs && node scripts/verify-flags.mjs"
+  },
+  "dependencies": {
+    "snarkjs": "^0.7.6",
+    "circomlib": "^2.0.5",
+    "ffjavascript": "^0.3.1",
+    "@noble/hashes": "^2.4.0"
+  }
+}

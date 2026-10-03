@@ -1,0 +1,26 @@
+[package]
+name = "zkctf"
+version = "0.1.0"
+description = "ZKCTF $5 entry + Groth16 verify"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "zkctf"
+
+[features]
+no-entrypoint = []
+
+[dependencies]
+borsh = "=0.10.3"
+solana-program = "=1.17.34"
+thiserror = "=1.0.69"
+block-buffer = "=0.10.4"
+crypto-common = "=0.1.6"
+digest = "=0.10.7"
+# Keep Solana platform-tools (cargo/rustc 1.79) from pulling edition-2024 crates.
+blake3 = "=1.5.5"
+jobserver = "=0.1.32"
+zeroize_derive = "=1.4.2"
+rayon = "=1.10.0"
+rayon-core = "=1.12.1"
