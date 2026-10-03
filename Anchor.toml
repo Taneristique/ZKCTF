@@ -1,0 +1,19 @@
+[toolchain]
+anchor_version = "0.30.1"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.localnet]
+zkctf = "34Kut3tQ4HTJMF2gVvnT6shhmenPE6463xnGk5sxDtz7"
+
+[programs.devnet]
+zkctf = "34Kut3tQ4HTJMF2gVvnT6shhmenPE6463xnGk5sxDtz7"
+
+[provider]
+cluster = "localnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "node programs/zkctf/tests/zkctf.mjs"

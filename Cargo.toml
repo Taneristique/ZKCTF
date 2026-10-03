@@ -1,0 +1,12 @@
+[workspace]
+members = ["programs/zkctf"]
+resolver = "2"
+
+# ahash 0.8.5 enables removed stdsimd on Solana's rustc; use patched copy.
+[patch.crates-io]
+ahash = { path = "vendor/ahash" }
+
+[profile.release]
+overflow-checks = true
+lto = "fat"
+codegen-units = 1

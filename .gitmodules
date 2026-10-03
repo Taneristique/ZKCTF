@@ -1,0 +1,3 @@
+[submodule "circuits/keccak256-circom"]
+	path = circuits/keccak256-circom
+	url = https://github.com/vocdoni/keccak256-circom.git
