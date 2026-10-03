@@ -78,14 +78,13 @@ Install the recommended **rust-analyzer** extension (`.vscode/extensions.json`).
 
 ## Deploy (Railway)
 
-Two services from this repo. `backend/` is self-contained (API + lessons), `frontend/` proxies `/zk-api` to it.
+One service. The root `Dockerfile` builds both apps; `scripts/start.sh` runs the API on `127.0.0.1:8787` and Next.js on `$PORT`, which proxies `/zk-api` to the API inside the container.
 
-| Service | Root Directory | Variables | Extra |
-| --- | --- | --- | --- |
-| API (`api.zkctf.com`) | `/backend` (builds `backend/Dockerfile`) | `AUTHORITY_KEYPAIR_JSON`, `ZKCTF_PROGRAM_ID`, `SOLANA_RPC`, `USDC_MINT`, `TREASURY_WALLET`, `ZKCTF_DATA_DIR=/data` | Volume at `/data` |
-| Web (`zkctf.com`) | `/frontend` | `ZKCTF_API_URL=https://api.zkctf.com`, `NEXT_PUBLIC_SOLANA_RPC`, `NEXT_PUBLIC_PROGRAM_ID` | Redeploy after changing `ZKCTF_API_URL` (read at build time) |
+- Root Directory: `/` (the root `Dockerfile` is auto-detected)
+- Variables: `AUTHORITY_KEYPAIR_JSON`, `ZKCTF_PROGRAM_ID`, `SOLANA_RPC`, `USDC_MINT`, `TREASURY_WALLET`, `ZKCTF_DATA_DIR=/data`; optional build-time `NEXT_PUBLIC_SOLANA_RPC`, `NEXT_PUBLIC_PROGRAM_ID`
+- Volume mounted at `/data`; custom domain `zkctf.com`
 
-`AUTHORITY_KEYPAIR_JSON` is the keypair array (`[12,34,…]`); keep it only in the host's secret variables.
+`AUTHORITY_KEYPAIR_JSON` is the keypair array (`[12,34,…]`); keep it only in the host's secret variables. `backend/Dockerfile` still builds the API alone if it ever needs its own service.
 
 ## License
 

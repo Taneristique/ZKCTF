@@ -1,0 +1,17 @@
+**/node_modules
+**/.next
+**/.env
+**/.env.*
+!**/.env.example
+**/*keypair*.json
+**/*.tsbuildinfo
+backend/data
+backend/content/lessons/drafts
+target
+vendor
+circuits
+programs
+docs
+protocol
+.git
+.vscode
