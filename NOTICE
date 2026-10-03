@@ -1,0 +1,6 @@
+ZKCTF
+Copyright 2026 Taneristique and ZKCTF contributors
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This product includes a patched copy of ahash (vendor/ahash), licensed under MIT OR Apache-2.0.
