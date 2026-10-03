@@ -49,8 +49,10 @@ export default function LearnPage() {
   const [flag, setFlag] = useState("");
   const [note, setNote] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   const load = useCallback(() => {
+    setLoadFailed(false);
     void getJson<{ tracks: Record<string, Track>; lessons: LessonMeta[]; member: MemberStatus | null }>(
       `/lessons${wallet ? `?wallet=${wallet}` : ""}`,
       (wallet && cachedAuth(wallet)) || undefined,
@@ -60,7 +62,10 @@ export default function LearnPage() {
         setLessons(r.lessons ?? []);
         setMember(r.member);
       })
-      .catch(() => setLessons([]));
+      .catch(() => {
+        setLessons([]);
+        setLoadFailed(true);
+      });
   }, [wallet]);
 
   useEffect(load, [load]);
@@ -131,7 +136,16 @@ export default function LearnPage() {
         ))}
       </div>
 
-      {shown.length === 0 && <p className="mt-8 text-sm text-cream/50">{t.lessonEmpty}</p>}
+      {loadFailed ? (
+        <p className="mt-8 text-sm text-cream/60">
+          {t.lessonLoadError}{" "}
+          <button type="button" onClick={load} className="text-teal underline">
+            {t.retry}
+          </button>
+        </p>
+      ) : (
+        shown.length === 0 && <p className="mt-8 text-sm text-cream/50">{t.lessonEmpty}</p>
+      )}
 
       <ul className="mt-6 space-y-4">
         {shown.map((l) => (
