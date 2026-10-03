@@ -1,0 +1,34 @@
+{
+  "id": "2026-w40-wormhole-sysvar-spoof",
+  "week": "2026-W40",
+  "track": "security",
+  "title": "Wormhole 2022: the account nobody checked",
+  "summary": "A Solana bridge minted 120,000 wETH it never received because one instruction trusted an account it was handed instead of checking its address. We rebuild the bug in miniature and fix it.",
+  "case": {
+    "name": "Wormhole bridge exploit",
+    "date": "2022-02-02",
+    "impact": "~120,000 wETH (~$320M at the time) minted without collateral",
+    "sources": [
+      "https://wormholecrypto.medium.com/wormhole-incident-report-02-02-22-ad9b8f21eec6"
+    ]
+  },
+  "body": "On Solana, a program cannot reach out and read any account it likes. The caller passes a list of accounts with every instruction, and the program decides what to trust. That design is fast, but it moves a duty onto the program: for every account it reads, it must prove the account is the one it expects. Usually that means checking the address (or that it is a PDA derived from known seeds) and checking the owner program.\n\nWormhole's Solana side verified guardian signatures in two steps. A secp256k1 precompile instruction checked the signatures earlier in the same transaction, and Wormhole's verify_signatures then read the Instructions sysvar to confirm that the precompile had really run. The Instructions sysvar is a special account at a fixed address that lists the instructions in the current transaction.\n\nThe code read that list with load_instruction_at, an older helper that parses whatever account bytes it is given. It never asked whether the account passed in was actually the sysvar at its fixed address. The attacker created an ordinary account, filled it with bytes that looked like a successful signature check, and passed it where the sysvar belonged. Wormhole accepted a fake approval, recorded a valid-looking message, and the attacker used it to mint 120,000 wETH on Solana with no ETH locked on Ethereum.\n\nThe fix was one line: call load_instruction_at_checked, which first verifies that the account's key equals the Instructions sysvar ID and then parses it. The general lesson is bigger than this one function. Every account a Solana program reads is attacker-chosen until proven otherwise. Check the address or PDA seeds, check the owner, and check a type discriminator before trusting the data.\n\nZKCTF's own program follows the same rule. When enter_round receives the pot token account it checks that the token account's owner is the program's pot vault PDA, and every instruction loads Config only after checking the PDA address, the owner program and the discriminator. Without those checks, a player could pass a look-alike account and redirect the entry fee. This is the same class of bug as Wormhole.\n\nReproduction exercise: the snippet below is a simplified version of the vulnerable handler. Read it as a reviewer and decide which helper the code should have called.",
+  "exercise": {
+    "statement": "In the simplified handler below, the program parses the Instructions sysvar from an account the caller supplies. Which solana_program helper should it call so the account's address is verified before parsing? Answer ZKCTF{function_name}.",
+    "artifacts": [
+      "fn verify_signatures(accounts: &[AccountInfo]) -> ProgramResult {\n    let acc = &mut accounts.iter();\n    let _payer = next_account_info(acc)?;\n    let instruction_acc = next_account_info(acc)?; // should be the Instructions sysvar\n    let ix = load_instruction_at(0, &instruction_acc.data.borrow())?;\n    if ix.program_id != secp256k1_program::id() {\n        return Err(ProgramError::InvalidArgument);\n    }\n    // ... trust the signature count encoded in ix.data ...\n    Ok(())\n}"
+    ],
+    "hints": [
+      "The fixed helper takes the AccountInfo itself, not raw bytes, so it can look at the key.",
+      "Its name is the old helper's name plus one word that means 'verified'."
+    ]
+  },
+  "flag": "ZKCTF{load_instruction_at_checked}",
+  "authors": {
+    "ai": "draft assisted by an LLM",
+    "human": "ZKCTF editor"
+  },
+  "reviewed": true,
+  "status": "published",
+  "publishedAt": "2026-10-03T12:00:00.000Z"
+}

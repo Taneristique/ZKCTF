@@ -1,0 +1,34 @@
+{
+  "id": "2026-w40-ecdsa-nonce-reuse",
+  "week": "2026-W40",
+  "track": "math",
+  "title": "One nonce, two signatures, no secret: ECDSA nonce reuse",
+  "summary": "In 2010 Sony signed PlayStation 3 updates with the same ECDSA nonce every time, and the private signing key fell out with high-school algebra mod n. We do the same algebra on small numbers.",
+  "case": {
+    "name": "PlayStation 3 ECDSA key recovery (fail0verflow)",
+    "date": "2010-12-29",
+    "impact": "Sony's console code-signing private key recovered; anyone could sign software the PS3 would trust",
+    "sources": [
+      "https://fahrplan.events.ccc.de/congress/2010/Fahrplan/events/4087.en.html"
+    ]
+  },
+  "body": "ECDSA signatures work in a group of prime order n. The signer has a private key d. For each message hash z the signer picks a fresh secret number k (the nonce), computes a point kG on the curve, takes its x-coordinate mod n as r, and outputs (r, s) where s = k⁻¹ · (z + r·d) mod n. Everything here is ordinary modular arithmetic, and k⁻¹ is the modular inverse of k mod n.\n\nThe security argument needs k to be secret and never repeated. Watch what happens when it repeats. Two messages z₁ and z₂ signed with the same k share the same r (it depends only on k). Write both equations:\n  s₁ = k⁻¹ (z₁ + r·d)   and   s₂ = k⁻¹ (z₂ + r·d)   (mod n)\nSubtract them and the d terms cancel: s₁ − s₂ = k⁻¹ (z₁ − z₂). So k = (z₁ − z₂) · (s₁ − s₂)⁻¹ mod n. Once k is known, rearrange either equation: d = (s₁·k − z₁) · r⁻¹ mod n. Two signatures, one subtraction, two modular inverses, and the private key is out.\n\nThis is exactly what happened to the PS3. Sony's signing code used a constant k, so every published update carried the same r. The fail0verflow team presented the recovery at the 27th Chaos Communication Congress, and the console's root of trust was gone for good, because the key is burned into hardware.\n\nThe math also tells you the defences. Nonces must be unique and unpredictable. Even a few biased bits leak d through lattice attacks, which is how some Android Bitcoin wallets lost funds in 2013. Modern libraries derive k deterministically from d and z (RFC 6979), so the same message gives the same k but different messages never share one. As an auditor, the red flag is two signatures from one key with the same r.\n\nModular inverse refresher: for prime n, a⁻¹ ≡ a^(n−2) mod n (Fermat), or use the extended Euclidean algorithm. Always reduce negative numbers back into 0…n−1 before inverting.",
+  "exercise": {
+    "statement": "A toy signer works mod the prime n = 1009 and reused its nonce for two messages. Recover the private key d. Answer ZKCTF{d} with d as a decimal number between 1 and 1008.",
+    "artifacts": [
+      "n  = 1009\nr  = 412   (same in both signatures)\nz1 = 123   s1 = 744\nz2 = 456   s2 = 666"
+    ],
+    "hints": [
+      "First find k = (z1 − z2) · (s1 − s2)⁻¹ mod n. Reduce z1 − z2 and s1 − s2 into 0…1008 first.",
+      "Then d = (s1 · k − z1) · r⁻¹ mod n. You can check your k: it is a three-digit number."
+    ]
+  },
+  "flag": "ZKCTF{777}",
+  "authors": {
+    "ai": "draft assisted by an LLM",
+    "human": "ZKCTF editor"
+  },
+  "reviewed": true,
+  "status": "published",
+  "publishedAt": "2026-10-03T12:00:00.000Z"
+}
