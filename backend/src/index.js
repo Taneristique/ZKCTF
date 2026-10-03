@@ -477,8 +477,8 @@ app.post("/lessons/:id/validate", express.json(), async (req, res) => {
   }
 });
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`ZKCTF api 0.0.0.0:${PORT} program=${PROGRAM_ID.toBase58()}`);
+app.listen(PORT, "::", () => {
+  console.log(`ZKCTF api [::]:${PORT} program=${PROGRAM_ID.toBase58()}`);
 });
 
 function windowMeta() {
