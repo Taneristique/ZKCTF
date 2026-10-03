@@ -6,7 +6,7 @@ import { getJson, postJson } from "@/lib/api";
 import { useLang } from "@/lib/lang";
 import { hexToBytes, submitInstruction, sendB64Tx } from "@/lib/program";
 import { Countdown } from "@/components/Countdown";
-import { Transaction } from "@solana/web3.js";
+import { ComputeBudgetProgram, Transaction } from "@solana/web3.js";
 
 type Level = { id: number; title: string; statement: string; artifacts: string[]; hints: string[]; h: string };
 type Progress = { solved: number[]; next: number | null; cleared: boolean; levelCount: number };
@@ -155,8 +155,9 @@ export default function PlayPage() {
         proofB: hexToBytes(assist.proof.b),
         proofC: hexToBytes(assist.proof.c),
       });
-      const tx = new Transaction().add(ix);
-      await sendTransaction(tx, connection);
+      const tx = new Transaction().add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }), ix);
+      const sig = await sendTransaction(tx, connection);
+      await connection.confirmTransaction(sig, "confirmed");
       const confirmed = await postJson<{
         ok: boolean;
         progress?: Progress;
