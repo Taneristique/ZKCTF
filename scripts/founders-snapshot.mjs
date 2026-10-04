@@ -23,7 +23,7 @@ const load = (rel) => import(pathToFileURL(join(BACKEND, "src", rel)).href);
 
 async function main() {
   process.chdir(BACKEND);
-  const { Connection } = await import("@solana/web3.js");
+  const { Connection } = require("@solana/web3.js");
   const { syncFounders, founders } = await load("founders.js");
   const { FOUNDING } = await load("membership.js");
   const { CLUSTER } = await load("race.js");

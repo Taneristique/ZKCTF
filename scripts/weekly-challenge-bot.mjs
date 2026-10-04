@@ -58,7 +58,7 @@ async function main() {
     console.log("Skip on-chain create_round (set CHAIN_DEPLOY=1 to publish).");
     return;
   }
-  const { Connection } = await import("@solana/web3.js");
+  const { Connection } = require("@solana/web3.js");
   const { authorityKeypair } = await load("authority.js");
   const { onChainRound } = await load("chain.js");
   const { createRoundOnChain } = await load("scheduler.js");

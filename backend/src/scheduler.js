@@ -48,10 +48,18 @@ async function notify(msg, key = msg) {
   if (Date.now() - (alerted.get(key) ?? 0) < 6 * 3600_000) return;
   alerted.set(key, Date.now());
   try {
-    await fetch(url, {
+    const target = new URL(url);
+    const text = `ZKCTF bot: ${msg}`;
+    // Discord reads `content`, Slack reads `text`; Telegram sendMessage also needs chat_id in the body.
+    const body = { content: text, text };
+    if (target.hostname === "api.telegram.org") {
+      body.chat_id = target.searchParams.get("chat_id");
+      target.search = "";
+    }
+    await fetch(target, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: `ZKCTF bot: ${msg}`, text: `ZKCTF bot: ${msg}` }),
+      body: JSON.stringify(body),
       signal: AbortSignal.timeout(10_000),
     });
   } catch {

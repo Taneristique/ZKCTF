@@ -24,7 +24,7 @@ const load = (rel) => import(pathToFileURL(join(BACKEND, "src", rel)).href);
 async function main() {
   process.chdir(BACKEND);
   if (process.env.LOYALTY_MINT) throw new Error(`LOYALTY_MINT is already set (${process.env.LOYALTY_MINT}).`);
-  const { Connection } = await import("@solana/web3.js");
+  const { Connection } = require("@solana/web3.js");
   const { authorityKeypair } = await load("authority.js");
   const { createLoyaltyMint } = await load("loyalty.js");
   const connection = new Connection(process.env.SOLANA_RPC ?? "https://api.devnet.solana.com", "confirmed");
