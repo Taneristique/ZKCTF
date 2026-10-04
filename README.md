@@ -100,6 +100,7 @@ One service. The root `Dockerfile` builds both apps; `scripts/start.sh` runs the
 
 - Root Directory: `/` (the root `Dockerfile` is auto-detected)
 - Variables: `AUTHORITY_KEYPAIR_JSON`, `ZKCTF_PROGRAM_ID`, `SOLANA_RPC`, `USDC_MINT`, `TREASURY_WALLET`, `ZKCTF_DATA_DIR=/data`; optional build-time `NEXT_PUBLIC_SOLANA_RPC`, `NEXT_PUBLIC_PROGRAM_ID`
+- `FOUNDING_EXCLUDE`: comma-separated team/test wallets that keep their seat but don't take one of the 100 Founding spots or enter the snapshot
 - Weekly bot: `BOT_CHAIN=1` (only on the production service, so a dev machine never publishes rounds), `LOYALTY_MINT`, optional `BOT_ALERT_WEBHOOK` (Discord or Slack webhook for failures, low SOL and each settle), `BOT_MIN_SOL`, `OPENROUTER_API_KEY`
 - Volume mounted at `/data`; custom domain `zkctf.com`
 

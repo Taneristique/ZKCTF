@@ -12,12 +12,27 @@ import { dataPath, load, save } from "./store.js";
 
 const PATH = dataPath("founders.json");
 
+/** Team / test wallets (FOUNDING_EXCLUDE, comma-separated): they keep their seat but take no Founding spot. */
+export function excludedFounders() {
+  return new Set(
+    String(process.env.FOUNDING_EXCLUDE ?? "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean),
+  );
+}
+
+/** Public Founders, numbered 1.. in purchase order, without excluded wallets. */
 export function founders() {
-  return Object.values(load(PATH)).sort((a, b) => a.ordinal - b.ordinal);
+  const skip = excludedFounders();
+  return Object.values(load(PATH))
+    .sort((a, b) => a.ordinal - b.ordinal)
+    .filter((r) => !skip.has(r.wallet))
+    .map((r, i) => ({ ...r, ordinal: i + 1 }));
 }
 
 export function founderFor(wallet) {
-  return load(PATH)[wallet] ?? null;
+  return founders().find((r) => r.wallet === wallet) ?? null;
 }
 
 let running = null;
