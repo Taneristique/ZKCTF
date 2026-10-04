@@ -93,13 +93,13 @@ export const tr: Dict = {
 
   foundingTitle: "Kurucu üye ayrıcalığı",
   foundingLead:
-    "Üyelik alan ilk 100 cüzdan Kurucu üye olur: yeniledikçe %50 indirim, Kurucu rozeti ve her yeni derse herkesten 24 saat önce erişim.",
+    "Üyelik alan ilk 100 cüzdan Kurucu üye olur: Devnet’te yeniledikçe %50 indirim, Kurucu rozeti ve her yeni derse herkesten 24 saat önce erişim.",
   foundingMainnet:
-    "Kurucu üyeler zincir üstünde kayıt altına alınır ve ZKCTF mainnet’e geçtiğinde, oradaki ilk alımlarından itibaren Kurucu fiyatını korur.",
+    "Kurucu üyeler zincir üstünde kayıt altına alınır. ZKCTF mainnet’e geçtiğinde oradaki ilk alımlarında %50 indirim alır ve Kurucu rozetini kalıcı olarak korurlar.",
   foundingLeft: "Kalan Kurucu koltuk",
   foundingYou: "Kurucu üyesin. Fiyatın sabitlendi.",
   founderNo: "Kurucu #",
-  foundingCarried: "Devnet betasından Kurucu üyesin: Kurucu fiyatın burada da geçerli.",
+  foundingCarried: "Devnet betasından Kurucu üyesin: buradaki ilk alımında %50 indirim. Yenilemeler normal fiyattan.",
   foundingGone: "Kurucu koltukların hepsi doldu.",
 
   loyaltyTitle: "Finisher token",
@@ -130,7 +130,7 @@ export const tr: Dict = {
     "Her 5 USDC’lik yarış girişi, bizim değil programın kontrol ettiği bir havuz hesabına gider. Yalnızca zincir üstünde doğrulanan Groth16 kanıtları sayılır. Yarış bittikten sonra program sabit bir oranla ödeme yapar: %20 hazineye, %80 ilk 10’a. Üyelik ödemeleri hazineye gider; yarış havuzuna ve sıralamaya hiç dokunmaz.",
   foundersTitle: "Kurucu üyeler",
   foundersBody:
-    "Kurucu üyelik, ödemeyi yapan cüzdana aittir ve zincir üstünde herkese açıktır. Kurucu üyeler aynı cüzdanla mainnet’te de Kurucu fiyatını korur. Başka bir cüzdana devredilemez.",
+    "Kurucu üyelik, ödemeyi yapan cüzdana aittir ve zincir üstünde herkese açıktır. Mainnet’te aynı cüzdan ilk alımında %50 indirim alır ve Kurucu rozetini korur; sonraki yenilemeler normal fiyattandır. Başka bir cüzdana devredilemez.",
   loyaltyLegalTitle: "Finisher token koşulları",
   loyaltyLegalBody:
     "Finisher token, bir yarışın bütün CTF’lerini süre dolmadan bitiren her cüzdana ücretsiz verilir. Devredilemez, satılmaz, nakit değeri yoktur ve paraya çevrilemez. Gelirden, ödül havuzlarından, yönetimden ya da kârdan pay vermez; bir yatırım aracı değildir. Yalnızca topluluk ayrıcalıklarının kilidini açar; bu ayrıcalıkları kendi takdirimizle sunarız, değiştirebilir veya sonlandırabiliriz. Token sahiplerine özel Elit etkinliklere katılım ücretsizdir.",

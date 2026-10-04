@@ -93,13 +93,13 @@ export const es: Dict = {
 
   foundingTitle: "Beneficio de miembro fundador",
   foundingLead:
-    "Las primeras 100 wallets que compren una membresía son miembros fundadores: 50% de descuento mientras renueven, insignia de fundador y cada clase nueva 24 horas antes que el resto.",
+    "Las primeras 100 wallets que compren una membresía son miembros fundadores: 50% de descuento en Devnet mientras renueven, insignia de fundador y cada clase nueva 24 horas antes que el resto.",
   foundingMainnet:
-    "Los fundadores quedan registrados on-chain y conservan el precio de fundador cuando ZKCTF llegue a mainnet, desde su primera compra allí.",
+    "Los fundadores quedan registrados on-chain. Cuando ZKCTF llegue a mainnet, tendrán 50% de descuento en su primera compra allí y conservarán para siempre la insignia de fundador.",
   foundingLeft: "Lugares de fundador libres",
   foundingYou: "Sos miembro fundador. Tu precio quedó fijo.",
   founderNo: "Fundador #",
-  foundingCarried: "Sos fundador desde la beta en Devnet: tu precio de fundador también vale acá.",
+  foundingCarried: "Sos fundador desde la beta en Devnet: 50% de descuento en tu primera compra acá. Las renovaciones van a precio normal.",
   foundingGone: "Ya no quedan lugares de fundador.",
 
   loyaltyTitle: "Token Finisher",
@@ -130,7 +130,7 @@ export const es: Dict = {
     "Cada entrada de 5 USDC va a una cuenta de pozo controlada por el programa, no por nosotros. Solo cuentan las pruebas Groth16 verificadas on-chain, y cuando termina la carrera el programa paga con un reparto fijo: 20% al tesoro y 80% al top 10. Los pagos de membresía van al tesoro y nunca tocan el pozo ni el ranking.",
   foundersTitle: "Miembros fundadores",
   foundersBody:
-    "La condición de fundador pertenece a la wallet que hizo la compra y es pública on-chain. Los fundadores conservan el precio de fundador en mainnet con la misma wallet. No se puede transferir a otra wallet.",
+    "La condición de fundador pertenece a la wallet que hizo la compra y es pública on-chain. En mainnet, la misma wallet tiene 50% de descuento en su primera compra y conserva la insignia de fundador; las renovaciones siguientes van a precio normal. No se puede transferir a otra wallet.",
   loyaltyLegalTitle: "Condiciones del token Finisher",
   loyaltyLegalBody:
     "El token Finisher se entrega gratis a cada wallet que completa todos los CTF de una carrera antes del cierre. No es transferible, no se vende, no tiene valor monetario y no se puede canjear por dinero. No da participación en ingresos, pozos de premios, gobernanza ni ganancias, y tenerlo no es una inversión. Solo habilita beneficios de la comunidad, que ofrecemos a nuestro criterio y que pueden cambiar o terminar. Los eventos Élite para holders tienen entrada gratis.",

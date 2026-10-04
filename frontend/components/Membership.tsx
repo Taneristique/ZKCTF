@@ -20,6 +20,7 @@ type Plans = {
     earlyAccessHours: number;
     ordinal: number | null;
     carried: boolean;
+    carriedDiscount: boolean;
   };
   member: MemberStatus | null;
 };
@@ -98,13 +99,15 @@ export function Membership({ onPaid }: { onPaid?: () => void }) {
               />
             </div>
             <p className="mt-2 font-mono text-xs text-teal">
-              {founding.carried && !founding.member
+              {founding.carriedDiscount
                 ? t.foundingCarried
-                : founding.member
-                  ? `${founding.ordinal ? `${t.founderNo}${founding.ordinal} · ` : ""}${t.foundingYou}`
-                  : founding.left > 0
-                    ? `${t.foundingLeft}: ${founding.left} / ${founding.seats}`
-                    : t.foundingGone}
+                : founding.carried && founding.ordinal
+                  ? `${t.founderNo}${founding.ordinal}`
+                  : founding.member
+                    ? `${founding.ordinal ? `${t.founderNo}${founding.ordinal} · ` : ""}${t.foundingYou}`
+                    : founding.left > 0
+                      ? `${t.foundingLeft}: ${founding.left} / ${founding.seats}`
+                      : t.foundingGone}
             </p>
           </>
         )}

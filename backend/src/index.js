@@ -17,6 +17,8 @@ import {
   planTable,
   buildCheckoutTx,
   treasuryOwner,
+  holdFoundingSeat,
+  releaseFoundingSeat,
 } from "./membership.js";
 import { TRACKS, lessonCatalog, lessonFor, lessonFlag } from "./lessons.js";
 import { walletFromRequest } from "./walletAuth.js";
@@ -212,6 +214,7 @@ app.get("/plans", async (req, res) => {
         member: Boolean(offer.status?.founding),
         ordinal: (wallet && founderFor(wallet)?.ordinal) || offer.carried?.ordinal || null,
         carried: Boolean(offer.carried),
+        carriedDiscount: offer.carriedDiscount,
       },
       member: offer.status,
     });
@@ -245,6 +248,7 @@ app.post("/checkout", express.json(), async (req, res) => {
       wallet,
       months,
       founding,
+      tier: offer.tier,
     });
     const sim = await connection.simulateTransaction(tx);
     if (sim.value.err) {
@@ -260,6 +264,7 @@ app.post("/checkout", express.json(), async (req, res) => {
       return;
     }
     tx.partialSign(authority);
+    if (offer.tier === 1 && !offer.status?.founding) holdFoundingSeat(wallet);
     res.json({
       tx: tx.serialize({ requireAllSignatures: false, verifySignatures: false }).toString("base64"),
       months,
@@ -267,9 +272,11 @@ app.post("/checkout", express.json(), async (req, res) => {
       priceUsdc: atoms / 1e6,
       mint,
       treasuryAta,
-      note: founding
-        ? `Founding member: ${atoms / 1e6} USDC for ${months} month(s). Price locked on renewals.`
-        : `${atoms / 1e6} USDC for ${months} month(s).`,
+      note: offer.carriedDiscount
+        ? `Founder first-purchase price: ${atoms / 1e6} USDC for ${months} month(s). Renewals are at the regular price.`
+        : founding
+          ? `Founding member: ${atoms / 1e6} USDC for ${months} month(s). Price locked on renewals.`
+          : `${atoms / 1e6} USDC for ${months} month(s).`,
     });
   } catch (e) {
     res.status(400).json({ error: String(e.message ?? e) });
@@ -281,6 +288,7 @@ app.post("/checkout/confirm", express.json(), async (req, res) => {
   const wallet = String(req.body?.wallet ?? "");
   try {
     await syncFounders(connection);
+    releaseFoundingSeat(wallet);
     res.json({ founder: founderFor(wallet) });
   } catch (e) {
     res.status(502).json({ error: String(e.message ?? e) });

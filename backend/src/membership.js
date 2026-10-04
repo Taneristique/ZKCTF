@@ -88,21 +88,53 @@ export async function foundingTaken(connection) {
 }
 
 /**
- * Founding price applies to existing Founding members, to Founders carried over from a previous
- * deployment (FOUNDER_SNAPSHOT), and to new buyers while Founding seats remain.
+ * Founding seats handed out in checkouts that are signed but not yet on chain (wallet → expiry ms).
+ * Counting them closes the window where two simultaneous buyers both get the last seat.
+ */
+const pending = new Map();
+const HOLD_MS = 120_000;
+
+function pendingFor(except) {
+  const now = Date.now();
+  let n = 0;
+  for (const [w, until] of pending) {
+    if (until <= now) pending.delete(w);
+    else if (w !== except) n++;
+  }
+  return n;
+}
+
+export function holdFoundingSeat(wallet) {
+  pending.set(wallet, Date.now() + HOLD_MS);
+}
+
+export function releaseFoundingSeat(wallet) {
+  pending.delete(wallet);
+}
+
+/**
+ * Who pays the Founding price, and with which seat tier:
+ * - Founding members (tier 1 seat) keep it on renewals.
+ * - New buyers get a tier 1 seat while seats remain (signed-but-unconfirmed checkouts count as taken).
+ * - Founders from a previous deployment (FOUNDER_SNAPSHOT) get it once, on their first purchase here:
+ *   the seat is tier 0, so renewals are at the regular price. Their badge comes from the snapshot.
  */
 export async function foundingOffer(connection, wallet) {
-  const [status, taken] = await Promise.all([
+  const [status, onChain] = await Promise.all([
     wallet ? memberStatus(connection, wallet) : Promise.resolve(null),
     foundingTaken(connection),
   ]);
+  const taken = onChain + pendingFor(wallet);
   const left = Math.max(0, FOUNDING.seats - taken);
   const carried = wallet ? snapshotFounder(wallet) : null;
-  const eligible = Boolean(status?.founding) || Boolean(carried) || left > 0;
-  return { status, taken, left, eligible, carried };
+  const firstPurchase = !status?.expiry;
+  let tier = 0;
+  if (status?.founding || (!carried && left > 0)) tier = 1;
+  const carriedDiscount = Boolean(carried) && firstPurchase && tier === 0;
+  return { status, taken, left, eligible: tier === 1 || carriedDiscount, tier, carried, carriedDiscount };
 }
 
-export async function buildCheckoutTx({ connection, authority, wallet, months, founding }) {
+export async function buildCheckoutTx({ connection, authority, wallet, months, founding, tier = founding ? 1 : 0 }) {
   const atoms = priceAtoms(months, founding);
   if (atoms == null) throw new Error("Pick a 1, 3 or 12 month plan.");
   const member = new PublicKey(wallet);
@@ -115,7 +147,7 @@ export async function buildCheckoutTx({ connection, authority, wallet, months, f
       payer: member.toBase58(),
       wallet: member.toBase58(),
       authority: authority.publicKey.toBase58(),
-      tier: founding ? 1 : 0,
+      tier,
       months,
       slots: 0,
     }),
