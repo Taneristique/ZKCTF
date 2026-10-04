@@ -1,0 +1,11 @@
+{
+  "name": "ZKCTF Finisher",
+  "symbol": "ZKFIN",
+  "description": "Soulbound loyalty token. One is given free for each ZKCTF weekly round in which the holder cleared every CTF while it was live. Non-transferable, no cash value, not an investment; it only unlocks community perks such as holder-only Elite CTF events.",
+  "image": "https://zkctf.com/logo.png",
+  "external_url": "https://zkctf.com/legal",
+  "attributes": [
+    { "trait_type": "Transferable", "value": "No" },
+    { "trait_type": "Cash value", "value": "None" }
+  ]
+}

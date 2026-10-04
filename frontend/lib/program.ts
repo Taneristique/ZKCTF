@@ -9,6 +9,16 @@ export const PROGRAM_ID = new PublicKey(
   process.env.NEXT_PUBLIC_PROGRAM_ID ?? "34Kut3tQ4HTJMF2gVvnT6shhmenPE6463xnGk5sxDtz7",
 );
 
+export const USDC_MINT = new PublicKey(
+  process.env.NEXT_PUBLIC_USDC_MINT ?? "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
+);
+
+/** Sum of the wallet's balances for `mint` across all its token accounts (UI units). */
+export async function tokenBalance(connection: Connection, owner: PublicKey, mint = USDC_MINT) {
+  const { value } = await connection.getParsedTokenAccountsByOwner(owner, { mint });
+  return value.reduce((sum, a) => sum + Number(a.account.data.parsed.info.tokenAmount.uiAmount ?? 0), 0);
+}
+
 const SUBMIT = Uint8Array.from([88, 166, 102, 181, 162, 127, 170, 48]);
 
 const enc = new TextEncoder();

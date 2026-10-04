@@ -16,7 +16,7 @@ export function Join() {
 
       <article className="mt-8 max-w-xl rounded-3xl border border-teal/40 bg-teal/[0.07] p-5 sm:p-7">
         <p className="text-4xl font-semibold">
-          5 USDC<span className="text-base font-normal text-cream/45"> / week</span>
+          5 USDC<span className="text-base font-normal text-cream/45">{t.perWeek}</span>
         </p>
         <p className="mt-3 text-sm leading-6 text-cream/65">{t.ctfWhen}</p>
         <Link

@@ -22,7 +22,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "ZKCTF",
   description:
-    "Bug-bounty pay-to-submit is often 50–100 USDC with no refund — here 5 USDC stays in the pot. Groth16 proof-of-solve: the flag never hits the chain. Top 10 share 80% by fixed formula.",
+    "Affordable cybersecurity education built on reproduced real hacks, plus a weekly on-chain CTF on Solana: 5 USDC entry, Groth16 proof-of-solve, the 10 fastest finishers share 80% of the pot.",
   icons: {
     icon: [
       { url: "/icon.svg", type: "image/svg+xml" },

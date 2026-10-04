@@ -8,7 +8,15 @@ import { hexToBytes, submitInstruction, sendB64Tx } from "@/lib/program";
 import { Countdown } from "@/components/Countdown";
 import { ComputeBudgetProgram, Transaction } from "@solana/web3.js";
 
-type Level = { id: number; title: string; statement: string; artifacts: string[]; hints: string[]; h: string };
+type Level = {
+  id: number;
+  title: string;
+  statement: string;
+  artifacts: string[];
+  hints: string[];
+  h: string;
+  background?: { title: string; refs: { label: string; url: string }[] } | null;
+};
 type Progress = { solved: number[]; next: number | null; cleared: boolean; levelCount: number };
 
 function HintBlock({ hints, label }: { hints: string[]; label: string }) {
@@ -34,7 +42,8 @@ export default function PlayPage() {
   const [entered, setEntered] = useState(false);
   const [levels, setLevels] = useState<Level[]>([]);
   const [progress, setProgress] = useState<Progress | null>(null);
-  const [loadErr, setLoadErr] = useState<string | null>(null);
+  const [loadErr, setLoadErr] = useState(false);
+  const [roundLocked, setRoundLocked] = useState(false);
   const [openId, setOpenId] = useState<number | null>(0);
   const [flags, setFlags] = useState<Record<number, string>>({});
   const [note, setNote] = useState<string | null>(null);
@@ -60,15 +69,16 @@ export default function PlayPage() {
   }
 
   useEffect(() => {
-    void getJson<{ levels: Level[] }>("/round")
+    void getJson<{ levels: Level[]; locked?: boolean }>("/round")
       .then((r) => {
         setLevels(r.levels ?? []);
-        setLoadErr(null);
+        setRoundLocked(Boolean(r.locked));
+        setLoadErr(false);
         if (r.levels?.[0]) setOpenId(r.levels[0].id);
       })
-      .catch((e) => {
+      .catch(() => {
         setLevels([]);
-        setLoadErr(e instanceof Error ? e.message : "Could not load this week’s puzzles. Is the API on :8787?");
+        setLoadErr(true);
       });
   }, []);
 
@@ -188,7 +198,7 @@ export default function PlayPage() {
       <div className="mt-4 max-w-md">
         <Countdown />
       </div>
-      {loadErr && <p className="mt-3 text-sm text-teal">{loadErr}</p>}
+      {loadErr && <p className="mt-3 text-sm text-teal">{t.roundLoadError}</p>}
       {!open && <p className="mt-3 text-sm text-cream/60">{t.locked}</p>}
       {!connected && <p className="mt-6 text-sm text-teal">{t.connectFirst}</p>}
       {connected && !open && (
@@ -212,7 +222,7 @@ export default function PlayPage() {
       <div className="mt-8 space-y-6">
         <p className="text-xs uppercase tracking-[0.2em] text-teal">{t.officialSet}</p>
         {sorted.length === 0 && !loadErr && (
-          <p className="text-sm text-cream/50">{t.noLevels}</p>
+          <p className="text-sm text-cream/50">{roundLocked ? t.roundLocked : t.noLevels}</p>
         )}
         <div className="grid gap-3 sm:grid-cols-2">
           {sorted.map((lv) => {
@@ -256,6 +266,22 @@ export default function PlayPage() {
                     </pre>
                   ))}
                   <HintBlock hints={lv.hints ?? []} label={t.hint} />
+                  {lv.background && (
+                    <details className="mt-4 text-xs text-cream/55">
+                      <summary className="cursor-pointer">
+                        {t.background}: {lv.background.title}
+                      </summary>
+                      <ul className="mt-2 space-y-1">
+                        {lv.background.refs.map((r) => (
+                          <li key={r.url}>
+                            <a className="text-teal underline" href={r.url} target="_blank" rel="noreferrer">
+                              {r.label}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </details>
+                  )}
                   <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                     <input
                       value={flags[lv.id] ?? ""}

@@ -11,7 +11,16 @@ export type MemberStatus = { active: boolean; founding: boolean; expiry: number 
 type Plans = {
   plans: Plan[];
   foundingPlans: Plan[];
-  founding: { seats: number; left: number; eligible: boolean; member: boolean; earlyAccessHours: number };
+  founding: {
+    seats: number;
+    taken: number;
+    left: number;
+    eligible: boolean;
+    member: boolean;
+    earlyAccessHours: number;
+    ordinal: number | null;
+    carried: boolean;
+  };
   member: MemberStatus | null;
 };
 
@@ -46,6 +55,7 @@ export function Membership({ onPaid }: { onPaid?: () => void }) {
       const sig = await sendB64Tx(connection, sendTransaction, out.tx);
       await connection.confirmTransaction(sig, "confirmed");
       setNote(`${t.paid} ${out.note}`);
+      await postJson("/checkout/confirm", { wallet: publicKey.toBase58() }).catch(() => null);
       load();
       onPaid?.();
     } catch (e) {
@@ -70,14 +80,33 @@ export function Membership({ onPaid }: { onPaid?: () => void }) {
       <div className="rounded-3xl border border-teal/40 bg-teal/[0.07] p-5 sm:p-6">
         <p className="text-xs uppercase tracking-[0.2em] text-teal">{t.foundingTitle}</p>
         <p className="mt-2 text-sm leading-6 text-cream/75">{t.foundingLead}</p>
+        <p className="mt-3 rounded-2xl border border-teal/30 px-3 py-2 text-sm font-medium leading-6 text-teal">
+          {t.foundingMainnet}
+        </p>
         {founding && (
-          <p className="mt-3 font-mono text-xs text-teal">
-            {founding.member
-              ? t.foundingYou
-              : founding.left > 0
-                ? `${t.foundingLeft}: ${founding.left} / ${founding.seats}`
-                : t.foundingGone}
-          </p>
+          <>
+            <div
+              className="mt-4 h-2 overflow-hidden rounded-full bg-cream/10"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={founding.seats}
+              aria-valuenow={founding.seats - founding.left}
+            >
+              <div
+                className="h-full rounded-full bg-teal"
+                style={{ width: `${Math.min(100, ((founding.seats - founding.left) / Math.max(1, founding.seats)) * 100)}%` }}
+              />
+            </div>
+            <p className="mt-2 font-mono text-xs text-teal">
+              {founding.carried && !founding.member
+                ? t.foundingCarried
+                : founding.member
+                  ? `${founding.ordinal ? `${t.founderNo}${founding.ordinal} · ` : ""}${t.foundingYou}`
+                  : founding.left > 0
+                    ? `${t.foundingLeft}: ${founding.left} / ${founding.seats}`
+                    : t.foundingGone}
+            </p>
+          </>
         )}
       </div>
 
