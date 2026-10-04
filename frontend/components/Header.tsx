@@ -4,10 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import { useLang } from "@/lib/lang";
+import { LANGS, useLang } from "@/lib/lang";
 import { useTheme } from "@/lib/theme";
 import { Countdown } from "@/components/Countdown";
-import type { Lang } from "@/lib/copy";
 
 const empty = () => () => {};
 const client = () => true;
@@ -57,17 +56,21 @@ export function Header() {
             {t.network}
           </span>
           <Countdown compact />
-          <div className="hidden items-center gap-1 sm:flex">
-            {(["en", "tr", "es"] as Lang[]).map((l) => (
+          <div className="hidden items-center gap-1 sm:flex" role="group" aria-label={t.language}>
+            {LANGS.map((l) => (
               <button
-                key={l}
+                key={l.code}
                 type="button"
-                onClick={() => setLang(l)}
+                lang={l.code}
+                title={l.label}
+                aria-label={l.label}
+                aria-pressed={lang === l.code}
+                onClick={() => setLang(l.code)}
                 className={`rounded-full px-2 py-1 text-[11px] uppercase ${
-                  lang === l ? "bg-cream text-ink" : "text-cream/50 hover:text-cream"
+                  lang === l.code ? "bg-cream text-ink" : "text-cream/50 hover:text-cream"
                 }`}
               >
-                {l}
+                {l.code}
               </button>
             ))}
           </div>
@@ -94,7 +97,7 @@ export function Header() {
               <WalletMultiButton />
             ) : (
               <span className="inline-flex h-9 items-center whitespace-nowrap rounded-full bg-cream px-3 text-xs font-semibold text-ink md:h-10 md:px-4">
-                Connect
+                {t.connectBtn}
               </span>
             )}
           </div>
@@ -102,7 +105,7 @@ export function Header() {
             type="button"
             className="flex size-10 items-center justify-center rounded-full border border-cream/15 md:hidden"
             aria-expanded={open}
-            aria-label={open ? "Close menu" : "Open menu"}
+            aria-label={open ? t.menuClose : t.menuOpen}
             onClick={() => setOpen((v) => !v)}
           >
             <span className="flex w-4 flex-col gap-1">
@@ -128,17 +131,19 @@ export function Header() {
               </Link>
             ))}
           </nav>
-          <div className="mt-3 flex gap-2 px-1">
-            {(["en", "tr", "es"] as Lang[]).map((l) => (
+          <div className="mt-3 flex gap-2 px-1" role="group" aria-label={t.language}>
+            {LANGS.map((l) => (
               <button
-                key={l}
+                key={l.code}
                 type="button"
-                onClick={() => setLang(l)}
-                className={`min-h-10 flex-1 rounded-full text-xs uppercase ${
-                  lang === l ? "bg-cream text-ink" : "border border-cream/15 text-cream/60"
+                lang={l.code}
+                aria-pressed={lang === l.code}
+                onClick={() => setLang(l.code)}
+                className={`min-h-10 flex-1 rounded-full text-xs ${
+                  lang === l.code ? "bg-cream text-ink" : "border border-cream/15 text-cream/60"
                 }`}
               >
-                {l}
+                {l.label}
               </button>
             ))}
           </div>

@@ -9,7 +9,7 @@ export default function LegalPage() {
   return (
     <div className="mx-auto max-w-2xl">
       <p className="text-xs uppercase tracking-[0.2em] text-teal">{t.legal}</p>
-      <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{t.legalLead}</h1>
+      <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{t.legalTitle}</h1>
       <p className="mt-4 text-sm leading-6 text-cream/55">{t.legalLead}</p>
 
       <section className="mt-12">
@@ -20,6 +20,16 @@ export default function LegalPage() {
       <section className="mt-10">
         <h2 className="text-lg font-medium">{t.escrowTitle}</h2>
         <p className="mt-3 text-[15px] leading-7 text-cream/65">{t.escrowBody}</p>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="text-lg font-medium">{t.foundersTitle}</h2>
+        <p className="mt-3 text-[15px] leading-7 text-cream/65">{t.foundersBody}</p>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="text-lg font-medium">{t.loyaltyLegalTitle}</h2>
+        <p className="mt-3 text-[15px] leading-7 text-cream/65">{t.loyaltyLegalBody}</p>
       </section>
 
       <section className="mt-10">
