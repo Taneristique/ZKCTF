@@ -226,6 +226,18 @@ export function settleIx({ authority, treasuryAta, winnerAtas, k }) {
   });
 }
 
+/** Sign with `signers` (first one pays), send, and wait for "confirmed". Throws if the tx failed. */
+export async function sendAndConfirm(connection, tx, signers) {
+  const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash("confirmed");
+  tx.feePayer = signers[0].publicKey;
+  tx.recentBlockhash = blockhash;
+  tx.sign(...signers);
+  const sig = await connection.sendRawTransaction(tx.serialize());
+  const res = await connection.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight }, "confirmed");
+  if (res.value.err) throw new Error(`tx ${sig} failed: ${JSON.stringify(res.value.err)}`);
+  return sig;
+}
+
 export async function recentTx(connection, feePayer) {
   const tx = new Transaction();
   tx.feePayer = new PublicKey(feePayer);
@@ -266,11 +278,65 @@ export function parseEntry(data) {
   };
 }
 
+/** Config PDA: disc(8) + authority(32) + bump(1). Returns the authority the program trusts, or null. */
+export async function onChainAuthority(connection) {
+  const info = await connection.getAccountInfo(configPda()[0]);
+  if (!info || !info.owner.equals(PROGRAM_ID) || info.data.length < 40) return null;
+  return new PublicKey(info.data.subarray(8, 40)).toBase58();
+}
+
 /** Round PDA: disc(8) + start(i64) + … */
 export async function onChainRoundStart(connection) {
   const info = await connection.getAccountInfo(roundPda()[0]);
   if (!info || !info.owner.equals(PROGRAM_ID) || info.data.length < 16) return null;
   return Number(info.data.readBigInt64LE(8));
+}
+
+/** Round PDA: disc(8) start(8) end(8) level_count(1) n_winners(1) entries(u32) pot_atoms(u64) settled(1) … */
+export async function onChainRound(connection) {
+  const info = await connection.getAccountInfo(roundPda()[0]);
+  if (!info || !info.owner.equals(PROGRAM_ID) || info.data.length < 39 + 32 * 8) return null;
+  const d = info.data;
+  return {
+    start: Number(d.readBigInt64LE(8)),
+    end: Number(d.readBigInt64LE(16)),
+    levelCount: d[24],
+    entries: d.readUInt32LE(26),
+    potAtoms: Number(d.readBigUInt64LE(30)),
+    settled: d[38] !== 0,
+    commitments: Array.from({ length: 8 }, (_, i) => d.subarray(39 + i * 32, 71 + i * 32).toString("hex")),
+  };
+}
+
+/** Every Entry PDA that entered the round starting at `roundStart`, read from chain (not the host index). */
+export async function entriesOnChain(connection, roundStart) {
+  const rows = await connection.getProgramAccounts(PROGRAM_ID, {
+    filters: [{ dataSize: ENTRY_SPACE }, { memcmp: { offset: 40, bytes: base58(i64(roundStart)) } }],
+  });
+  return rows.map(({ account }) => parseEntry(account.data)).filter(Boolean);
+}
+
+/** Full clears for a round, fastest first. */
+export async function finishersOnChain(connection, round) {
+  const full = (1 << round.levelCount) - 1;
+  return (await entriesOnChain(connection, round.start))
+    .filter((e) => e.solvedMask === full)
+    .sort((a, b) => a.lastTs - b.lastTs || a.wallet.localeCompare(b.wallet));
+}
+
+export function base58(buf) {
+  const A = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+  let x = BigInt(`0x${buf.toString("hex") || "0"}`);
+  let out = "";
+  while (x > 0n) {
+    out = A[Number(x % 58n)] + out;
+    x /= 58n;
+  }
+  for (const byte of buf) {
+    if (byte !== 0) break;
+    out = `1${out}`;
+  }
+  return out;
 }
 
 /** Entry row for this wallet in the current on-chain round, or null. */

@@ -17,6 +17,7 @@ import {
   createAtaIdempotentIx,
   recentTx,
 } from "./chain.js";
+import { snapshotFounder } from "./founders.js";
 
 const USDC_ATOMS = 1_000_000;
 
@@ -86,15 +87,19 @@ export async function foundingTaken(connection) {
   return rows.length;
 }
 
-/** Founding price applies to existing Founding members and while Founding seats remain. */
+/**
+ * Founding price applies to existing Founding members, to Founders carried over from a previous
+ * deployment (FOUNDER_SNAPSHOT), and to new buyers while Founding seats remain.
+ */
 export async function foundingOffer(connection, wallet) {
   const [status, taken] = await Promise.all([
     wallet ? memberStatus(connection, wallet) : Promise.resolve(null),
     foundingTaken(connection),
   ]);
   const left = Math.max(0, FOUNDING.seats - taken);
-  const eligible = Boolean(status?.founding) || left > 0;
-  return { status, taken, left, eligible };
+  const carried = wallet ? snapshotFounder(wallet) : null;
+  const eligible = Boolean(status?.founding) || Boolean(carried) || left > 0;
+  return { status, taken, left, eligible, carried };
 }
 
 export async function buildCheckoutTx({ connection, authority, wallet, months, founding }) {

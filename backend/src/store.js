@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -9,7 +9,9 @@ mkdirSync(dir, { recursive: true });
 const ENTRIES = join(dir, "entries.json");
 const LESSON_SOLVES = join(dir, "lesson-solves.json");
 
-function load(path) {
+export const dataPath = (name) => join(dir, name);
+
+export function load(path) {
   try {
     return JSON.parse(readFileSync(path, "utf8"));
   } catch {
@@ -17,8 +19,11 @@ function load(path) {
   }
 }
 
-function save(path, obj) {
-  writeFileSync(path, JSON.stringify(obj, null, 2));
+/** Write-then-rename so a crash mid-write never leaves a truncated file. */
+export function save(path, obj) {
+  const tmp = `${path}.tmp`;
+  writeFileSync(tmp, JSON.stringify(obj, null, 2));
+  renameSync(tmp, path);
 }
 
 export function getEntry(wallet, startIso) {
