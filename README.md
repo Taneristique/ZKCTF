@@ -45,7 +45,7 @@ cd backend && node ../scripts/founders-snapshot.mjs   # first 100 buyers → sna
 cd backend && node ../scripts/settle-round.mjs        # manual settle, same code as the bot
 ```
 
-For mainnet, set `FOUNDER_SNAPSHOT` to the exported snapshot: those wallets get the Founding price from their first purchase (`FOUNDING_SEATS=0` keeps it to them only).
+For mainnet, set `FOUNDER_SNAPSHOT` to the exported snapshot: those wallets get the Founding price once, on their first purchase (their seat is a regular tier 0 seat, so renewals are at the full price), and keep the Founder badge. Devnet seats are paid with free faucet USDC, so a permanent mainnet discount would be easy to farm. Signed-but-unconfirmed Founding checkouts hold a seat for 2 minutes so two simultaneous buyers cannot both take the last one; the mainnet program should enforce the cap on chain from its first deploy.
 
 ### Publishing the weekly lessons (AI draft → human review → publish)
 

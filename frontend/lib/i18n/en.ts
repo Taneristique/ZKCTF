@@ -92,13 +92,13 @@ export const en = {
 
   foundingTitle: "Founding member perk",
   foundingLead:
-    "The first 100 wallets to buy a membership become Founding members: 50% off for as long as they renew, a Founding badge, and every new lesson 24 hours early.",
+    "The first 100 wallets to buy a membership become Founding members: 50% off on Devnet for as long as they renew, a Founding badge, and every new lesson 24 hours early.",
   foundingMainnet:
-    "Founders are recorded on-chain and keep the Founding price when ZKCTF launches on mainnet, starting with their first purchase there.",
+    "Founders are recorded on-chain. When ZKCTF launches on mainnet they get 50% off their first purchase there and keep a permanent Founding badge.",
   foundingLeft: "Founding seats left",
   foundingYou: "You’re a Founding member. Your price is locked.",
   founderNo: "Founder #",
-  foundingCarried: "Founder from the Devnet beta: your Founding price applies here.",
+  foundingCarried: "Founder from the Devnet beta: 50% off your first purchase here. Renewals are at the regular price.",
   foundingGone: "All Founding seats are taken.",
 
   loyaltyTitle: "Finisher token",
@@ -129,7 +129,7 @@ export const en = {
     "Each 5 USDC race entry goes into a pot account controlled by the program, not by us. Only proofs verified on-chain (Groth16) count, and after the round ends the program pays out with a fixed split: 20% to the treasury, 80% to the top 10 finishers. Membership payments go to the treasury and never touch the race pot or the board.",
   foundersTitle: "Founding members",
   foundersBody:
-    "Founding status belongs to the wallet that made the purchase and is public on-chain. Founders keep the Founding price on mainnet from the same wallet. It cannot be transferred to another wallet.",
+    "Founding status belongs to the wallet that made the purchase and is public on-chain. On mainnet, the same wallet gets 50% off its first purchase and keeps the Founding badge; later renewals are at the regular price. It cannot be transferred to another wallet.",
   loyaltyLegalTitle: "Finisher token terms",
   loyaltyLegalBody:
     "The Finisher token is given free to every wallet that clears all CTFs of a round before it closes. It is non-transferable, is never sold, has no cash value and cannot be exchanged for money. It gives no share of revenue, prize pots, governance or profit, and holding it is not an investment. It only unlocks community perks, which we offer at our discretion and may change or end. Elite events for holders are free to enter.",
