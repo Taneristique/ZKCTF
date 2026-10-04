@@ -23,10 +23,29 @@ cd backend && pnpm install && pnpm dev   # :8787
 
 # Web
 cd frontend && pnpm install && pnpm dev -p 3001  # :3001
-# New weekly official set (answers → backend/data/round.json)
-cd backend && node ../scripts/weekly-challenge-bot.mjs
-# Optional on-chain: CHAIN_DEPLOY=1 node ../scripts/weekly-challenge-bot.mjs
+# Preview next week's CTFs (generated + verified, nothing written)
+cd backend && node ../scripts/weekly-challenge-bot.mjs --dry-run
+# Generator tests: every flag is re-derived by an independent solver
+cd backend && pnpm test
 ```
+
+Puzzles stay hidden until the round starts; set `ROUND_REVEAL_EARLY=1` locally to see them anyway.
+
+### Weekly bot
+
+The API runs the weekly cycle itself (`backend/src/scheduler.js`, every 5 minutes): settle the finished round on chain, mint the Finisher token to everyone who cleared it, generate next week's CTFs, publish their commitments with `create_round`, and sync the Founding list. Every step reads chain state first, so restarts and retries are safe. `GET /zk-api/bot/status` shows the last run, errors, the authority's SOL balance and recent history.
+
+Each CTF comes from a puzzle type in `backend/src/ctfgen.js`, built on a documented vulnerability class (`backend/content/ctf-docs/index.json`, with CWE / SWC / RFC references shown to players). The answer is computed by code and re-derived from the player-visible data by a separate solver; a level is published only if that gives exactly one answer equal to the flag. `OPENROUTER_API_KEY` is optional and only adds a story intro, which is rejected if it contains digits, URLs or the answer.
+
+The authority wallet pays the fees: about 0.003 SOL per round plus about 0.002 SOL per new Finisher token holder. Keep at least 0.5 SOL on it; the bot warns below `BOT_MIN_SOL`.
+
+```bash
+cd backend && node ../scripts/loyalty-init.mjs        # once: prints LOYALTY_MINT (soulbound Token-2022 mint)
+cd backend && node ../scripts/founders-snapshot.mjs   # first 100 buyers → snapshots/founders-devnet.json
+cd backend && node ../scripts/settle-round.mjs        # manual settle, same code as the bot
+```
+
+For mainnet, set `FOUNDER_SNAPSHOT` to the exported snapshot: those wallets get the Founding price from their first purchase (`FOUNDING_SEATS=0` keeps it to them only).
 
 ### Publishing the weekly lessons (AI draft → human review → publish)
 
@@ -69,7 +88,6 @@ Join → Enter (5 USDC) → Play. (`enter_round` rejects any other mint.)
 
 ```bash
 node scripts/judge-loop.mjs
-cd backend && TREASURY_USDC_ATA=... node ../scripts/settle-round.mjs
 ```
 
 ### Editor (rust-analyzer)
@@ -82,6 +100,7 @@ One service. The root `Dockerfile` builds both apps; `scripts/start.sh` runs the
 
 - Root Directory: `/` (the root `Dockerfile` is auto-detected)
 - Variables: `AUTHORITY_KEYPAIR_JSON`, `ZKCTF_PROGRAM_ID`, `SOLANA_RPC`, `USDC_MINT`, `TREASURY_WALLET`, `ZKCTF_DATA_DIR=/data`; optional build-time `NEXT_PUBLIC_SOLANA_RPC`, `NEXT_PUBLIC_PROGRAM_ID`
+- Weekly bot: `BOT_CHAIN=1` (only on the production service, so a dev machine never publishes rounds), `LOYALTY_MINT`, optional `BOT_ALERT_WEBHOOK` (Discord or Slack webhook for failures, low SOL and each settle), `BOT_MIN_SOL`, `OPENROUTER_API_KEY`
 - Volume mounted at `/data`; custom domain `zkctf.com`
 
 `AUTHORITY_KEYPAIR_JSON` is the keypair array (`[12,34,…]`); keep it only in the host's secret variables. `backend/Dockerfile` still builds the API alone if it ever needs its own service.
