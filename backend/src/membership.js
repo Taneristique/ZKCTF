@@ -17,7 +17,7 @@ import {
   createAtaIdempotentIx,
   recentTx,
 } from "./chain.js";
-import { snapshotFounder } from "./founders.js";
+import { excludedFounders, snapshotFounder } from "./founders.js";
 
 const USDC_ATOMS = 1_000_000;
 
@@ -75,16 +75,18 @@ export async function memberStatus(connection, wallet) {
   };
 }
 
+/** Founding seats on chain, not counting FOUNDING_EXCLUDE team wallets. */
 export async function foundingTaken(connection) {
   const rows = await connection.getProgramAccounts(PROGRAM_ID, {
-    dataSlice: { offset: 0, length: 0 },
+    dataSlice: { offset: 8, length: 32 },
     filters: [
       { dataSize: SEAT_SPACE },
       // "2" is base58 for the single byte 0x01 (tier = Founding).
       { memcmp: { offset: SEAT_TIER_OFFSET, bytes: "2" } },
     ],
   });
-  return rows.length;
+  const skip = excludedFounders();
+  return rows.filter((r) => !skip.has(new PublicKey(r.account.data).toBase58())).length;
 }
 
 /**
