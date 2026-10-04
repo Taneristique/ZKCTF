@@ -25,4 +25,6 @@ try {
   console.log("zkey: ok", buf.length, "bytes");
 } catch (e) {
   console.log("zkey: unavailable, groth16 off:", e.message);
+  // A soft failure would be cached as a Docker layer and silently reused by every later build.
+  if (process.env.ZKCTF_ZKEY_REQUIRED === "1") process.exit(1);
 }

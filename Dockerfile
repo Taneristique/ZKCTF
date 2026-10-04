@@ -18,7 +18,7 @@ RUN cd circuits && pnpm install --frozen-lockfile --prod
 COPY circuits/scripts/fetch-zkey.mjs circuits/scripts/
 ARG ZKCTF_ZKEY_URL=https://github.com/Taneristique/ZKCTF/releases/download/zkey-v1/relation.zkey
 ARG ZKCTF_ZKEY_SHA256=ce3e0a710c4d5d93dd8b280a98d9c7b8de4f5e60d2a7abeca6424ef2044f37ee
-RUN cd circuits && ZKCTF_ZKEY_URL=$ZKCTF_ZKEY_URL ZKCTF_ZKEY_SHA256=$ZKCTF_ZKEY_SHA256 node scripts/fetch-zkey.mjs
+RUN cd circuits && ZKCTF_ZKEY_REQUIRED=1 ZKCTF_ZKEY_URL=$ZKCTF_ZKEY_URL ZKCTF_ZKEY_SHA256=$ZKCTF_ZKEY_SHA256 node scripts/fetch-zkey.mjs
 COPY circuits/lib circuits/lib
 COPY circuits/scripts/prove.mjs circuits/scripts/
 COPY circuits/artifacts/relation.wasm circuits/build/relation_js/relation.wasm
