@@ -3,11 +3,13 @@ import cors from "cors";
 import express from "express";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { recordSolve, rankSolvers, canAttempt, progress as solveProgress } from "./solves.js";
-import { publicLevels, levelById, readRound } from "./roundStore.js";
-import { OFFICIAL } from "./seeds.js";
+import { publicLevels, levelById, readRound, roundOpen } from "./roundStore.js";
 import { getEntry, putEntry, listEntries, lessonSolves, recordLessonSolve } from "./store.js";
-import { ENTRY_USDC, N_WINNERS, CLUSTER, ASSET, TREASURY_BPS, WEIGHTS, example } from "./race.js";
-import { authorityKeypair } from "./authority.js";
+import { ENTRY_USDC, N_WINNERS, CLUSTER, ASSET, TREASURY_BPS, WEIGHTS, example, saturdayWindow } from "./race.js";
+import { founders, founderFor, syncFounders, snapshotFounder } from "./founders.js";
+import { loyaltyStatus, TIERS } from "./loyalty.js";
+import { startScheduler } from "./scheduler.js";
+import { authorityKeypair, authoritySource } from "./authority.js";
 import {
   FOUNDING,
   memberStatus,
@@ -28,6 +30,7 @@ import {
   entryForRound,
   rankClearsOnChain,
   enterChainBlockers,
+  onChainAuthority,
 } from "./chain.js";
 import { flagsEqual, hex32, fromHex } from "./relation.mjs";
 import { artifactsReady, groth16Proof, buildC } from "./prove.js";
@@ -39,17 +42,43 @@ const connection = new Connection(RPC, "confirmed");
 const authority = authorityKeypair();
 const WINDOW = process.env.ROUND_WINDOW ?? "open";
 
+let trustedAuthority = null;
+/** The server key must equal the authority stored in the program config, or co-signed txs fail with custom error 0x3. */
+async function authorityStatus() {
+  if (!trustedAuthority) {
+    try {
+      trustedAuthority = await onChainAuthority(connection);
+    } catch {
+      trustedAuthority = null;
+    }
+  }
+  const server = authority.publicKey.toBase58();
+  return {
+    ok: trustedAuthority === server,
+    server,
+    onChain: trustedAuthority,
+    source: authoritySource(),
+  };
+}
+
+const PAYMENTS_PAUSED =
+  "Payments are paused: the server signing key does not match the program authority. Nothing was charged. Please try again later.";
+
 const app = express();
 app.use(cors({ origin: true }));
 
-app.get("/health", (_req, res) => {
+app.get("/health", async (_req, res) => {
+  const auth = await authorityStatus();
   res.json({
     ok: true,
     product: "ZKCTF",
     membership: "usdc",
     rpc: RPC,
     program: PROGRAM_ID.toBase58(),
-    authority: authority.publicKey.toBase58(),
+    authority: auth.server,
+    authorityOnChain: auth.onChain,
+    authorityOk: auth.ok,
+    authoritySource: auth.source,
     groth16: artifactsReady(),
     window: WINDOW,
     entryUsdc: ENTRY_USDC,
@@ -66,6 +95,8 @@ app.get("/round", (_req, res) => {
   res.json({
     ...windowMeta(),
     levels: publicLevels(),
+    locked: !roundOpen(stored),
+    levelCount: stored.levels.length,
     source: stored.source,
     roundStart: stored.start,
     roundEnd: stored.end,
@@ -179,6 +210,8 @@ app.get("/plans", async (req, res) => {
         earlyAccessHours: FOUNDING.earlyAccessHours,
         eligible: offer.eligible,
         member: Boolean(offer.status?.founding),
+        ordinal: (wallet && founderFor(wallet)?.ordinal) || offer.carried?.ordinal || null,
+        carried: Boolean(offer.carried),
       },
       member: offer.status,
     });
@@ -195,6 +228,14 @@ app.post("/checkout", express.json(), async (req, res) => {
     res.status(400).json({ error: "Connect a wallet first, then pick a plan." });
     return;
   }
+  const auth = await authorityStatus();
+  if (!auth.ok) {
+    console.error(
+      `checkout refused: server authority ${auth.server} (${auth.source}) != on-chain ${auth.onChain}. Set AUTHORITY_KEYPAIR_JSON.`,
+    );
+    res.status(503).json({ error: PAYMENTS_PAUSED });
+    return;
+  }
   try {
     const offer = await foundingOffer(connection, wallet);
     const founding = offer.eligible;
@@ -208,7 +249,9 @@ app.post("/checkout", express.json(), async (req, res) => {
     const sim = await connection.simulateTransaction(tx);
     if (sim.value.err) {
       const logs = (sim.value.logs ?? []).join(" ");
-      const reason = /insufficient funds/i.test(logs)
+      const reason = /custom program error: 0x3\b/.test(logs)
+        ? PAYMENTS_PAUSED
+        : /insufficient funds/i.test(logs)
         ? `Not enough USDC. You need ${atoms / 1e6} USDC (devnet: faucet.circle.com).`
         : /AccountNotFound|could not find account|invalid account data/i.test(logs + JSON.stringify(sim.value.err))
           ? `No USDC token account on this wallet. Get devnet USDC from faucet.circle.com first.`
@@ -231,6 +274,49 @@ app.post("/checkout", express.json(), async (req, res) => {
   } catch (e) {
     res.status(400).json({ error: String(e.message ?? e) });
   }
+});
+
+/** Called by the frontend after a membership tx confirms: records the Founder number right away. */
+app.post("/checkout/confirm", express.json(), async (req, res) => {
+  const wallet = String(req.body?.wallet ?? "");
+  try {
+    await syncFounders(connection);
+    res.json({ founder: founderFor(wallet) });
+  } catch (e) {
+    res.status(502).json({ error: String(e.message ?? e) });
+  }
+});
+
+/** Public, ordered Founding members list (also on chain as tier-1 seats). */
+app.get("/founders", (_req, res) => {
+  const rows = founders();
+  res.json({
+    seats: FOUNDING.seats,
+    count: rows.length,
+    founders: rows.map(({ ordinal, wallet, signature, paidAt }) => ({ ordinal, wallet, signature, paidAt })),
+  });
+});
+
+app.get("/founders/:wallet", (req, res) => {
+  const row = founderFor(req.params.wallet);
+  const carried = snapshotFounder(req.params.wallet);
+  res.json({ founder: Boolean(row || carried), ordinal: row?.ordinal ?? carried?.ordinal ?? null, carried: Boolean(carried) });
+});
+
+app.get("/loyalty/:wallet", async (req, res) => {
+  try {
+    res.json({ ...(await loyaltyStatus(connection, req.params.wallet)), tiers: TIERS });
+  } catch (e) {
+    res.status(400).json({ error: String(e.message ?? e) });
+  }
+});
+
+app.get("/bot/status", (_req, res) => {
+  const stored = readRound();
+  res.json({
+    ...scheduler.status(),
+    hostRound: { start: stored.start, end: stored.end, source: stored.source, levels: stored.levels.length },
+  });
 });
 
 app.get("/entry/:wallet", (req, res) => {
@@ -320,9 +406,9 @@ app.post("/prove-assist", express.json(), async (req, res) => {
     res.status(403).json({ error: "Enter this week’s race first." });
     return;
   }
-  const level = levelById(levelId) ?? OFFICIAL[levelId];
+  const level = levelById(levelId);
   if (!level) {
-    res.status(400).json({ error: "Bad level." });
+    res.status(400).json({ error: roundOpen() ? "Bad level." : "This round has not started yet." });
     return;
   }
   const gate = canAttempt(wallet, meta.start, levelId);
@@ -416,7 +502,7 @@ app.get("/lessons", async (req, res) => {
   try {
     const member = viewer ? await memberStatus(connection, viewer) : null;
     const solved = authed ? lessonSolves(authed) : {};
-    const access = authed ? member : member && { ...member, founding: false };
+    const access = authed ? await withEarlyAccess(member, authed) : member && { ...member, founding: false };
     res.json({
       tracks: TRACKS,
       member,
@@ -435,7 +521,7 @@ app.get("/lessons/:id", async (req, res) => {
     return;
   }
   try {
-    const member = await memberStatus(connection, wallet);
+    const member = await withEarlyAccess(await memberStatus(connection, wallet), wallet);
     const out = lessonFor(req.params.id, member);
     if (out.error === 404) {
       res.status(404).json({ error: "Lesson not found." });
@@ -477,21 +563,28 @@ app.post("/lessons/:id/validate", express.json(), async (req, res) => {
   }
 });
 
+/** Founding members and Veteran+ loyalty holders see lessons early (lessons.js reads `founding`). */
+async function withEarlyAccess(member, wallet) {
+  if (!member || member.founding) return member;
+  const loyal = await loyaltyStatus(connection, wallet).catch(() => null);
+  return loyal?.perks.includes("earlyLessons") ? { ...member, founding: true } : member;
+}
+
+const scheduler = startScheduler({ connection, authority, authorityStatus });
+
 app.listen(PORT, "::", () => {
   console.log(`ZKCTF api [::]:${PORT} program=${PROGRAM_ID.toBase58()}`);
+  void authorityStatus().then((a) => {
+    if (a.ok) console.log(`authority ok ${a.server} (${a.source})`);
+    else
+      console.error(
+        `AUTHORITY MISMATCH: server ${a.server} (${a.source}) vs on-chain ${a.onChain}. Payments are paused until AUTHORITY_KEYPAIR_JSON holds the on-chain authority key.`,
+      );
+  });
 });
 
 function windowMeta() {
-  const now = new Date();
-  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 15, 0, 0, 0));
-  const daysSinceSat = (start.getUTCDay() + 1) % 7;
-  start.setUTCDate(start.getUTCDate() - daysSinceSat);
-  let end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
-  if (now >= end) {
-    start.setUTCDate(start.getUTCDate() + 7);
-    end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
-  }
-  const live = now >= start && now < end;
+  const { start, end, live } = saturdayWindow();
   return {
     mode: WINDOW === "open" ? "open" : "saturday",
     live,

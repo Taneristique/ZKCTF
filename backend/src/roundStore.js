@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { randomBytes } from "node:crypto";
 import { createCommitment, hex32 } from "./relation.mjs";
 import { OFFICIAL as FALLBACK } from "./seeds.js";
+import { docFor } from "./bot.js";
 
 const dir = process.env.ZKCTF_DATA_DIR
   ? process.env.ZKCTF_DATA_DIR
@@ -37,6 +38,7 @@ export function sealLevels(levels) {
       artifacts: Array.isArray(lv.artifacts) ? lv.artifacts.map(String) : [],
       hints: Array.isArray(lv.hints) ? lv.hints.map(String) : [],
       walkthrough: String(lv.walkthrough ?? ""),
+      ...(lv.type ? { type: String(lv.type), doc: String(lv.doc ?? "") } : {}),
       flag,
       delta: hex32(delta),
       h: hex32(h),
@@ -69,12 +71,24 @@ export function readRound() {
   };
 }
 
+/** Puzzles stay hidden until the round opens so nobody gets a head start (ROUND_REVEAL_EARLY=1 for local dev). */
+export function roundOpen(row = readRound(), now = Date.now()) {
+  return process.env.ROUND_REVEAL_EARLY === "1" || !row.start || now >= Date.parse(row.start);
+}
+
 export function publicLevels() {
-  return readRound().levels.map(({ flag, delta, ...rest }) => rest);
+  const row = readRound();
+  if (!roundOpen(row)) return [];
+  return row.levels.map(({ flag, delta, walkthrough, doc, ...rest }) => ({
+    ...rest,
+    background: doc ? docFor(doc) : null,
+  }));
 }
 
 export function levelById(id) {
-  return readRound().levels.find((l) => Number(l.id) === Number(id)) ?? null;
+  const row = readRound();
+  if (!roundOpen(row)) return null;
+  return row.levels.find((l) => Number(l.id) === Number(id)) ?? null;
 }
 
 export function roundCommitments() {

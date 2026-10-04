@@ -1,0 +1,103 @@
+{
+  "classical-ciphers": {
+    "title": "Classical ciphers are not encryption",
+    "summary": "Substitution ciphers such as the Caesar shift have a key space small enough to try exhaustively and leak letter patterns. Any homemade or historical cipher used to protect secrets is a broken or risky cryptographic algorithm.",
+    "incidents": ["Developers still ship ROT13 or XOR 'obfuscation' for API keys and passwords in mobile apps and config files."],
+    "refs": [
+      { "label": "CWE-327: Use of a Broken or Risky Cryptographic Algorithm", "url": "https://cwe.mitre.org/data/definitions/327.html" },
+      { "label": "OWASP Top 10 A02:2021 Cryptographic Failures", "url": "https://owasp.org/Top10/A02_2021-Cryptographic_Failures/" }
+    ]
+  },
+  "integer-overflow": {
+    "title": "Integer overflow and underflow",
+    "summary": "Fixed-width integers wrap around modulo 2^n. Before Solidity 0.8, arithmetic was unchecked, so subtracting past zero produced a huge value and adding past the maximum wrapped to a small one.",
+    "incidents": ["BeautyChain (BEC) batchOverflow, April 2018 (CVE-2018-10299): a multiplication overflow let attackers mint enormous token balances."],
+    "refs": [
+      { "label": "SWC-101: Integer Overflow and Underflow", "url": "https://swcregistry.io/docs/SWC-101" },
+      { "label": "CWE-190: Integer Overflow or Wraparound", "url": "https://cwe.mitre.org/data/definitions/190.html" },
+      { "label": "Solidity 0.8 breaking changes: checked arithmetic", "url": "https://docs.soliditylang.org/en/latest/080-breaking-changes.html" }
+    ]
+  },
+  "encoding-is-not-encryption": {
+    "title": "Encoding is not encryption",
+    "summary": "Base64, hex and similar encodings are reversible without any key. Storing a password encoded, even in several layers, is equivalent to storing it in plain text.",
+    "incidents": ["Kubernetes Secrets are only Base64-encoded by default; they must be encrypted at rest separately."],
+    "refs": [
+      { "label": "CWE-261: Weak Encoding for Password", "url": "https://cwe.mitre.org/data/definitions/261.html" },
+      { "label": "OWASP Password Storage Cheat Sheet", "url": "https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html" }
+    ]
+  },
+  "xor-key-reuse": {
+    "title": "XOR with a reused key",
+    "summary": "XOR with a key is only secure as a one-time pad. If a short key repeats, or a key stream is reused, known plaintext (a fixed header or prefix) reveals the key bytes directly.",
+    "incidents": ["WEP Wi-Fi encryption reused RC4 key streams; Fluhrer, Mantin and Shamir (2001) showed the key could be recovered from captured traffic."],
+    "refs": [
+      { "label": "CWE-323: Reusing a Nonce, Key Pair in Encryption", "url": "https://cwe.mitre.org/data/definitions/323.html" },
+      { "label": "CWE-327: Use of a Broken or Risky Cryptographic Algorithm", "url": "https://cwe.mitre.org/data/definitions/327.html" }
+    ]
+  },
+  "weak-prng": {
+    "title": "Predictable randomness",
+    "summary": "Linear congruential generators and values derived from public chain data are predictable. Three consecutive outputs of an LCG with a known prime modulus are enough to recover its parameters and every future output.",
+    "incidents": ["SmartBillions lottery, 2017: randomness derived from block hashes was gamed by an attacker who timed calls to predictable values."],
+    "refs": [
+      { "label": "CWE-338: Use of Cryptographically Weak PRNG", "url": "https://cwe.mitre.org/data/definitions/338.html" },
+      { "label": "SWC-120: Weak Sources of Randomness from Chain Attributes", "url": "https://swcregistry.io/docs/SWC-120" }
+    ]
+  },
+  "modular-arithmetic": {
+    "title": "Modular arithmetic and the Chinese Remainder Theorem",
+    "summary": "If a secret's remainders modulo several pairwise-coprime numbers leak, the Chinese Remainder Theorem rebuilds the secret uniquely modulo their product. The same math powers RSA-CRT and Håstad's broadcast attack.",
+    "incidents": ["Håstad's broadcast attack recovers a message sent with small exponent e to e recipients by combining ciphertexts with the CRT."],
+    "refs": [
+      { "label": "Chinese remainder theorem", "url": "https://en.wikipedia.org/wiki/Chinese_remainder_theorem" },
+      { "label": "Coppersmith / Håstad broadcast attack", "url": "https://en.wikipedia.org/wiki/Coppersmith%27s_attack" }
+    ]
+  },
+  "rsa-key-size": {
+    "title": "Inadequate RSA key size",
+    "summary": "RSA security rests on the difficulty of factoring n = p × q. Small or structurally weak primes make factoring easy, after which the private exponent d = e⁻¹ mod (p−1)(q−1) follows immediately.",
+    "incidents": ["ROCA (CVE-2017-15361): Infineon chips generated RSA primes with a structure that made millions of keys factorable."],
+    "refs": [
+      { "label": "CWE-326: Inadequate Encryption Strength", "url": "https://cwe.mitre.org/data/definitions/326.html" },
+      { "label": "NIST SP 800-57 Part 1 Rev. 5: key management", "url": "https://csrc.nist.gov/pubs/sp/800/57/pt1/r5/final" }
+    ]
+  },
+  "unsalted-hash": {
+    "title": "Unsalted fast hashes",
+    "summary": "A fast hash without a salt lets an attacker precompute or brute-force every input in a small space. Short PINs and common passwords fall in seconds; use a salted, slow password hash such as Argon2id.",
+    "incidents": ["LinkedIn, 2012: millions of unsalted SHA-1 password hashes leaked and were cracked at scale."],
+    "refs": [
+      { "label": "CWE-759: Use of a One-Way Hash without a Salt", "url": "https://cwe.mitre.org/data/definitions/759.html" },
+      { "label": "CWE-916: Use of Password Hash With Insufficient Computational Effort", "url": "https://cwe.mitre.org/data/definitions/916.html" }
+    ]
+  },
+  "jwt-weak-secret": {
+    "title": "Weak HMAC secrets in JWTs",
+    "summary": "HS256 tokens are only as strong as the shared secret. Anyone holding one valid token can test candidate secrets offline; a guessable secret lets an attacker forge tokens with any claims.",
+    "incidents": ["Public JWT secret wordlists are routinely used in bug bounties to forge admin sessions on misconfigured APIs."],
+    "refs": [
+      { "label": "RFC 7519: JSON Web Token", "url": "https://www.rfc-editor.org/rfc/rfc7519" },
+      { "label": "RFC 8725: JWT Best Current Practices (3.5, key entropy)", "url": "https://www.rfc-editor.org/rfc/rfc8725" },
+      { "label": "CWE-1391: Use of Weak Credentials", "url": "https://cwe.mitre.org/data/definitions/1391.html" }
+    ]
+  },
+  "reentrancy": {
+    "title": "Reentrancy",
+    "summary": "A contract that makes an external call before updating its own state can be re-entered by the callee, which then sees stale state. The fix is checks-effects-interactions or a reentrancy guard.",
+    "incidents": ["The DAO, June 2016: a recursive withdraw drained about 3.6 million ETH and led to the Ethereum hard fork."],
+    "refs": [
+      { "label": "SWC-107: Reentrancy", "url": "https://swcregistry.io/docs/SWC-107" },
+      { "label": "Solidity security considerations: reentrancy", "url": "https://docs.soliditylang.org/en/latest/security-considerations.html#reentrancy" }
+    ]
+  },
+  "erc4626-inflation": {
+    "title": "Vault share inflation (first depositor attack)",
+    "summary": "Share vaults round down when minting. An attacker who owns the only share can donate assets to inflate the share price so the next depositor's shares round to zero, then redeem everything.",
+    "incidents": ["Hundred Finance, April 2023: an empty market's exchange rate was manipulated with a donation and rounding, losing about 7 million USD."],
+    "refs": [
+      { "label": "EIP-4626: Tokenized Vaults", "url": "https://eips.ethereum.org/EIPS/eip-4626" },
+      { "label": "OpenZeppelin ERC-4626: inflation attack", "url": "https://docs.openzeppelin.com/contracts/5.x/erc4626" }
+    ]
+  }
+}
