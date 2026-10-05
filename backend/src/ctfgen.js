@@ -391,6 +391,7 @@ export function buildRound({ count = 4, avoid = [] } = {}) {
     for (let tries = 0; ; tries++) {
       const lv = TYPES[type].build();
       const problems = checkLevel(type, lv);
+      if (levels.some((l) => l.flag === lv.flag)) problems.push(`duplicate flag ${lv.flag}`);
       if (!problems.length) {
         levels.push({ ...lv, type, doc: TYPES[type].doc });
         break;
