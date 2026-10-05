@@ -29,10 +29,11 @@ export function keccak(bytes) {
   return keccak_256(bytes);
 }
 
+/** Constant-time compare of any length (Academy flags may exceed the circuit's 32 bytes). */
 export function flagsEqual(a, b) {
-  const x = pad32(a);
-  const y = pad32(b);
-  if (x.length !== y.length) return false;
+  const bytes = (v) => (typeof v === "string" ? utf8(v) : Uint8Array.from(v));
+  const x = keccak(bytes(a));
+  const y = keccak(bytes(b));
   let d = 0;
   for (let i = 0; i < x.length; i++) d |= x[i] ^ y[i];
   return d === 0;
