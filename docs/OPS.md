@@ -46,6 +46,8 @@ AUTHORITY_KEYPAIR=/home/you/.config/solana/zkctf-devnet.json
 # FOUNDING_SEATS=100
 # FOUNDING_DISCOUNT_BPS=5000
 # FOUNDING_EARLY_HOURS=24
+# Team wallets (Railway Variables — not localhost-only): never take a Founding seat / public list.
+# FOUNDING_EXCLUDE=Wallet1Base58,Wallet2Base58
 ```
 
 Without `AUTHORITY_KEYPAIR` the backend falls back to a keypair derived from a public seed (`backend/src/authority.js`). That is only for local demos; never deploy with it.
@@ -79,6 +81,22 @@ node scripts/lesson.mjs list
 - Without an OpenRouter key, `draft` writes a blank template.
 
 **Access control:** full lesson text and flag checks need an active on-chain seat **and** a wallet signature. The browser signs `ZKCTF Academy sign-in / wallet / expires` once a day (`frontend/lib/walletAuth.ts`); the API verifies the ed25519 signature (`backend/src/walletAuth.js`). Knowing a member's address is not enough.
+
+**Teaser:** set `"teaser": true` on at most one published lesson so non-members can read it (funnel). Everything else stays seat-gated.
+
+### Academy piracy (practical)
+
+You cannot stop a paying member from copy-pasting. Goal: **stolen text is not the product**.
+
+| Do | Don't |
+| --- | --- |
+| Keep **full** curriculum off a public GitHub tree if the repo is public (private submodule, or publish only to the host volume) | Rely on “please don’t share” |
+| Ship **one** `teaser: true` lesson; rest locked | Put every body JSON in a public clone |
+| Moat = **Saturday race + Groth16 + weekly cadence** | Treat Academy PDF as the moat |
+| Flag/exercise check via API (already) | Embed answers in the public client bundle |
+| Founding early access + weekly new case | One-time dump of a year of lessons |
+
+If `backend/content/lessons/published/` is already on a public remote, treat it as leaked marketing and move new full bodies to a private path / server-only volume.
 
 ---
 

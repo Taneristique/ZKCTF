@@ -4,6 +4,9 @@ ZKCTF is a platform for profitable on-chain capture-the-flag puzzles powered by 
 
 - **Academy (weekly):** AI-assisted, human-reviewed lessons in **cybersecurity** and **math for cybersecurity**, published every week. Each security lesson rebuilds a real incident; each math lesson teaches the math that broke or protected a real system. Membership is paid in **USDC on-chain** (10 / 27 / 90 USDC for 1 / 3 / 12 months). **Founding members** (first 100 wallets) get 50% off for as long as they renew, a Founding badge, and 24-hour early access to lessons.
 - **Saturday race:** 24 hours, Saturday 18:00 Istanbul = 12:00 Buenos Aires. **5 USDC** to enter. 20% treasury, 80% to the first 10 with a fixed table. The flag you type **never goes on-chain**: a Groth16 proof shows you solved it.
+- **Pseudonym:** first-time players pick a public name (independent of Academy); the weekly board shows names, not only wallets.
+- **Week-winner NFT:** after settle, top finishers get a **soulbound** Token-2022 badge for that week (transferable collections deferred).
+- **Academy gift:** clear **3** full races (Finisher balance) → claim **1** free Academy month **once** per wallet (no USDC).
 
 Not “another Solana CTF app.” Structural locks: [STRUCTURAL_LOCKS.md](STRUCTURAL_LOCKS.md).
 
@@ -100,7 +103,7 @@ One service. The root `Dockerfile` builds both apps; `scripts/start.sh` runs the
 
 - Root Directory: `/` (the root `Dockerfile` is auto-detected)
 - Variables: `AUTHORITY_KEYPAIR_JSON`, `ZKCTF_PROGRAM_ID`, `SOLANA_RPC`, `USDC_MINT`, `TREASURY_WALLET`, `ZKCTF_DATA_DIR=/data`; optional build-time `NEXT_PUBLIC_SOLANA_RPC`, `NEXT_PUBLIC_PROGRAM_ID`
-- `FOUNDING_EXCLUDE`: comma-separated team/test wallets that keep their seat but don't take one of the 100 Founding spots or enter the snapshot
+- `FOUNDING_EXCLUDE` (**Railway Variables**, production): comma-separated team/test wallets — they never reduce Founding seats left, never appear on the public Founders list, and never show as Founding in the UI. Set this on the cloud service env, not only in a local `.env`.
 - Weekly bot: `BOT_CHAIN=1` (only on the production service, so a dev machine never publishes rounds), `LOYALTY_MINT`, optional `BOT_ALERT_WEBHOOK` (Discord or Slack webhook for failures, low SOL and each settle), `BOT_MIN_SOL`, `OPENROUTER_API_KEY`
 - Volume mounted at `/data`; custom domain `zkctf.com`
 

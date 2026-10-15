@@ -12,7 +12,11 @@ import { dataPath, load, save } from "./store.js";
 
 const PATH = dataPath("founders.json");
 
-/** Team / test wallets (FOUNDING_EXCLUDE, comma-separated): they keep their seat but take no Founding spot. */
+/**
+ * Team / test wallets (FOUNDING_EXCLUDE, comma-separated).
+ * They may hold a paid Academy seat but: never take a Founding spot, never appear on the
+ * public Founders list, never show as “Founding member” in product UI.
+ */
 export function excludedFounders() {
   return new Set(
     String(process.env.FOUNDING_EXCLUDE ?? "")
@@ -22,16 +26,21 @@ export function excludedFounders() {
   );
 }
 
+export function isExcludedFounder(wallet) {
+  return Boolean(wallet) && excludedFounders().has(String(wallet));
+}
+
 /** Public Founders, numbered 1.. in purchase order, without excluded wallets. */
 export function founders() {
   const skip = excludedFounders();
   return Object.values(load(PATH))
     .sort((a, b) => a.ordinal - b.ordinal)
-    .filter((r) => !skip.has(r.wallet))
+    .filter((r) => !skip.has(r.wallet) && !r.excluded)
     .map((r, i) => ({ ...r, ordinal: i + 1 }));
 }
 
 export function founderFor(wallet) {
+  if (isExcludedFounder(wallet)) return null;
   return founders().find((r) => r.wallet === wallet) ?? null;
 }
 
@@ -53,9 +62,15 @@ async function sync(connection) {
     ],
   });
   const all = load(PATH);
+  const skip = excludedFounders();
+  // Purge excluded wallets so they never keep an ordinal or appear in the list.
+  for (const w of Object.keys(all)) {
+    if (skip.has(w)) delete all[w];
+  }
   const fresh = [];
   for (const { pubkey, account } of rows) {
     const wallet = new PublicKey(account.data.subarray(8, 40)).toBase58();
+    if (skip.has(wallet)) continue;
     if (all[wallet]) continue;
     const sigs = await connection.getSignaturesForAddress(pubkey, { limit: 1000 });
     const first = sigs.filter((s) => !s.err).at(-1);
@@ -66,7 +81,10 @@ async function sync(connection) {
       paidAt: first?.blockTime ? first.blockTime * 1000 : Date.now(),
     });
   }
-  if (!fresh.length) return { added: 0, total: Object.keys(all).length };
+  if (!fresh.length) {
+    save(PATH, all);
+    return { added: 0, total: Object.keys(all).length };
+  }
   fresh.sort((a, b) => a.paidAt - b.paidAt || String(a.signature).localeCompare(String(b.signature)));
   let next = Object.values(all).reduce((m, r) => Math.max(m, r.ordinal), 0);
   for (const row of fresh) all[row.wallet] = { ordinal: ++next, ...row, recordedAt: Date.now() };
@@ -90,5 +108,6 @@ export function snapshotFounder(wallet) {
       snapshot = new Map();
     }
   }
+  if (isExcludedFounder(wallet)) return null;
   return snapshot.get(wallet) ?? null;
 }
