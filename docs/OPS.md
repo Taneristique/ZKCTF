@@ -48,6 +48,10 @@ AUTHORITY_KEYPAIR=/home/you/.config/solana/zkctf-devnet.json
 # FOUNDING_EARLY_HOURS=24
 # Team wallets (Railway Variables — not localhost-only): never take a Founding seat / public list.
 # FOUNDING_EXCLUDE=Wallet1Base58,Wallet2Base58
+# Optional weekly sponsor (shows on /u activity instead of ZKCTF logo for that week’s wins):
+# WEEK_SPONSOR_NAME=Acme Security
+# WEEK_SPONSOR_LOGO=https://cdn.example.com/acme.png
+# Or set round.json → "sponsor": { "name": "…", "logo": "…" }
 ```
 
 Without `AUTHORITY_KEYPAIR` the backend falls back to a keypair derived from a public seed (`backend/src/authority.js`). That is only for local demos; never deploy with it.

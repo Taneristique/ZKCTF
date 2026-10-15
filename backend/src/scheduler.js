@@ -71,6 +71,10 @@ async function notify(msg, key = msg) {
 
 export async function settleOnChain({ connection, authority, round }) {
   const winners = (await finishersOnChain(connection, round)).slice(0, N_WINNERS);
+  const { splitPot } = await import("./payout.js");
+  const potAtoms = Number(round.potAtoms ?? 0);
+  const { pays } = splitPot(potAtoms, winners.length);
+  const paysUsdc = pays.map((a) => a / 1e6);
   const treasuryAta = ata(treasuryOwner(authority));
   const needed = [{ owner: treasuryOwner(authority), key: treasuryAta }, ...winners.map((w) => ({ owner: w.wallet, key: ata(w.wallet) }))];
   const infos = await connection.getMultipleAccountsInfo(needed.map((n) => n.key));
@@ -89,7 +93,12 @@ export async function settleOnChain({ connection, authority, round }) {
     }),
   );
   const sig = await sendAndConfirm(connection, tx, [authority]);
-  return { sig, winners: winners.map((w) => w.wallet) };
+  return {
+    sig,
+    winners: winners.map((w) => w.wallet),
+    paysUsdc: paysUsdc.slice(0, winners.length),
+    potAtoms,
+  };
 }
 
 export async function createRoundOnChain({ connection, authority, row }) {
@@ -165,7 +174,10 @@ export function startScheduler({ connection, authority, authorityStatus }) {
           s.rounds[round.start]?.settled?.winners ??
           (await finishersOnChain(connection, round)).slice(0, N_WINNERS).map((f) => f.wallet);
         if (winners.length) {
-          const out = await awardWeekWinners(connection, authority, round.start, winners);
+          const settled = s.rounds[round.start]?.settled;
+          const out = await awardWeekWinners(connection, authority, round.start, winners, {
+            paysUsdc: settled?.paysUsdc,
+          });
           s.rounds[round.start] = { ...s.rounds[round.start], weekNft: out };
           remember(s, "weekNft", { round: round.start, minted: out.minted });
           await notify(`week NFTs for round ${round.start}: minted ${out.minted}`);

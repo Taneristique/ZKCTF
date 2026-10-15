@@ -21,6 +21,7 @@ import { createInitializeInstruction, pack } from "@solana/spl-token-metadata";
 import { dataPath, load, save } from "./store.js";
 import { sendAndConfirm } from "./chain.js";
 import { displayName } from "./profiles.js";
+import { raceHost } from "./hostSponsor.js";
 
 const PATH = dataPath("week-nfts.json");
 const PUBLIC_BASE = () => (process.env.PUBLIC_API_URL ?? process.env.PUBLIC_BASE_URL ?? "").replace(/\/$/, "");
@@ -107,12 +108,15 @@ async function createWinnerMint(connection, authority, { name, symbol, uri }) {
 /**
  * Mint one unique soulbound NFT per winner. Idempotent via week-nfts.json.
  * `winners` = ordered wallet list (rank 1 = index 0).
+ * `opts.paysUsdc` = parallel array of USDC paid at settle (Sherlock-style history).
  */
-export async function awardWeekWinners(connection, authority, roundKey, winners) {
+export async function awardWeekWinners(connection, authority, roundKey, winners, opts = {}) {
   const key = String(roundKey);
   const all = db();
   const round = (all[key] ??= {});
   const base = PUBLIC_BASE();
+  const host = raceHost(Number(roundKey));
+  const paysUsdc = opts.paysUsdc ?? [];
   let minted = 0;
   for (let i = 0; i < winners.length; i++) {
     const wallet = winners[i];
@@ -136,6 +140,7 @@ export async function awardWeekWinners(connection, authority, roundKey, winners)
       createMintToInstruction(mint, ata, authority.publicKey, 1, [], TOKEN_2022_PROGRAM_ID),
     );
     const sig = await sendAndConfirm(connection, tx, [authority]);
+    const prizeUsdc = Number(paysUsdc[i] ?? 0);
     round[wallet] = {
       rank,
       pseudonym: pseudo,
@@ -144,6 +149,9 @@ export async function awardWeekWinners(connection, authority, roundKey, winners)
       sig,
       status: "ok",
       at: Date.now(),
+      prizeUsdc,
+      host: { id: host.id, name: host.name, logo: host.logo },
+      title: `${host.name} Saturday race`,
     };
     save(PATH, all);
     minted++;
