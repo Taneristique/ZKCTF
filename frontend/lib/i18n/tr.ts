@@ -141,6 +141,8 @@ export const tr: Dict = {
   medalSecond: "2. likler",
   medalThird: "3. lükler",
   medalEarned: "Toplam kazanç",
+  emergingTitle: "Yükselen yetenek",
+  emergingLead: "Her uzman bir ilk yarışla başladı. Cumartesi CTF’e katıl — kazanınca burada görünür.",
   activityTitle: "Yarış geçmişi",
   activityLead: "Cumartesi bitişleri: sıra ve ödül — ZKCTF veya o haftanın sponsoru.",
   activityEmpty: "Henüz ödüllü bitiş yok. Zaman çizelgesi için bir cumartesi yarışını bitir.",

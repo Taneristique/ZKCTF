@@ -140,6 +140,8 @@ export const en = {
   medalSecond: "2nd places",
   medalThird: "3rd places",
   medalEarned: "Total earned",
+  emergingTitle: "Emerging talent",
+  emergingLead: "Every expert started with a first race. Join a Saturday CTF — your wins will show up here.",
   activityTitle: "Race history",
   activityLead: "Saturday finishes with place and prize — ZKCTF or that week’s sponsor.",
   activityEmpty: "No paid finishes yet. Clear a Saturday race to start the timeline.",
