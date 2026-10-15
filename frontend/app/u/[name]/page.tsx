@@ -1,11 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getJson } from "@/lib/api";
 import { useLang } from "@/lib/lang";
 import { Avatar } from "@/components/Avatar";
+
+type Host = { id: string; name: string; logo?: string | null };
+type Activity = {
+  day: string;
+  date: string;
+  round: number;
+  rank: number;
+  prizeUsdc: number;
+  title: string;
+  host: Host;
+  medal: string;
+  mint?: string;
+};
 
 type PublicCard = {
   profile: { pseudonym: string; createdAt: number } | null;
@@ -18,10 +32,26 @@ type PublicCard = {
   academyMember: boolean;
   weekWins: number;
   firstPlaces: number;
+  secondPlaces?: number;
+  thirdPlaces?: number;
   top10: number;
+  medals?: {
+    payouts: number;
+    first: number;
+    second: number;
+    third: number;
+    earnedUsdc: number;
+  };
+  activity?: Activity[];
   weekNfts: { round: number; rank: number; mint: string }[];
-  prestige: { points?: number; badge?: string; lifetime?: number } | null;
 };
+
+function medalDot(medal: string) {
+  if (medal === "gold") return "bg-amber-400";
+  if (medal === "silver") return "bg-cream/70";
+  if (medal === "bronze") return "bg-orange-700/80";
+  return "bg-teal/50";
+}
 
 export default function PublicProfilePage() {
   const { t } = useLang();
@@ -53,6 +83,7 @@ export default function PublicProfilePage() {
   }
 
   const since = new Date(card.profile.createdAt).toISOString().slice(0, 10);
+  const m = card.medals;
 
   return (
     <div className="mx-auto max-w-lg">
@@ -67,7 +98,46 @@ export default function PublicProfilePage() {
         </div>
       </div>
 
-      <dl className="mt-8 grid grid-cols-2 gap-3 rounded-3xl border border-cream/15 p-5 text-sm sm:grid-cols-3">
+      {/* Sherlock-style medal strip */}
+      {m && (
+        <dl className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="rounded-2xl border border-cream/15 px-3 py-3">
+            <dt className="text-[10px] uppercase tracking-wider text-cream/45">{t.medalPayouts}</dt>
+            <dd className="mt-1 font-mono text-xl text-teal">
+              {m.payouts}
+              <span className="text-xs text-cream/40">x</span>
+            </dd>
+          </div>
+          <div className="rounded-2xl border border-amber-400/30 px-3 py-3">
+            <dt className="text-[10px] uppercase tracking-wider text-amber-400/80">{t.medalFirst}</dt>
+            <dd className="mt-1 font-mono text-xl text-amber-300">
+              {m.first}
+              <span className="text-xs text-cream/40">x</span>
+            </dd>
+          </div>
+          <div className="rounded-2xl border border-cream/20 px-3 py-3">
+            <dt className="text-[10px] uppercase tracking-wider text-cream/50">{t.medalSecond}</dt>
+            <dd className="mt-1 font-mono text-xl text-cream/80">
+              {m.second}
+              <span className="text-xs text-cream/40">x</span>
+            </dd>
+          </div>
+          <div className="rounded-2xl border border-orange-700/40 px-3 py-3">
+            <dt className="text-[10px] uppercase tracking-wider text-orange-600/90">{t.medalThird}</dt>
+            <dd className="mt-1 font-mono text-xl text-orange-500/90">
+              {m.third}
+              <span className="text-xs text-cream/40">x</span>
+            </dd>
+          </div>
+        </dl>
+      )}
+      {m && m.earnedUsdc > 0 && (
+        <p className="mt-3 font-mono text-sm text-teal">
+          {t.medalEarned}: {m.earnedUsdc.toFixed(2)} USDC
+        </p>
+      )}
+
+      <dl className="mt-6 grid grid-cols-2 gap-3 rounded-3xl border border-cream/15 p-5 text-sm sm:grid-cols-3">
         <div>
           <dt className="text-cream/45">{t.publicFinishes}</dt>
           <dd className="mt-1 font-mono text-xl text-teal">{card.finishes}</dd>
@@ -77,37 +147,50 @@ export default function PublicProfilePage() {
           <dd className="mt-1 font-mono text-xl">{card.top10}</dd>
         </div>
         <div>
-          <dt className="text-cream/45">{t.publicFirst}</dt>
-          <dd className="mt-1 font-mono text-xl">{card.firstPlaces}</dd>
-        </div>
-        <div>
           <dt className="text-cream/45">{t.loyaltyTier}</dt>
           <dd className="mt-1 capitalize">{card.tier ?? "—"}</dd>
         </div>
-        <div>
-          <dt className="text-cream/45">{t.accFounder}</dt>
-          <dd className="mt-1">{card.founding ? `#${card.founderOrdinal ?? "?"}` : "—"}</dd>
-        </div>
-        <div>
-          <dt className="text-cream/45">{t.membership}</dt>
-          <dd className="mt-1">{card.academyMember ? t.tierMember : "—"}</dd>
-        </div>
       </dl>
 
-      {card.weekNfts.length > 0 && (
-        <section className="mt-8">
-          <p className="text-xs uppercase tracking-[0.2em] text-cream/45">{t.weekNftTitle}</p>
-          <ul className="mt-3 divide-y divide-cream/10 rounded-3xl border border-cream/15">
-            {card.weekNfts.map((n) => (
-              <li key={`${n.round}-${n.mint}`} className="flex items-center gap-3 px-4 py-3 font-mono text-xs">
-                <span className="text-teal">#{n.rank}</span>
-                <span className="flex-1 text-cream/70">{new Date(n.round * 1000).toISOString().slice(0, 10)}</span>
-                <span className="text-cream/40">{n.mint.slice(0, 8)}…</span>
+      {/* Activity feed — Watson / Sherlock style */}
+      <section className="mt-10">
+        <p className="text-xs uppercase tracking-[0.2em] text-cream/45">{t.activityTitle}</p>
+        <p className="mt-2 text-sm text-cream/50">{t.activityLead}</p>
+        {!card.activity?.length ? (
+          <p className="mt-4 text-sm text-cream/40">{t.activityEmpty}</p>
+        ) : (
+          <ul className="mt-5 space-y-6">
+            {card.activity.map((a) => (
+              <li key={`${a.round}-${a.rank}-${a.mint ?? ""}`} className="relative pl-4">
+                <span className={`absolute left-0 top-2 size-2 rounded-full ${medalDot(a.medal)}`} />
+                <p className="font-mono text-[10px] uppercase tracking-wider text-cream/40">{a.date}</p>
+                <div className="mt-2 flex gap-3 rounded-2xl border border-cream/10 p-3">
+                  <div className="relative size-10 shrink-0 overflow-hidden rounded-xl border border-cream/10 bg-ink">
+                    {a.host.logo?.startsWith("http") ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={a.host.logo} alt={a.host.name} width={40} height={40} className="size-10 object-cover" />
+                    ) : a.host.logo ? (
+                      <Image src={a.host.logo} alt={a.host.name} width={40} height={40} className="size-10 object-cover" />
+                    ) : (
+                      <span className="flex size-10 items-center justify-center text-[10px] text-teal">ZK</span>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-cream/90">{a.title}</p>
+                    <p className="mt-0.5 text-xs text-cream/50">
+                      {a.host.name} · {a.day}
+                    </p>
+                    <p className="mt-2 font-mono text-xs text-teal">
+                      #{a.rank}
+                      {a.prizeUsdc > 0 ? ` · ${a.prizeUsdc.toFixed(2)} USDC` : ""}
+                    </p>
+                  </div>
+                </div>
               </li>
             ))}
           </ul>
-        </section>
-      )}
+        )}
+      </section>
 
       <p className="mt-8 text-sm text-cream/50">
         <Link href="/play" className="text-teal underline">

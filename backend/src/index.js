@@ -214,6 +214,23 @@ app.get("/u/:name", async (req, res) => {
     ]);
     const nfts = weekNftsFor(wallet);
     const wins = nfts.filter((n) => n.rank >= 1 && n.rank <= 10);
+    const firstPlaces = wins.filter((n) => n.rank === 1).length;
+    const secondPlaces = wins.filter((n) => n.rank === 2).length;
+    const thirdPlaces = wins.filter((n) => n.rank === 3).length;
+    const payouts = wins.filter((n) => Number(n.prizeUsdc) > 0).length;
+    const earnedUsdc = wins.reduce((s, n) => s + Number(n.prizeUsdc || 0), 0);
+    const activity = wins.slice(0, 40).map((n) => ({
+      at: n.at ?? n.round * 1000,
+      date: new Date((n.at ?? n.round * 1000)).toISOString().slice(0, 7),
+      day: new Date(n.round * 1000).toISOString().slice(0, 10),
+      round: n.round,
+      rank: n.rank,
+      prizeUsdc: Number(n.prizeUsdc || 0),
+      mint: n.mint,
+      title: n.title || "ZKCTF Saturday race",
+      host: n.host || { id: "zkctf", name: "ZKCTF", logo: "/logo.png" },
+      medal: n.rank === 1 ? "gold" : n.rank === 2 ? "silver" : n.rank === 3 ? "bronze" : "paid",
+    }));
     res.json({
       profile,
       wallet,
@@ -228,8 +245,18 @@ app.get("/u/:name", async (req, res) => {
       prestige: prestige
         ? { points: prestige.points, badge: prestige.badge, lifetime: prestige.lifetime }
         : null,
-      firstPlaces: wins.filter((n) => n.rank === 1).length,
+      firstPlaces,
+      secondPlaces,
+      thirdPlaces,
       top10: wins.length,
+      medals: {
+        payouts,
+        first: firstPlaces,
+        second: secondPlaces,
+        third: thirdPlaces,
+        earnedUsdc: Math.round(earnedUsdc * 1e6) / 1e6,
+      },
+      activity,
     });
   } catch (e) {
     res.status(502).json({ error: String(e.message ?? e) });
