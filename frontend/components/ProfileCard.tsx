@@ -6,7 +6,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { getJson, postJson } from "@/lib/api";
 import { walletAuth } from "@/lib/walletAuth";
 import { useLang } from "@/lib/lang";
-import { avatarUrl } from "@/lib/avatar";
+import { Avatar } from "@/components/Avatar";
 
 type Profile = {
   pseudonym: string;
@@ -83,20 +83,12 @@ export function ProfileCard() {
   }
 
   const locked = Boolean(profile && !profile.canRename);
-
-  const seed = profile?.pseudonym || name.trim() || publicKey.toBase58();
+  const seed = profile?.pseudonym || name.trim() || publicKey?.toBase58() || "zkctf";
 
   return (
     <section className="mt-8 rounded-3xl border border-cream/15 p-5">
       <div className="flex items-start gap-4">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={avatarUrl(seed, 128)}
-          alt=""
-          width={56}
-          height={56}
-          className="size-14 shrink-0 rounded-full border border-cream/15 bg-ink"
-        />
+        <Avatar seed={seed} size="lg" />
         <div className="min-w-0 flex-1">
           <p className="text-xs uppercase tracking-[0.2em] text-teal">{t.profileTitle}</p>
           <p className="mt-2 text-sm leading-6 text-cream/65">{t.profileLead}</p>
