@@ -4,8 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { getJson, postJson } from "@/lib/api";
 import { useLang } from "@/lib/lang";
+import { walletAuth } from "@/lib/walletAuth";
 import { hexToBytes, submitInstruction, sendB64Tx } from "@/lib/program";
 import { Countdown } from "@/components/Countdown";
+import { Leaderboard } from "@/components/Leaderboard";
 import { ComputeBudgetProgram, Transaction } from "@solana/web3.js";
 
 type Level = {
@@ -37,9 +39,11 @@ function HintBlock({ hints, label }: { hints: string[]; label: string }) {
 
 export default function PlayPage() {
   const { t } = useLang();
-  const { publicKey, connected, sendTransaction } = useWallet();
+  const { publicKey, connected, sendTransaction, signMessage } = useWallet();
   const { connection } = useConnection();
   const [entered, setEntered] = useState(false);
+  const [pseudonym, setPseudonym] = useState<string | null>(null);
+  const [pseudoDraft, setPseudoDraft] = useState("");
   const [levels, setLevels] = useState<Level[]>([]);
   const [progress, setProgress] = useState<Progress | null>(null);
   const [loadErr, setLoadErr] = useState(false);
@@ -86,9 +90,16 @@ export default function PlayPage() {
     if (!publicKey) {
       setEntered(false);
       setProgress(null);
+      setPseudonym(null);
       return;
     }
     const w = publicKey.toBase58();
+    void getJson<{ profile: { pseudonym: string } | null }>(`/profile/${w}`)
+      .then((r) => {
+        setPseudonym(r.profile?.pseudonym ?? null);
+        setPseudoDraft(r.profile?.pseudonym ?? "");
+      })
+      .catch(() => setPseudonym(null));
     void getJson<{ entered?: boolean }>(`/entry/${w}`)
       .then((r) => {
         setEntered(Boolean(r.entered));
@@ -100,8 +111,33 @@ export default function PlayPage() {
   const open = entered;
   const ctfLabel = (id: number) => `CTF #${Number(id) + 1}`;
 
+  async function savePseudonym() {
+    if (!publicKey || !signMessage) return;
+    setBusy(true);
+    setNote(null);
+    try {
+      const headers = await walletAuth(publicKey.toBase58(), signMessage);
+      const out = await postJson<{ ok: boolean; profile?: { pseudonym: string }; error?: string }>(
+        "/profile",
+        { wallet: publicKey.toBase58(), pseudonym: pseudoDraft },
+        headers,
+      );
+      if (!out.ok || !out.profile) throw new Error(out.error ?? "Failed");
+      setPseudonym(out.profile.pseudonym);
+      setNote(t.profileSaved);
+    } catch (e) {
+      setNote(e instanceof Error ? e.message : t.rejected);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function enterRace() {
     if (!publicKey || !sendTransaction) return;
+    if (!pseudonym) {
+      setNote(t.profileNeed);
+      return;
+    }
     setBusy(true);
     setNote(null);
     try {
@@ -201,10 +237,38 @@ export default function PlayPage() {
       {loadErr && <p className="mt-3 text-sm text-teal">{t.roundLoadError}</p>}
       {!open && <p className="mt-3 text-sm text-cream/60">{t.locked}</p>}
       {!connected && <p className="mt-6 text-sm text-teal">{t.connectFirst}</p>}
+      {connected && !open && !pseudonym && (
+        <div className="mt-6 max-w-md rounded-3xl border border-cream/15 p-4">
+          <p className="text-xs uppercase tracking-[0.2em] text-teal">{t.profileTitle}</p>
+          <p className="mt-2 text-sm text-cream/60">{t.profileNeed}</p>
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            <input
+              value={pseudoDraft}
+              onChange={(e) => setPseudoDraft(e.target.value)}
+              placeholder="0xWarden"
+              maxLength={20}
+              className="min-h-12 flex-1 rounded-2xl border border-cream/15 bg-ink px-4 font-mono text-sm"
+            />
+            <button
+              type="button"
+              disabled={busy || pseudoDraft.trim().length < 3}
+              onClick={() => void savePseudonym()}
+              className="min-h-12 rounded-2xl bg-teal/20 px-5 text-sm text-teal disabled:opacity-40"
+            >
+              {t.profileCreate}
+            </button>
+          </div>
+        </div>
+      )}
+      {connected && !open && pseudonym && (
+        <p className="mt-4 font-mono text-xs text-cream/50">
+          {t.profileAs} <span className="text-teal">{pseudonym}</span>
+        </p>
+      )}
       {connected && !open && (
         <button
           type="button"
-          disabled={busy}
+          disabled={busy || !pseudonym}
           onClick={() => void enterRace()}
           className="mt-6 inline-flex min-h-12 items-center rounded-full bg-cream px-5 text-sm font-medium text-ink disabled:opacity-40"
         >
@@ -304,6 +368,8 @@ export default function PlayPage() {
           ))}
         {note && <p className="text-xs text-cream/55">{note}</p>}
       </div>
+
+      <Leaderboard />
     </div>
   );
 }

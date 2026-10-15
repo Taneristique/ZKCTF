@@ -54,6 +54,11 @@ function meta(lesson) {
   };
 }
 
+/** Free preview lessons: set `"teaser": true` in the JSON. Full catalog otherwise needs a seat. */
+export function isTeaser(lesson) {
+  return Boolean(lesson?.teaser);
+}
+
 /** Catalog for a viewer. Locked rows expose metadata only. */
 export function lessonCatalog(member, now = Date.now()) {
   const founding = Boolean(member?.founding);
@@ -61,17 +66,19 @@ export function lessonCatalog(member, now = Date.now()) {
     .filter((l) => opensAt(l, founding) <= now)
     .map((l) => ({
       ...meta(l),
+      teaser: isTeaser(l),
       early: now < Date.parse(l.publishedAt),
-      unlocked: Boolean(member?.active),
+      unlocked: Boolean(member?.active) || isTeaser(l),
     }));
 }
 
 export function lessonFor(id, member, now = Date.now()) {
   const lesson = loadLessons().find((l) => l.id === id);
   if (!lesson || opensAt(lesson, Boolean(member?.founding)) > now) return { error: 404 };
-  if (!member?.active) return { error: 403, lesson: meta(lesson) };
+  const free = isTeaser(lesson);
+  if (!member?.active && !free) return { error: 403, lesson: meta(lesson) };
   const { flag, ...rest } = lesson;
-  return { lesson: rest };
+  return { lesson: { ...rest, teaser: free } };
 }
 
 export function lessonFlag(id) {

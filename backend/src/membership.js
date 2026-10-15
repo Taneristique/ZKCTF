@@ -17,7 +17,7 @@ import {
   createAtaIdempotentIx,
   recentTx,
 } from "./chain.js";
-import { excludedFounders, snapshotFounder } from "./founders.js";
+import { excludedFounders, isExcludedFounder, snapshotFounder } from "./founders.js";
 
 const USDC_ATOMS = 1_000_000;
 
@@ -65,9 +65,12 @@ export async function memberStatus(connection, wallet) {
   const info = await connection.getAccountInfo(pda);
   const row = info && info.owner.equals(PROGRAM_ID) ? parseSeat(info.data) : null;
   if (!row) return { active: false, founding: false, expiry: null, source: "none", seat: pda.toBase58() };
+  const excluded = isExcludedFounder(wallet);
   return {
     active: Date.now() / 1000 <= row.expiry,
-    founding: row.tier === 1,
+    // Excluded team wallets never surface as Founding in product UI / seat math.
+    founding: excluded ? false : row.tier === 1,
+    excluded,
     expiry: row.expiry * 1000,
     months: row.months,
     source: "chain",
@@ -98,15 +101,18 @@ const HOLD_MS = 120_000;
 
 function pendingFor(except) {
   const now = Date.now();
+  const skip = excludedFounders();
   let n = 0;
   for (const [w, until] of pending) {
     if (until <= now) pending.delete(w);
+    else if (skip.has(w)) pending.delete(w);
     else if (w !== except) n++;
   }
   return n;
 }
 
 export function holdFoundingSeat(wallet) {
+  if (isExcludedFounder(wallet)) return;
   pending.set(wallet, Date.now() + HOLD_MS);
 }
 
@@ -128,12 +134,34 @@ export async function foundingOffer(connection, wallet) {
   ]);
   const taken = onChain + pendingFor(wallet);
   const left = Math.max(0, FOUNDING.seats - taken);
+  // Team / test wallets: regular Academy seat only — no Founding price, tier, or seat consumption.
+  if (wallet && isExcludedFounder(wallet)) {
+    return {
+      status,
+      taken,
+      left,
+      eligible: false,
+      tier: 0,
+      carried: null,
+      carriedDiscount: false,
+      excluded: true,
+    };
+  }
   const carried = wallet ? snapshotFounder(wallet) : null;
   const firstPurchase = !status?.expiry;
   let tier = 0;
   if (status?.founding || (!carried && left > 0)) tier = 1;
   const carriedDiscount = Boolean(carried) && firstPurchase && tier === 0;
-  return { status, taken, left, eligible: tier === 1 || carriedDiscount, tier, carried, carriedDiscount };
+  return {
+    status,
+    taken,
+    left,
+    eligible: tier === 1 || carriedDiscount,
+    tier,
+    carried,
+    carriedDiscount,
+    excluded: false,
+  };
 }
 
 export async function buildCheckoutTx({ connection, authority, wallet, months, founding, tier = founding ? 1 : 0 }) {

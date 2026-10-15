@@ -6,6 +6,8 @@ import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { getJson } from "@/lib/api";
 import { useLang } from "@/lib/lang";
 import { tokenBalance } from "@/lib/program";
+import { ProfileCard } from "@/components/ProfileCard";
+import { AcademyGiftCard } from "@/components/AcademyGiftCard";
 
 type Member = {
   active: boolean;
@@ -115,6 +117,9 @@ function AccountBody() {
         <dd className="text-right capitalize">{prestige?.badge && prestige.badge !== "none" ? prestige.badge : "—"}</dd>
       </dl>
       <p className="mt-3 text-xs text-cream/45">{t.prestigeNote}</p>
+
+      <ProfileCard />
+      <AcademyGiftCard />
 
       <section className="mt-8 rounded-3xl border border-teal/40 bg-teal/[0.07] p-5">
         <p className="text-xs uppercase tracking-[0.2em] text-teal">{t.loyaltyTitle}</p>

@@ -5,8 +5,19 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { recordSolve, rankSolvers, canAttempt, progress as solveProgress } from "./solves.js";
 import { publicLevels, levelById, readRound, roundOpen } from "./roundStore.js";
 import { getEntry, putEntry, listEntries, lessonSolves, recordLessonSolve } from "./store.js";
-import { ENTRY_USDC, N_WINNERS, CLUSTER, ASSET, TREASURY_BPS, WEIGHTS, example, saturdayWindow } from "./race.js";
-import { founders, founderFor, syncFounders, snapshotFounder } from "./founders.js";
+import {
+  ENTRY_USDC,
+  ENTRY_ATOMS,
+  N_WINNERS,
+  CLUSTER,
+  ASSET,
+  TREASURY_BPS,
+  WEIGHTS,
+  example,
+  saturdayWindow,
+  splitPot,
+} from "./race.js";
+import { founders, founderFor, syncFounders, snapshotFounder, isExcludedFounder } from "./founders.js";
 import { loyaltyStatus, TIERS } from "./loyalty.js";
 import { startScheduler } from "./scheduler.js";
 import { authorityKeypair, authoritySource } from "./authority.js";
@@ -20,6 +31,9 @@ import {
   holdFoundingSeat,
   releaseFoundingSeat,
 } from "./membership.js";
+import { profileFor, setProfile, nameAvailable, namesFor, displayName, walletForName } from "./profiles.js";
+import { giftStatus, buildGiftTx, markGiftClaimed, GIFT_FINISHES, GIFT_MONTHS } from "./academyGift.js";
+import { weekNftsFor, weekMeta } from "./weekNft.js";
 import { TRACKS, lessonCatalog, lessonFor, lessonFlag } from "./lessons.js";
 import { walletFromRequest } from "./walletAuth.js";
 import {
@@ -32,7 +46,9 @@ import {
   entryForRound,
   rankClearsOnChain,
   enterChainBlockers,
+  explainEnterSimFailure,
   onChainAuthority,
+  onChainRound,
 } from "./chain.js";
 import { flagsEqual, hex32, fromHex } from "./relation.mjs";
 import { artifactsReady, groth16Proof, buildC } from "./prove.js";
@@ -71,6 +87,19 @@ app.use(cors({ origin: true }));
 
 app.get("/health", async (_req, res) => {
   const auth = await authorityStatus();
+  let founding = null;
+  try {
+    const offer = await foundingOffer(connection, null);
+    founding = {
+      seats: FOUNDING.seats,
+      taken: offer.taken,
+      left: offer.left,
+      excludeEnv: Boolean(process.env.FOUNDING_EXCLUDE?.trim()),
+      note: "FOUNDING_EXCLUDE wallets do not reduce left seats and are omitted from public founders",
+    };
+  } catch {
+    founding = { error: "unavailable" };
+  }
   res.json({
     ok: true,
     product: "ZKCTF",
@@ -89,6 +118,7 @@ app.get("/health", async (_req, res) => {
     treasuryBps: TREASURY_BPS,
     cluster: CLUSTER,
     linearCtf: true,
+    founding,
   });
 });
 
@@ -115,6 +145,7 @@ app.get("/leaderboard", async (_req, res) => {
   const preview = rankSolvers(meta.start, levels.length);
   let ranked = preview;
   let source = "host-preview";
+  let potAtoms = listEntries(meta.start).length * ENTRY_ATOMS;
   try {
     const wallets = listEntries(meta.start).map((e) => e.wallet);
     const onChain = await rankClearsOnChain(connection, wallets, levels.length);
@@ -122,12 +153,33 @@ app.get("/leaderboard", async (_req, res) => {
       ranked = onChain;
       source = "on-chain";
     }
+    const round = await onChainRound(connection);
+    if (round && round.start === meta.start) potAtoms = round.potAtoms || potAtoms;
   } catch {
     /* RPC optional for preview */
   }
+  const top = ranked.slice(0, 25);
+  const labels = namesFor(top.map((r) => r.wallet));
+  const paidSlots = Math.min(top.length, N_WINNERS);
+  const { pays, treasury } = splitPot(potAtoms, paidSlots);
+  const paysUsdc = pays.map((a) => a / 1e6);
   res.json({
     levels: levels.map((l) => ({ level: l.id, title: l.title })),
-    ranked: ranked.slice(0, 25),
+    ranked: top.map((r, i) => {
+      const place = i + 1;
+      const prizeUsdc = i < paidSlots ? paysUsdc[i] : 0;
+      return {
+        ...r,
+        place,
+        pseudonym: labels[r.wallet] ?? null,
+        displayName: labels[r.wallet] ?? displayName(r.wallet),
+        prizeUsdc,
+        paid: prizeUsdc > 0,
+      };
+    }),
+    potUsdc: potAtoms / 1e6,
+    treasuryUsdc: treasury / 1e6,
+    prizePoolUsdc: (potAtoms - treasury) / 1e6,
     nWinners: N_WINNERS,
     entryUsdc: ENTRY_USDC,
     asset: ASSET,
@@ -136,8 +188,186 @@ app.get("/leaderboard", async (_req, res) => {
     rule: "linear",
     source,
     payoutSource: "on-chain Groth16 submit PDAs + settle/split_pot",
-    note: "Only wallets that clear every CTF this week can win. Ranked by finish time. Top N share 80%. Host-preview is not the payout source.",
+    note: "Projected USDC from the current pot and finishers (same weights as settle). Final payout is on-chain only.",
   });
+});
+
+/** Pseudonym profile (independent of race entry / Academy). */
+app.get("/profile/check/:name", (req, res) => {
+  res.json(nameAvailable(req.params.name));
+});
+
+/** Public Watson-style card: /u/:name → achievements (no private balances). */
+app.get("/u/:name", async (req, res) => {
+  const wallet = walletForName(req.params.name);
+  if (!wallet) {
+    res.status(404).json({ error: "No player with that pseudonym." });
+    return;
+  }
+  const profile = profileFor(wallet);
+  try {
+    const [loyalty, founder, member, prestige] = await Promise.all([
+      loyaltyStatus(connection, wallet),
+      Promise.resolve(founderFor(wallet)),
+      memberStatus(connection, wallet).catch(() => null),
+      Promise.resolve(getPrestige(wallet, windowMeta().start)),
+    ]);
+    const nfts = weekNftsFor(wallet);
+    const wins = nfts.filter((n) => n.rank >= 1 && n.rank <= 10);
+    res.json({
+      profile,
+      wallet,
+      shortWallet: `${wallet.slice(0, 4)}…${wallet.slice(-4)}`,
+      finishes: loyalty?.count ?? 0,
+      tier: loyalty?.tier ?? null,
+      founding: Boolean(founder?.founder),
+      founderOrdinal: founder?.ordinal ?? null,
+      academyMember: Boolean(member?.active),
+      weekWins: wins.length,
+      weekNfts: nfts.slice(0, 24),
+      prestige: prestige
+        ? { points: prestige.points, badge: prestige.badge, lifetime: prestige.lifetime }
+        : null,
+      firstPlaces: wins.filter((n) => n.rank === 1).length,
+      top10: wins.length,
+    });
+  } catch (e) {
+    res.status(502).json({ error: String(e.message ?? e) });
+  }
+});
+
+app.get("/profile/:wallet", (req, res) => {
+  const profile = profileFor(req.params.wallet);
+  res.json({
+    profile,
+    displayName: displayName(req.params.wallet),
+    weekNfts: weekNftsFor(req.params.wallet),
+    publicPath: profile?.pseudonym ? `/u/${profile.pseudonym}` : null,
+  });
+});
+
+app.post("/profile", express.json(), async (req, res) => {
+  const wallet = walletFromRequest(req);
+  if (!wallet) {
+    res.status(401).json({ error: "Sign in with your wallet to set a pseudonym." });
+    return;
+  }
+  if (req.body?.wallet && String(req.body.wallet) !== wallet) {
+    res.status(403).json({ error: "Wallet mismatch." });
+    return;
+  }
+  const out = setProfile(wallet, req.body?.pseudonym ?? req.body?.name);
+  if (!out.ok) {
+    res.status(400).json(out);
+    return;
+  }
+  res.json(out);
+});
+
+app.get("/gift/academy/:wallet", async (req, res) => {
+  try {
+    res.json(await giftStatus(connection, req.params.wallet));
+  } catch (e) {
+    res.status(400).json({ error: String(e.message ?? e) });
+  }
+});
+
+/** Free 1-month seat after N Finisher rounds — wallet signs mint_seat, no USDC. */
+app.post("/gift/academy", express.json(), async (req, res) => {
+  const wallet = walletFromRequest(req) ?? String(req.body?.wallet ?? "");
+  if (!wallet) {
+    res.status(401).json({ error: "Sign in with your wallet to claim the Academy gift." });
+    return;
+  }
+  const auth = await authorityStatus();
+  if (!auth.ok) {
+    res.status(503).json({ error: PAYMENTS_PAUSED });
+    return;
+  }
+  try {
+    const { tx, months } = await buildGiftTx({ connection, authority, wallet });
+    const sim = await connection.simulateTransaction(tx);
+    if (sim.value.err) {
+      res.status(400).json({
+        error: `Gift simulation failed: ${(sim.value.logs ?? []).slice(-3).join(" · ") || JSON.stringify(sim.value.err)}`,
+      });
+      return;
+    }
+    tx.partialSign(authority);
+    res.json({
+      tx: tx.serialize({ requireAllSignatures: false, verifySignatures: false }).toString("base64"),
+      months,
+      finishesNeeded: GIFT_FINISHES,
+      note: `${months} month Academy seat — no USDC. Sign once; lifetime one claim per wallet.`,
+    });
+  } catch (e) {
+    res.status(400).json({ error: String(e.message ?? e) });
+  }
+});
+
+app.post("/gift/academy/confirm", express.json(), async (req, res) => {
+  const wallet = String(req.body?.wallet ?? "");
+  const signature = req.body?.signature ? String(req.body.signature) : null;
+  if (!wallet) {
+    res.status(400).json({ error: "wallet required" });
+    return;
+  }
+  try {
+    const member = await memberStatus(connection, wallet);
+    if (!member?.expiry) {
+      res.status(409).json({ error: "Seat not on chain yet." });
+      return;
+    }
+    const row = markGiftClaimed(wallet, signature);
+    res.json({ ok: true, gift: row, member, months: GIFT_MONTHS });
+  } catch (e) {
+    res.status(502).json({ error: String(e.message ?? e) });
+  }
+});
+
+app.get("/week-nft/art.svg", (_req, res) => {
+  res.type("image/svg+xml").send(`<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0a0c10"/>
+      <stop offset="100%" stop-color="#0d3d3a"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="800" fill="url(#g)"/>
+  <circle cx="400" cy="360" r="140" fill="none" stroke="#2dd4bf" stroke-width="6"/>
+  <path d="M280 360 L360 440 L520 280" fill="none" stroke="#f5f0e8" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="400" y="560" text-anchor="middle" fill="#f5f0e8" font-family="ui-monospace,monospace" font-size="36">ZKCTF</text>
+  <text x="400" y="610" text-anchor="middle" fill="#2dd4bf" font-family="ui-monospace,monospace" font-size="22">WEEK WINNER</text>
+  <text x="400" y="660" text-anchor="middle" fill="#f5f0e880" font-family="ui-monospace,monospace" font-size="14">SOULBOUND · NO CASH VALUE</text>
+</svg>`);
+});
+
+app.get("/week-nft/meta/:round/:wallet.json", (req, res) => {
+  const meta = weekMeta(req.params.round);
+  const mine = (meta.winners ?? []).find((w) => w.wallet === req.params.wallet);
+  res.json({
+    ...meta,
+    name: mine ? `ZKCTF Week #${mine.rank} · ${mine.pseudonym}` : meta.name,
+    attributes: [
+      ...(meta.attributes ?? []),
+      ...(mine
+        ? [
+            { trait_type: "rank", value: mine.rank },
+            { trait_type: "pseudonym", value: mine.pseudonym },
+            { trait_type: "wallet", value: mine.wallet },
+          ]
+        : []),
+    ],
+  });
+});
+
+app.get("/week-nft/meta/:round", (req, res) => {
+  res.json(weekMeta(req.params.round));
+});
+
+app.get("/week-nft/:wallet", (req, res) => {
+  res.json({ nfts: weekNftsFor(req.params.wallet) });
 });
 
 app.get("/progress/:wallet", (req, res) => {
@@ -211,12 +441,17 @@ app.get("/plans", async (req, res) => {
         discountBps: FOUNDING.discountBps,
         earlyAccessHours: FOUNDING.earlyAccessHours,
         eligible: offer.eligible,
-        member: Boolean(offer.status?.founding),
-        ordinal: (wallet && founderFor(wallet)?.ordinal) || offer.carried?.ordinal || null,
-        carried: Boolean(offer.carried),
-        carriedDiscount: offer.carriedDiscount,
+        member: Boolean(offer.status?.founding) && !offer.excluded,
+        ordinal: offer.excluded
+          ? null
+          : (wallet && founderFor(wallet)?.ordinal) || offer.carried?.ordinal || null,
+        carried: Boolean(offer.carried) && !offer.excluded,
+        carriedDiscount: offer.carriedDiscount && !offer.excluded,
+        excluded: Boolean(offer.excluded),
       },
-      member: offer.status,
+      member: offer.status
+        ? { ...offer.status, founding: offer.excluded ? false : offer.status.founding }
+        : null,
     });
   } catch (e) {
     res.status(502).json({ error: String(e.message ?? e) });
@@ -306,9 +541,19 @@ app.get("/founders", (_req, res) => {
 });
 
 app.get("/founders/:wallet", (req, res) => {
-  const row = founderFor(req.params.wallet);
-  const carried = snapshotFounder(req.params.wallet);
-  res.json({ founder: Boolean(row || carried), ordinal: row?.ordinal ?? carried?.ordinal ?? null, carried: Boolean(carried) });
+  const wallet = req.params.wallet;
+  if (isExcludedFounder(wallet)) {
+    res.json({ founder: false, ordinal: null, carried: false, excluded: true });
+    return;
+  }
+  const row = founderFor(wallet);
+  const carried = snapshotFounder(wallet);
+  res.json({
+    founder: Boolean(row || carried),
+    ordinal: row?.ordinal ?? carried?.ordinal ?? null,
+    carried: Boolean(carried),
+    excluded: false,
+  });
 });
 
 app.get("/loyalty/:wallet", async (req, res) => {
@@ -374,8 +619,7 @@ app.post("/enter", express.json(), async (req, res) => {
         tx.add(ix);
         const sim = await connection.simulateTransaction(tx);
         if (sim.value.err) {
-          const tip = (sim.value.logs ?? []).slice(-3).join(" · ") || JSON.stringify(sim.value.err);
-          chainNote = `Host entry saved; enter_round simulation failed — ${tip}`;
+          chainNote = `Host entry saved; on-chain enter not ready — ${explainEnterSimFailure(sim)}`;
         } else {
           txB64 = tx
             .serialize({ requireAllSignatures: false, verifySignatures: false })

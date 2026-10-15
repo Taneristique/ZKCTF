@@ -11,6 +11,9 @@ Mandatory product omurga vs FlagWars / Capture The SOL. Soft pitch is not enough
 | **E** | Academy never writes race board / pot | Lesson flags are checked off-chain; membership USDC goes to the treasury ATA, never the pot |
 | **F** | Pitch = ZK proof-of-solve + pot math — never “Solana CTF app” | `frontend/lib/copy.ts`, Docs, READMEs, layout metadata |
 | **G** | No reward token / stake cut of pot | Already red in plan; do not add |
+| **H** | Pseudonym is host identity only (not payout authority) | `profiles.js`; board shows names; settle still ranks Entry PDAs |
+| **I** | Week-winner NFT = soulbound Token-2022, no secondary market design | `weekNft.js` NonTransferable; transferable deferred |
+| **J** | Academy gift = 3 Finisher clears → 1 month seat, once per wallet | `academyGift.js`; no USDC; `mint_seat` co-sign |
 
 **Faz 0:** Shipping Play without A+B path is forbidden. Demo order: flag off explorer → verify tx → `split_pot` → (optional) Academy lesson + USDC membership 30s.
 

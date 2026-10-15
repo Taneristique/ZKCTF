@@ -262,7 +262,36 @@ export async function enterChainBlockers(connection) {
   if (!(await connection.getAccountInfo(pot))) {
     return `Pot USDC ATA missing (${pot.toBase58()}). Create the vault ["pot"] ATA for mint ${USDC_MINT.toBase58()}.`;
   }
+  const onChain = await onChainRound(connection);
+  if (onChain) {
+    const now = Math.floor(Date.now() / 1000);
+    if (onChain.settled) {
+      return "This on-chain round is already settled. Wait for the next Saturday race.";
+    }
+    if (now < onChain.start) {
+      const when = new Date(onChain.start * 1000).toISOString().replace("T", " ").slice(0, 16);
+      return `Race has not started yet. On-chain enter opens at ${when} UTC (program error 0x2 = outside the race window — not an attack).`;
+    }
+    if (now > onChain.end) {
+      return "This race window has ended on-chain. Wait for the next round.";
+    }
+  }
   return null;
+}
+
+/** Map enter_round / settle Custom(N) codes to plain English (logs look scary otherwise). */
+export function explainEnterSimFailure(sim) {
+  const err = sim?.value?.err;
+  const logs = sim?.value?.logs ?? [];
+  const blob = `${JSON.stringify(err)} ${logs.join("\n")}`;
+  const hex = blob.match(/custom program error:\s*0x([0-9a-f]+)/i);
+  const dec = blob.match(/Custom["\s:]*(\d+)/);
+  const code = hex ? parseInt(hex[1], 16) : dec ? Number(dec[1]) : null;
+  if (code === 2) {
+    return "Race window closed for enter (too early, too late, or already settled). Custom 0x2 is the program’s time-gate — not a hack alert.";
+  }
+  if (code === 3) return "Wrong program authority on this instruction.";
+  return logs.slice(-3).join(" · ") || JSON.stringify(err);
 }
 
 /** Entry PDA: disc(8) + wallet(32) + round_start(i64) + solved_mask(u8) + last_ts(i64) + bump(1). */

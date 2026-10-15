@@ -4,9 +4,10 @@
  * Every tick (default 5 min) re-reads chain state and does whatever is due, in this order:
  *   1. settle the on-chain round once it has ended (must happen before a new round overwrites it)
  *   2. mint the Finisher loyalty token to every wallet that cleared all levels of that round
- *   3. generate next week's levels if the host round is not for the upcoming window
- *   4. publish next week's commitments on chain (create_round)
- *   5. sync the Founding members registry (hourly)
+ *   3. mint soulbound week-winner NFTs to the top-N payees
+ *   4. generate next week's levels if the host round is not for the upcoming window
+ *   5. publish next week's commitments on chain (create_round)
+ *   6. sync the Founding members registry (hourly)
  * Each step is idempotent: it checks chain state first, so restarts, overlapping deploys or a
  * manual script run cannot double-settle, double-mint or overwrite a live round.
  */
@@ -27,6 +28,7 @@ import { treasuryOwner } from "./membership.js";
 import { N_WINNERS, saturdayWindow } from "./race.js";
 import { readRound, roundCommitments, writeRound } from "./roundStore.js";
 import { dataPath, load, save } from "./store.js";
+import { awardWeekWinners } from "./weekNft.js";
 
 const PATH = dataPath("scheduler.json");
 const TICK_MS = Number(process.env.BOT_TICK_MS ?? 5 * 60_000);
@@ -156,6 +158,20 @@ export function startScheduler({ connection, authority, authorityStatus }) {
         const out = await awardRound(connection, authority, String(round.start), finishers);
         s.rounds[round.start] = { ...s.rounds[round.start], loyalty: { ...out, finishers: finishers.length } };
         remember(s, "loyalty", { round: round.start, finishers: finishers.length });
+      }
+
+      if (canWrite && round?.settled && !s.rounds[round.start]?.weekNft) {
+        const winners =
+          s.rounds[round.start]?.settled?.winners ??
+          (await finishersOnChain(connection, round)).slice(0, N_WINNERS).map((f) => f.wallet);
+        if (winners.length) {
+          const out = await awardWeekWinners(connection, authority, round.start, winners);
+          s.rounds[round.start] = { ...s.rounds[round.start], weekNft: out };
+          remember(s, "weekNft", { round: round.start, minted: out.minted });
+          await notify(`week NFTs for round ${round.start}: minted ${out.minted}`);
+        } else {
+          s.rounds[round.start] = { ...s.rounds[round.start], weekNft: { minted: 0, total: 0 } };
+        }
       }
 
       const fresh = await prepareNextRound({ log: (m) => console.log(`[bot]${m}`), onChainStart: round?.start ?? null });
