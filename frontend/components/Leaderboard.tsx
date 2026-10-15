@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getJson } from "@/lib/api";
 import { useLang } from "@/lib/lang";
-import { avatarUrl } from "@/lib/avatar";
+import { Avatar } from "@/components/Avatar";
 
 type Row = {
   wallet: string;
@@ -80,14 +80,7 @@ export function Leaderboard() {
           return (
             <li key={r.wallet} className="flex items-start gap-3 px-4 py-3.5">
               <span className="mt-0.5 w-8 shrink-0 font-mono text-sm text-cream/40">{place}</span>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={avatarUrl(r.pseudonym ?? r.wallet, 64)}
-                alt=""
-                width={36}
-                height={36}
-                className="mt-0.5 size-9 shrink-0 rounded-full border border-cream/10 bg-ink"
-              />
+              <Avatar seed={r.pseudonym ?? r.wallet} size="md" className="mt-0.5" />
               <div className="min-w-0 flex-1">
                 <p className={`truncate text-sm font-medium ${paid ? "text-teal" : "text-cream/85"}`}>
                   {r.pseudonym ? (

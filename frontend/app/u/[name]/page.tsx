@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getJson } from "@/lib/api";
 import { useLang } from "@/lib/lang";
-import { avatarUrl } from "@/lib/avatar";
+import { Avatar } from "@/components/Avatar";
 
 type PublicCard = {
   profile: { pseudonym: string; createdAt: number } | null;
@@ -58,14 +58,7 @@ export default function PublicProfilePage() {
     <div className="mx-auto max-w-lg">
       <p className="text-xs uppercase tracking-[0.2em] text-teal">{t.publicProfileBadge}</p>
       <div className="mt-4 flex items-center gap-4">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={avatarUrl(card.profile.pseudonym, 160)}
-          alt=""
-          width={80}
-          height={80}
-          className="size-20 rounded-full border border-cream/15 bg-ink"
-        />
+        <Avatar seed={card.profile.pseudonym} size="xl" />
         <div>
           <h1 className="font-mono text-3xl font-semibold text-cream sm:text-4xl">{card.profile.pseudonym}</h1>
           <p className="mt-2 font-mono text-xs text-cream/45">
