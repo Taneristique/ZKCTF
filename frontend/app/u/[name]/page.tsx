@@ -98,25 +98,63 @@ export default function PublicProfilePage() {
         </div>
       </div>
 
-      {/* Medals only if earned — never show 0x (anon / Emerging Talent pattern). */}
-      {m && (m.payouts > 0 || m.first > 0 || m.second > 0 || m.third > 0) ? (
+      {/* Original profile stats (always when any exist) — ZKCTF account card language */}
+      <dl className="mt-8 grid grid-cols-2 gap-3 rounded-3xl border border-cream/15 p-5 text-sm sm:grid-cols-3">
+        <div>
+          <dt className="text-cream/45">{t.accWallet}</dt>
+          <dd className="mt-1 font-mono text-xs text-cream/70">{card.shortWallet}</dd>
+        </div>
+        {card.founding && (
+          <div>
+            <dt className="text-cream/45">{t.accFounder}</dt>
+            <dd className="mt-1 font-mono text-teal">#{card.founderOrdinal ?? "?"}</dd>
+          </div>
+        )}
+        {card.academyMember && (
+          <div>
+            <dt className="text-cream/45">{t.membership}</dt>
+            <dd className="mt-1">{t.tierMember}</dd>
+          </div>
+        )}
+        {card.finishes > 0 && (
+          <div>
+            <dt className="text-cream/45">{t.publicFinishes}</dt>
+            <dd className="mt-1 font-mono text-xl text-teal">{card.finishes}</dd>
+          </div>
+        )}
+        {card.top10 > 0 && (
+          <div>
+            <dt className="text-cream/45">{t.publicTop10}</dt>
+            <dd className="mt-1 font-mono text-xl">{card.top10}</dd>
+          </div>
+        )}
+        {card.tier && (
+          <div>
+            <dt className="text-cream/45">{t.loyaltyTier}</dt>
+            <dd className="mt-1 capitalize">{card.tier}</dd>
+          </div>
+        )}
+      </dl>
+
+      {/* Extra: place/prize chips only when earned — never 0x */}
+      {m && (m.payouts > 0 || m.first > 0 || m.second > 0 || m.third > 0) && (
         <>
-          <dl className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <dl className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {m.payouts > 0 && (
               <div className="rounded-2xl border border-cream/15 px-3 py-3">
                 <dt className="text-[10px] uppercase tracking-wider text-cream/45">{t.medalPayouts}</dt>
                 <dd className="mt-1 font-mono text-xl text-teal">
                   {m.payouts}
-                  <span className="text-xs text-cream/40">x</span>
+                  <span className="text-xs text-cream/40">×</span>
                 </dd>
               </div>
             )}
             {m.first > 0 && (
-              <div className="rounded-2xl border border-amber-400/30 px-3 py-3">
-                <dt className="text-[10px] uppercase tracking-wider text-amber-400/80">{t.medalFirst}</dt>
-                <dd className="mt-1 font-mono text-xl text-amber-300">
+              <div className="rounded-2xl border border-teal/30 px-3 py-3">
+                <dt className="text-[10px] uppercase tracking-wider text-teal/80">{t.medalFirst}</dt>
+                <dd className="mt-1 font-mono text-xl text-teal">
                   {m.first}
-                  <span className="text-xs text-cream/40">x</span>
+                  <span className="text-xs text-cream/40">×</span>
                 </dd>
               </div>
             )}
@@ -125,16 +163,16 @@ export default function PublicProfilePage() {
                 <dt className="text-[10px] uppercase tracking-wider text-cream/50">{t.medalSecond}</dt>
                 <dd className="mt-1 font-mono text-xl text-cream/80">
                   {m.second}
-                  <span className="text-xs text-cream/40">x</span>
+                  <span className="text-xs text-cream/40">×</span>
                 </dd>
               </div>
             )}
             {m.third > 0 && (
-              <div className="rounded-2xl border border-orange-700/40 px-3 py-3">
-                <dt className="text-[10px] uppercase tracking-wider text-orange-600/90">{t.medalThird}</dt>
-                <dd className="mt-1 font-mono text-xl text-orange-500/90">
+              <div className="rounded-2xl border border-cream/15 px-3 py-3">
+                <dt className="text-[10px] uppercase tracking-wider text-cream/45">{t.medalThird}</dt>
+                <dd className="mt-1 font-mono text-xl text-cream/70">
                   {m.third}
-                  <span className="text-xs text-cream/40">x</span>
+                  <span className="text-xs text-cream/40">×</span>
                 </dd>
               </div>
             )}
@@ -145,34 +183,6 @@ export default function PublicProfilePage() {
             </p>
           )}
         </>
-      ) : (
-        <div className="mt-8 rounded-3xl border border-teal/25 bg-teal/[0.06] px-5 py-4">
-          <p className="text-xs uppercase tracking-[0.2em] text-teal">{t.emergingTitle}</p>
-          <p className="mt-2 text-sm leading-6 text-cream/65">{t.emergingLead}</p>
-        </div>
-      )}
-
-      {(card.finishes > 0 || card.top10 > 0 || card.tier) && (
-        <dl className="mt-6 grid grid-cols-2 gap-3 rounded-3xl border border-cream/15 p-5 text-sm sm:grid-cols-3">
-          {card.finishes > 0 && (
-            <div>
-              <dt className="text-cream/45">{t.publicFinishes}</dt>
-              <dd className="mt-1 font-mono text-xl text-teal">{card.finishes}</dd>
-            </div>
-          )}
-          {card.top10 > 0 && (
-            <div>
-              <dt className="text-cream/45">{t.publicTop10}</dt>
-              <dd className="mt-1 font-mono text-xl">{card.top10}</dd>
-            </div>
-          )}
-          {card.tier && (
-            <div>
-              <dt className="text-cream/45">{t.loyaltyTier}</dt>
-              <dd className="mt-1 capitalize">{card.tier}</dd>
-            </div>
-          )}
-        </dl>
       )}
 
       {/* Activity feed only when there is something to celebrate */}
