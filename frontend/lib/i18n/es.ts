@@ -141,6 +141,8 @@ export const es: Dict = {
   medalSecond: "2.os puestos",
   medalThird: "3.er puestos",
   medalEarned: "Total ganado",
+  emergingTitle: "Talento emergente",
+  emergingLead: "Todo experto empezó con una primera carrera. Entrá al CTF del sábado — tus logros aparecen acá.",
   activityTitle: "Historial de carreras",
   activityLead: "Finales del sábado con puesto y premio — ZKCTF o el sponsor de esa semana.",
   activityEmpty: "Todavía no hay finales con premio. Completá un sábado para empezar la línea de tiempo.",
