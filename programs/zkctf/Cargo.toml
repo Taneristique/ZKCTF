@@ -24,3 +24,7 @@ jobserver = "=0.1.32"
 zeroize_derive = "=1.4.2"
 rayon = "=1.10.0"
 rayon-core = "=1.12.1"
+# solana-program 1.17 enables js-sys/futures-util; js-sys ≥0.3.70 renamed that to
+# futures-core-03-stream (dep: syntax). Pin so solana-verify Docker (1.73 cargo) resolves.
+js-sys = "=0.3.69"
+wasm-bindgen = "=0.2.92"
