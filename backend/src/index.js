@@ -122,6 +122,7 @@ app.get("/health", async (_req, res) => {
     founding,
     dataDir: DATA_DIR,
     dataPersistent,
+    railwayVolume: process.env.RAILWAY_VOLUME_MOUNT_PATH?.trim() || null,
     profiles: Object.keys(load(dataPath("profiles.json")).byWallet ?? {}).length,
     entries: Object.keys(load(dataPath("entries.json"))).length,
   });
