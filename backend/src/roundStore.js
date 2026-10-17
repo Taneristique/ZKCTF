@@ -1,16 +1,12 @@
-import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { join } from "node:path";
 import { randomBytes } from "node:crypto";
 import { createCommitment, hex32 } from "./relation.mjs";
 import { OFFICIAL as FALLBACK } from "./seeds.js";
 import { docFor } from "./bot.js";
+import { DATA_DIR } from "./dataDir.js";
 
-const dir = process.env.ZKCTF_DATA_DIR
-  ? process.env.ZKCTF_DATA_DIR
-  : join(dirname(fileURLToPath(import.meta.url)), "../data");
-mkdirSync(dir, { recursive: true });
-const PATH = join(dir, "round.json");
+const PATH = join(DATA_DIR, "round.json");
 
 function loadRaw() {
   if (!existsSync(PATH)) return null;

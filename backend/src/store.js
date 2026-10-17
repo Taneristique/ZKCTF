@@ -1,15 +1,12 @@
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { readFileSync, renameSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { DATA_DIR } from "./dataDir.js";
 
-const dir = process.env.ZKCTF_DATA_DIR
-  ? process.env.ZKCTF_DATA_DIR
-  : join(dirname(fileURLToPath(import.meta.url)), "../data");
-mkdirSync(dir, { recursive: true });
-const ENTRIES = join(dir, "entries.json");
-const LESSON_SOLVES = join(dir, "lesson-solves.json");
+const ENTRIES = join(DATA_DIR, "entries.json");
+const LESSON_SOLVES = join(DATA_DIR, "lesson-solves.json");
 
-export const dataPath = (name) => join(dir, name);
+export const dataPath = (name) => join(DATA_DIR, name);
+export { DATA_DIR };
 
 export function load(path) {
   try {
