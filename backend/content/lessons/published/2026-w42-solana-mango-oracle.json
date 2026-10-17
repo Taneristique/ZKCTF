@@ -1,0 +1,29 @@
+{
+  "id": "2026-w42-solana-mango-oracle",
+  "week": "2026-W42",
+  "track": "security",
+  "title": "Mango Markets 2022: the price the protocol believed",
+  "summary": "A Solana perpetual DEX let one trader move an illiquid spot oracle, mark a huge position in profit, and drain the insurance fund. We rebuild how on-chain prices become attacker-shaped when liquidity is thin.",
+  "case": {
+    "name": "Mango Markets exploit",
+    "date": "2022-10-11",
+    "impact": "~$114M drained from the protocol (partially returned under settlement talks)",
+    "sources": [
+      "https://mangomarkets.medium.com/",
+      "https://www.justice.gov/usao-sdny/pr/former-head-trading-firm-charged-fraudulent-scheme-involving-decentralized-cryptocurrency"
+    ]
+  },
+  "authors": {
+    "ai": null,
+    "human": "ZKCTF editor"
+  },
+  "reviewed": true,
+  "status": "published",
+  "teaser": false,
+  "publishedAt": "2026-10-17T20:49:39.918Z",
+  "rights": {
+    "holder": "ZKCTF",
+    "notice": "© ZKCTF Academy. Licensed for personal study by active members only. No scraping, training use, or republication of the full body.",
+    "license": "AllRightsReserved"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "2026-w42-solana-aquifer-token-program",
+  "week": "2026-W42",
+  "track": "security",
+  "title": "Aquifer 2026: the Token Program the caller chose",
+  "summary": "A Solana prop AMM paid real vault tokens for free because swap settlement let the caller pick which program ran each SPL transfer. We rebuild the one assignment that turned an allowlisted constant into attacker-controlled CPI.",
+  "case": {
+    "name": "Aquifer Solana AMM drain",
+    "date": "2026-08-31",
+    "impact": "~$2.47M across 212 swaps in ~40 minutes (USDC, USDT, HYPE, cbBTC, CASH, …)",
+    "sources": [
+      "https://blocksec.com/blog/web3-security-injective-aquifer-exploits",
+      "https://bitquery.io/investigations/aquifer-solana-hack-2-5-million"
+    ]
+  },
+  "authors": {
+    "ai": null,
+    "human": "Taneristique"
+  },
+  "reviewed": true,
+  "status": "published",
+  "teaser": false,
+  "publishedAt": "2026-10-17T20:47:52.036Z",
+  "rights": {
+    "holder": "ZKCTF",
+    "notice": "© ZKCTF Academy. Licensed for personal study by active members only. No scraping, training use, or republication of the full body.",
+    "license": "AllRightsReserved"
+  }
+}

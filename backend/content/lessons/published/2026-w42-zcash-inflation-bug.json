@@ -1,0 +1,29 @@
+{
+  "id": "2026-w42-zcash-inflation-bug",
+  "week": "2026-W42",
+  "track": "security",
+  "title": "Zcash 2019: inflation hiding in the proof system",
+  "summary": "A cryptographic flaw in Sapling allowed undetectable counterfeiting of ZEC. No wallet was hacked; the math permitted minting outside the transparent supply schedule. We explain the class without reconstructing a forge.",
+  "case": {
+    "name": "Zcash Sapling inflation vulnerability (disclosed)",
+    "date": "2019-02-05",
+    "impact": "Potential undetectable counterfeiting of shielded ZEC; fixed in network upgrade before public detail",
+    "sources": [
+      "https://electriccoin.co/blog/zcash-counterfeiting-vulnerability-successfully-remediated/",
+      "https://electriccoin.co/blog/statement-on-the-sapling-mpc/"
+    ]
+  },
+  "authors": {
+    "ai": null,
+    "human": "ZKCTF editor"
+  },
+  "reviewed": true,
+  "status": "published",
+  "teaser": false,
+  "publishedAt": "2026-10-17T20:49:40.056Z",
+  "rights": {
+    "holder": "ZKCTF",
+    "notice": "© ZKCTF Academy. Licensed for personal study by active members only. No scraping, training use, or republication of the full body.",
+    "license": "AllRightsReserved"
+  }
+}

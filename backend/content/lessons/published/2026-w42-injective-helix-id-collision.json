@@ -1,0 +1,28 @@
+{
+  "id": "2026-w42-injective-helix-id-collision",
+  "week": "2026-W42",
+  "track": "security",
+  "title": "Injective Helix 2026: when two IDs became one",
+  "summary": "Binary-options markets on Injective bound an insurance fund by hashing identity fields end to end. Without separators, two different field tuples collided, a phantom deficit was settled with dust, and about $4.8M left the system. We rebuild the encoding mistake.",
+  "case": {
+    "name": "Injective Helix binary options / insurance fund ID collision",
+    "date": "2026-08-31",
+    "impact": "~$4.8M across hundreds of short-lived markets (same BlockSec weekly window as Aquifer)",
+    "sources": [
+      "https://blocksec.com/blog/web3-security-injective-aquifer-exploits"
+    ]
+  },
+  "authors": {
+    "ai": "claude-sonnet-4-5-20250929 (outline; rewritten to BlockSec facts)",
+    "human": "ZKCTF editor"
+  },
+  "reviewed": true,
+  "status": "published",
+  "teaser": false,
+  "publishedAt": "2026-10-17T20:49:39.638Z",
+  "rights": {
+    "holder": "ZKCTF",
+    "notice": "© ZKCTF Academy. Licensed for personal study by active members only. No scraping, training use, or republication of the full body.",
+    "license": "AllRightsReserved"
+  }
+}

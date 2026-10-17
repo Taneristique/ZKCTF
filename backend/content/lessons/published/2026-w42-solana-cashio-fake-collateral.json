@@ -1,0 +1,29 @@
+{
+  "id": "2026-w42-solana-cashio-fake-collateral",
+  "week": "2026-W42",
+  "track": "security",
+  "title": "Cashio 2022: collateral that was never there",
+  "summary": "A Solana stablecoin printed CASH against a bank that held nothing of value because the program trusted account data without proving the mint and vault were the ones it created. We rebuild the trust boundary and the one check that would have stopped it.",
+  "case": {
+    "name": "Cashio infinite mint",
+    "date": "2022-03-23",
+    "impact": "~$50M of unbacked CASH minted and dumped",
+    "sources": [
+      "https://slowmist.medium.com/slowmist-analysis-of-the-cashio-attack-6c1f8c8f0c0a",
+      "https://twitter.com/CashioApp/status/1506738848012345345"
+    ]
+  },
+  "authors": {
+    "ai": null,
+    "human": "ZKCTF editor"
+  },
+  "reviewed": true,
+  "status": "published",
+  "teaser": false,
+  "publishedAt": "2026-10-17T20:49:39.759Z",
+  "rights": {
+    "holder": "ZKCTF",
+    "notice": "© ZKCTF Academy. Licensed for personal study by active members only. No scraping, training use, or republication of the full body.",
+    "license": "AllRightsReserved"
+  }
+}
