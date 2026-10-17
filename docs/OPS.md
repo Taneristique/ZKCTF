@@ -35,8 +35,10 @@ ENABLE_CHAIN_ENTER=1
 ROUND_WINDOW=open
 
 # AI drafts for lessons + weekly puzzles (OpenRouter key: sk-or-…)
-OPENROUTER_API_KEY=
-OPENROUTER_MODEL=anthropic/claude-sonnet-4
+ANTHROPIC_API_KEY=
+ANTHROPIC_MODEL=claude-sonnet-4-20250514
+# OPENROUTER_API_KEY=   # optional fallback
+# OPENROUTER_MODEL=anthropic/claude-sonnet-4
 
 # Program authority (initialize / create_round / settle / co-signs membership seats)
 AUTHORITY_KEYPAIR=/home/you/.config/solana/zkctf-devnet.json
