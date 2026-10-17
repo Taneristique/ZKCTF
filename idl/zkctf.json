@@ -1,0 +1,182 @@
+{
+  "address": "34Kut3tQ4HTJMF2gVvnT6shhmenPE6463xnGk5sxDtz7",
+  "metadata": {
+    "name": "zkctf",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "ZKCTF Saturday race: USDC entry, linear CTF, on-chain Groth16 submit, settle payouts"
+  },
+  "instructions": [
+    {
+      "name": "initialize",
+      "docs": ["Create config PDA and set program authority (one-time)."],
+      "discriminator": [175, 175, 109, 31, 13, 152, 155, 237],
+      "accounts": [
+        { "name": "payer", "writable": true, "signer": true },
+        { "name": "authority", "signer": true },
+        { "name": "config", "writable": true, "pda": { "seeds": [{ "kind": "const", "value": [99, 111, 110, 102, 105, 103] }] } },
+        { "name": "systemProgram", "address": "11111111111111111111111111111111" }
+      ],
+      "args": []
+    },
+    {
+      "name": "mint_seat",
+      "docs": ["Mint or extend an Academy seat PDA (authority co-signs)."],
+      "discriminator": [174, 36, 106, 250, 202, 238, 71, 231],
+      "accounts": [
+        { "name": "payer", "writable": true, "signer": true },
+        { "name": "wallet", "signer": true },
+        { "name": "authority", "signer": true },
+        { "name": "config" },
+        { "name": "seat", "writable": true },
+        { "name": "systemProgram", "address": "11111111111111111111111111111111" }
+      ],
+      "args": [
+        { "name": "tier", "type": "u8" },
+        { "name": "months", "type": "u8" },
+        { "name": "slots", "type": "u8" },
+        { "name": "promptsUsed", "type": "u8" }
+      ]
+    },
+    {
+      "name": "create_round",
+      "docs": ["Open or refresh the weekly round PDA + level commitments (authority)."],
+      "discriminator": [229, 218, 236, 169, 231, 80, 134, 112],
+      "accounts": [
+        { "name": "payer", "writable": true, "signer": true },
+        { "name": "authority", "signer": true },
+        { "name": "config" },
+        { "name": "round", "writable": true, "pda": { "seeds": [{ "kind": "const", "value": [114, 111, 117, 110, 100] }] } },
+        { "name": "systemProgram", "address": "11111111111111111111111111111111" }
+      ],
+      "args": [
+        { "name": "start", "type": "i64" },
+        { "name": "end", "type": "i64" },
+        { "name": "levelCount", "type": "u8" },
+        { "name": "commitments", "type": { "array": [{ "array": ["u8", 32] }, 8] } }
+      ]
+    },
+    {
+      "name": "enter_round",
+      "docs": ["Pay 5 USDC into the pot and create/reset the player Entry PDA."],
+      "discriminator": [166, 162, 71, 230, 92, 51, 37, 43],
+      "accounts": [
+        { "name": "player", "writable": true, "signer": true },
+        { "name": "round", "writable": true },
+        { "name": "entry", "writable": true },
+        { "name": "systemProgram", "address": "11111111111111111111111111111111" },
+        { "name": "playerAta", "writable": true },
+        { "name": "potAta", "writable": true },
+        { "name": "tokenProgram", "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA" }
+      ],
+      "args": []
+    },
+    {
+      "name": "submit",
+      "docs": ["Verify Groth16 proof for one level; set Entry.solved_mask bit."],
+      "discriminator": [88, 166, 102, 181, 162, 127, 170, 48],
+      "accounts": [
+        { "name": "player", "writable": true, "signer": true },
+        { "name": "entry", "writable": true },
+        { "name": "round" }
+      ],
+      "args": [
+        { "name": "level", "type": "u8" },
+        { "name": "commit", "type": { "array": ["u8", 32] } },
+        { "name": "proofA", "type": { "array": ["u8", 64] } },
+        { "name": "proofB", "type": { "array": ["u8", 128] } },
+        { "name": "proofC", "type": { "array": ["u8", 64] } }
+      ]
+    },
+    {
+      "name": "settle",
+      "docs": ["After window end: split pot to treasury + k winners. Remaining accounts = winner USDC ATAs (length k)."],
+      "discriminator": [175, 42, 185, 87, 144, 131, 102, 212],
+      "accounts": [
+        { "name": "authority", "signer": true },
+        { "name": "config" },
+        { "name": "round", "writable": true },
+        { "name": "potAta", "writable": true },
+        { "name": "vault" },
+        { "name": "treasuryAta", "writable": true },
+        { "name": "tokenProgram", "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA" }
+      ],
+      "args": [{ "name": "k", "type": "u8" }]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Config",
+      "discriminator": [175, 175, 109, 31, 13, 152, 155, 237]
+    },
+    {
+      "name": "Seat",
+      "discriminator": [174, 36, 106, 250, 202, 238, 71, 231]
+    },
+    {
+      "name": "Round",
+      "discriminator": [229, 218, 236, 169, 231, 80, 134, 112]
+    },
+    {
+      "name": "Entry",
+      "discriminator": [166, 162, 71, 230, 92, 51, 37, 43]
+    }
+  ],
+  "types": [
+    {
+      "name": "Config",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "authority", "type": "pubkey" },
+          { "name": "bump", "type": "u8" }
+        ]
+      }
+    },
+    {
+      "name": "Seat",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "wallet", "type": "pubkey" },
+          { "name": "tier", "type": "u8" },
+          { "name": "expiryUnix", "type": "i64" },
+          { "name": "slots", "type": "u8" },
+          { "name": "promptsUsed", "type": "u8" },
+          { "name": "skuMonths", "type": "u8" },
+          { "name": "bump", "type": "u8" }
+        ]
+      }
+    },
+    {
+      "name": "Round",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "start", "type": "i64" },
+          { "name": "end", "type": "i64" },
+          { "name": "levelCount", "type": "u8" },
+          { "name": "nWinners", "type": "u8" },
+          { "name": "entries", "type": "u32" },
+          { "name": "potAtoms", "type": "u64" },
+          { "name": "settled", "type": "u8" },
+          { "name": "commitments", "type": { "array": [{ "array": ["u8", 32] }, 8] } },
+          { "name": "bump", "type": "u8" }
+        ]
+      }
+    },
+    {
+      "name": "Entry",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "wallet", "type": "pubkey" },
+          { "name": "roundStart", "type": "i64" },
+          { "name": "solvedMask", "type": "u8" },
+          { "name": "lastTs", "type": "i64" },
+          { "name": "bump", "type": "u8" }
+        ]
+      }
+    }
+  ]
+}
