@@ -21,6 +21,16 @@ type Activity = {
   mint?: string;
 };
 
+type LiveWeek = {
+  place: number | null;
+  cleared: boolean;
+  finishTime?: number | null;
+  solved?: number;
+  levelCount?: number;
+  projected?: boolean;
+  note?: string;
+};
+
 type PublicCard = {
   profile: { pseudonym: string; createdAt: number } | null;
   wallet: string;
@@ -35,6 +45,8 @@ type PublicCard = {
   secondPlaces?: number;
   thirdPlaces?: number;
   top10: number;
+  prestige?: { points: number; badge: string; lifetime: number } | null;
+  liveWeek?: LiveWeek | null;
   medals?: {
     payouts: number;
     first: number;
@@ -42,7 +54,7 @@ type PublicCard = {
     third: number;
     earnedUsdc: number;
   };
-  activity?: Activity[];
+  activity?: (Activity & { live?: boolean })[];
   weekNfts: { round: number; rank: number; mint: string }[];
 };
 
@@ -84,6 +96,9 @@ export default function PublicProfilePage() {
 
   const since = new Date(card.profile.createdAt).toISOString().slice(0, 10);
   const m = card.medals;
+  const live = card.liveWeek;
+  const prestige = card.prestige;
+  const hasPrestige = Boolean(prestige && (prestige.points > 0 || prestige.lifetime > 0));
 
   return (
     <div className="mx-auto max-w-lg">
@@ -98,12 +113,37 @@ export default function PublicProfilePage() {
         </div>
       </div>
 
+      {live?.cleared && live.place != null && (
+        <div className="mt-8 rounded-3xl border border-teal/35 bg-teal/[0.07] px-5 py-4">
+          <p className="text-xs uppercase tracking-[0.2em] text-teal">{t.liveWeekTitle}</p>
+          <p className="mt-2 font-mono text-2xl text-cream">
+            #{live.place}
+            <span className="ml-2 text-sm text-cream/55">{t.liveWeekPlace}</span>
+          </p>
+          <p className="mt-2 text-xs text-cream/50">{t.liveWeekNote}</p>
+        </div>
+      )}
+
       {/* Original profile stats (always when any exist) — ZKCTF account card language */}
       <dl className="mt-8 grid grid-cols-2 gap-3 rounded-3xl border border-cream/15 p-5 text-sm sm:grid-cols-3">
         <div>
           <dt className="text-cream/45">{t.accWallet}</dt>
           <dd className="mt-1 font-mono text-xs text-cream/70">{card.shortWallet}</dd>
         </div>
+        {hasPrestige && (
+          <>
+            <div>
+              <dt className="text-cream/45">{t.seasonPoints}</dt>
+              <dd className="mt-1 font-mono text-xl text-teal">{prestige!.points}</dd>
+            </div>
+            {prestige!.badge && prestige!.badge !== "none" && (
+              <div>
+                <dt className="text-cream/45">{t.seasonBadge}</dt>
+                <dd className="mt-1 capitalize">{prestige!.badge}</dd>
+              </div>
+            )}
+          </>
+        )}
         {card.founding && (
           <div>
             <dt className="text-cream/45">{t.accFounder}</dt>
@@ -214,6 +254,7 @@ export default function PublicProfilePage() {
                     <p className="mt-2 font-mono text-xs text-teal">
                       #{a.rank}
                       {a.prizeUsdc > 0 ? ` · ${a.prizeUsdc.toFixed(2)} USDC` : ""}
+                      {a.live ? ` · ${t.liveWeekBadge}` : ""}
                     </p>
                   </div>
                 </div>
