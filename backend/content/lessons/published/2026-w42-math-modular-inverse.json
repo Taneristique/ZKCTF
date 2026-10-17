@@ -1,0 +1,41 @@
+{
+  "id": "2026-w42-math-modular-inverse",
+  "week": "2026-W42",
+  "track": "math",
+  "title": "Dividing in a clock: modular inverses",
+  "summary": "ECDSA, RSA, and Diffie–Hellman all need division modulo a prime. Fermat's little theorem turns that into an exponentiation. We compute a⁻¹ mod p on numbers small enough to check by hand.",
+  "case": {
+    "name": "ECDSA / RFC 6979 dependence on modular inversion",
+    "date": "2013-08-01",
+    "impact": "Signature and key-agreement formulas are undefined without a⁻¹ mod n; bugs and leaked partial inverses have repeatedly turned into private-key recovery",
+    "sources": [
+      "https://www.rfc-editor.org/rfc/rfc6979",
+      "https://en.wikipedia.org/wiki/Fermat%27s_little_theorem"
+    ]
+  },
+  "body": "In ordinary arithmetic, dividing by a means multiplying by 1/a. In modular arithmetic mod p you need an integer a⁻¹ such that\n  a · a⁻¹ ≡ 1 (mod p).\nThat integer exists if and only if gcd(a, p) = 1. When p is prime and a ≢ 0 (mod p), every nonzero residue has a unique inverse in 1…p−1.\n\nFermat's little theorem supplies a formula. For prime p and a not divisible by p,\n  a^{p−1} ≡ 1 (mod p),\nhence a · a^{p−2} ≡ 1 (mod p), so\n  a⁻¹ ≡ a^{p−2} (mod p).\nYou can evaluate that with fast exponentiation (square-and-multiply). The extended Euclidean algorithm gives the same inverse and often runs faster; both are correct. What matters for security reviews is that the inverse is well-defined and that implementations do not leak it through timing — modular inversion has historically been a side-channel favorite next to modular exponentiation.\n\nWhere the inverse shows up in systems you already study: ECDSA's s = k⁻¹(z + r·d) mod n needs k⁻¹; recovering k from nonce reuse (see the PS3 lesson) is exactly rearranging that formula. Diffie–Hellman and ECDH treat exponentiation in a prime-order group where every nonzero scalar is invertible. RSA's decryption exponent d is defined as the inverse of e modulo φ(n) (or λ(n)). If e and φ(n) are not coprime, the keygen is broken before you start.\n\nWorked example: p = 101, a = 17. Compute 17^{99} mod 101, or run extended Euclid on (17, 101). Either way a⁻¹ ≡ 6 (mod 101), because 17·6 = 102 ≡ 1 (mod 101). Always multiply back to verify: one check catches arithmetic mistakes that would poison a longer CTF solve.\n\nRed flags in code: inversion without a gcd/coprimality check on composite moduli; using Fermat with a composite modulus (the formula can fail); and constant-time claims that still call a variable-time invert routine. For hand solves, prefer Fermat when the modulus is a small prime and you have a pow(base, exp, mod) tool, and prefer extended Euclid when you want the Bézout coefficients too.",
+  "exercise": {
+    "statement": "Let p = 101 (prime) and a = 17. Compute a⁻¹ mod p using Fermat: a^{p−2} mod p. Answer ZKCTF{inv} with the representative in 1…100.",
+    "artifacts": [
+      "p = 101\na = 17\ninv = pow(a, p-2, p)   # or extended Euclid\nCheck: (a * inv) % p == 1"
+    ],
+    "hints": [
+      "p−2 = 99, so you need 17^99 mod 101.",
+      "The inverse is a single digit; verify by multiplying back by 17."
+    ]
+  },
+  "flag": "ZKCTF{6}",
+  "authors": {
+    "ai": null,
+    "human": "ZKCTF editor"
+  },
+  "reviewed": true,
+  "status": "published",
+  "teaser": false,
+  "publishedAt": "2026-10-17T21:00:40.785Z",
+  "rights": {
+    "holder": "ZKCTF",
+    "notice": "© ZKCTF Academy. Licensed for personal study by active members only. No scraping, training use, or republication of the full body.",
+    "license": "AllRightsReserved"
+  }
+}

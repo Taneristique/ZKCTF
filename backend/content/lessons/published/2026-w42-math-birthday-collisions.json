@@ -1,0 +1,41 @@
+{
+  "id": "2026-w42-math-birthday-collisions",
+  "week": "2026-W42",
+  "track": "math",
+  "title": "Why 2^{n/2} beats 2^n: the birthday bound",
+  "summary": "Hash security against collisions is not \"try every output.\" It is the birthday paradox: about square-root many samples already collide with high probability. We compute the bound on a 16-bit toy hash.",
+  "case": {
+    "name": "MD5 chosen-prefix collisions (certificates and tooling)",
+    "date": "2008-12-30",
+    "impact": "Once collision resistance collapsed for MD5, attackers could forge colliding X.509 certificates and break assumptions in tools that still trusted the hash",
+    "sources": [
+      "https://www.win.tue.nl/hashclash/rogue-ca/",
+      "https://www.rfc-editor.org/rfc/rfc6151"
+    ]
+  },
+  "body": "Pick people uniformly at random and ask when two share a birthday. With 365 days the surprising answer is that probability crosses one half near 23 people — far below 365. The same counting argument rules collision resistance for cryptographic hashes.\n\nModel a hash as a uniform random function to a set of size N = 2^b (b-bit digest). Draw n independent outputs. The number of pairs is n(n−1)/2. Each pair collides with probability about 1/N, so the expected number of colliding pairs is roughly n²/(2N). When that expectation reaches a constant, collisions become likely. Solving n²/(2N) ≈ 1 gives n ≈ √(2N) ≈ 2^{b/2}. A more careful calculation uses\n  P(collision) = 1 − exp(−n(n−1)/(2N))\n and asks for the smallest n with P ≥ 1/2, which is about 1.177√N.\n\nThat is why a 128-bit hash is often described as having a 64-bit collision security level, and why MD5's collapse mattered operationally: once practical collisions existed, anything that assumed \"different inputs ⇒ different MD5\" was lying — including certificate public keys in the infamous rogue CA demonstration. SHA-1 later followed a similar path; modern protocols moved to SHA-256 and SHA-3 precisely so that 2^{b/2} stays out of reach.\n\nAs an auditor you use the bound in two directions. Designing a commitment or Merkle leaf tag: if an attacker can choose about 2^{b/2} messages, assume they can find a collision unless the hash is unbroken. Reviewing a protocol that truncates a hash to 64 bits \"for space\": collision work drops to about 2^{32} trials — feasible. The birthday bound is also why you never use a short hash as a unique identifier for untrusted uploads.\n\nZKCTF's race commitments hash player-visible puzzle data into a binding digest before the round opens. The security claim is preimage / binding strength of that digest, not a truncated toy. Truncation is where birthday math quietly deletes your security margin.\n\nExercise skill: given N, compute the smallest n with 1 − exp(−n(n−1)/(2N)) ≥ 1/2. You do not need a CAS — try values near 1.177√N and check the formula.",
+  "exercise": {
+    "statement": "A toy hash has a 16-bit digest, so N = 65536. Find the smallest integer n such that P(at least one collision among n uniform outputs) ≥ 1/2, using P = 1 − exp(−n(n−1)/(2N)). Answer ZKCTF{n}.",
+    "artifacts": [
+      "N = 2^16 = 65536\nP(n) = 1 - exp(-n*(n-1)/(2*N))\nReport the minimal n with P(n) >= 0.5."
+    ],
+    "hints": [
+      "Start near 1.177 · √65536 ≈ 301 and test n and n+1 in the formula.",
+      "You want the first n where the probability crosses one half; it is a three-digit number."
+    ]
+  },
+  "flag": "ZKCTF{302}",
+  "authors": {
+    "ai": null,
+    "human": "ZKCTF editor"
+  },
+  "reviewed": true,
+  "status": "published",
+  "teaser": false,
+  "publishedAt": "2026-10-17T21:00:40.538Z",
+  "rights": {
+    "holder": "ZKCTF",
+    "notice": "© ZKCTF Academy. Licensed for personal study by active members only. No scraping, training use, or republication of the full body.",
+    "license": "AllRightsReserved"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "id": "2026-w42-math-crt-rsa",
+  "week": "2026-W42",
+  "track": "math",
+  "title": "One number, many moduli: the Chinese Remainder Theorem",
+  "summary": "RSA and many side-channel attacks lean on a simple fact: if you know a secret modulo coprime pieces, there is exactly one answer modulo their product. We recover that unique x by hand on tiny moduli.",
+  "case": {
+    "name": "RSA-CRT fault attacks (Boneh–DeMillo–Lipton lineage)",
+    "date": "1997-01-01",
+    "impact": "A single faulty RSA-CRT signature can leak the factorization of n; hardware glitching and bit flips turned the CRT speedup into a key-recovery oracle",
+    "sources": [
+      "https://link.springer.com/chapter/10.1007/3-540-69053-0_4",
+      "https://eprint.iacr.org/2004/240"
+    ]
+  },
+  "body": "The Chinese Remainder Theorem (CRT) says: if m₁, m₂, …, mₖ are pairwise coprime positive integers, and you are given residues a₁, …, aₖ, then there is exactly one integer x modulo M = m₁·m₂·…·mₖ that satisfies\n  x ≡ aᵢ (mod mᵢ)   for every i.\n\nThe constructive proof is the formula auditors actually use. Let Mᵢ = M / mᵢ. Because mᵢ and Mᵢ are coprime, Mᵢ has an inverse yᵢ modulo mᵢ. Then\n  x = Σ aᵢ · Mᵢ · yᵢ   (mod M).\nEach term aᵢ·Mᵢ·yᵢ is 0 mod every mⱼ for j≠i, and equals aᵢ mod mᵢ, so the sum hits every congruence at once.\n\nCryptography leans on CRT constantly. RSA private operations often compute mᵈ mod p and mᵈ mod q separately, then recombine with CRT — about four times faster than one exponentiation mod n = pq. That speedup is why CRT appears in almost every serious RSA implementation, and why a fault during one of the two half-exponentiations is catastrophic: classic Bellcore / Boneh–DeMillo–Lipton style arguments show that one correct and one faulty CRT signature can reveal p or q with a gcd. The lesson is not \"never use CRT\"; it is that the recombination step is a trust boundary. If an attacker can flip a bit in one half, the math hands them the factorization.\n\nYou also meet CRT when you combine side-channel residues, when you solve systems of congruences in CTF challenges, and whenever a protocol claims \"we only need the answer mod each prime factor.\" The uniqueness statement is the security-relevant half: there are not many secrets that fit the residues — there is one class mod M.\n\nWorked micro-example: x ≡ 2 (mod 3), x ≡ 3 (mod 5), x ≡ 2 (mod 7). Here M = 105, and the unique solution in 0…104 is x = 23. Check: 23 = 7·3+2, 23 = 4·5+3, 23 = 3·7+2.\n\nWhen you audit RSA code, look for CRT recombination without verification (re-encrypt and compare to the message, or verify the signature with the public key). When you solve a puzzle that gives you a secret mod several coprime moduli, reach for the sum above instead of guessing.",
+  "exercise": {
+    "statement": "Find the unique x in 0 … 384 that satisfies all three congruences below. Answer ZKCTF{x}.",
+    "artifacts": [
+      "x ≡ 2  (mod 5)\nx ≡ 3  (mod 7)\nx ≡ 10 (mod 11)\n\nM = 5·7·11 = 385, so report x in {0,1,…,384}."
+    ],
+    "hints": [
+      "Compute Mᵢ = M/mᵢ for each modulus, then yᵢ = Mᵢ⁻¹ mod mᵢ.",
+      "x ≡ Σ aᵢ·Mᵢ·yᵢ (mod 385). Your answer should be a three-digit number."
+    ]
+  },
+  "flag": "ZKCTF{87}",
+  "authors": {
+    "ai": null,
+    "human": "ZKCTF editor"
+  },
+  "reviewed": true,
+  "status": "published",
+  "teaser": false,
+  "publishedAt": "2026-10-17T21:00:40.667Z",
+  "rights": {
+    "holder": "ZKCTF",
+    "notice": "© ZKCTF Academy. Licensed for personal study by active members only. No scraping, training use, or republication of the full body.",
+    "license": "AllRightsReserved"
+  }
+}
