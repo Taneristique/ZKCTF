@@ -5,11 +5,12 @@ cd "$(dirname "$0")/.."
 
 trap 'kill $(jobs -p) 2>/dev/null' EXIT
 
-# Restore /data/round.json when the volume lost it (no curl/nano needed on Railway).
-if [[ -n "${ZKCTF_DATA_DIR:-}" ]]; then
-  mkdir -p "$ZKCTF_DATA_DIR"
-  node scripts/ensure-round.mjs || echo "[start] ensure-round failed (continuing)"
-fi
+# Durable state lives on the Railway volume (ZKCTF_DATA_DIR=/data).
+DATA_DIR="${ZKCTF_DATA_DIR:-/data}"
+mkdir -p "$DATA_DIR" 2>/dev/null || true
+export ZKCTF_DATA_DIR="$DATA_DIR"
+# Restore round.json when the volume lost it (no curl/nano needed on Railway).
+node scripts/ensure-round.mjs || echo "[start] ensure-round failed (continuing)"
 
 # Must match the /zk-api rewrite default in frontend/next.config.ts.
 (cd backend && PORT=8787 exec node src/index.js) &
