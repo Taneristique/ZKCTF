@@ -1,0 +1,11 @@
+{
+  "name": "ZKCTF",
+  "project_url": "https://zkctf.com",
+  "contacts": ["link:https://zkctf.com", "link:https://github.com/Taneristique/ZKCTF"],
+  "policy": "https://github.com/Taneristique/ZKCTF/blob/main/README.md",
+  "source_code": "https://github.com/Taneristique/ZKCTF",
+  "source_release": "devnet-0.1.0",
+  "description": "Weekly ZK CTF race on Solana: 5 USDC entry, Groth16-verified clears, on-chain settle.",
+  "version": "0.1.0",
+  "preferred_languages": ["en", "tr", "es"]
+}
