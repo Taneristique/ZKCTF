@@ -52,6 +52,7 @@ function AccountBody() {
   const [prestige, setPrestige] = useState<Prestige | null>(null);
   const [founder, setFounder] = useState<Founder | null>(null);
   const [loyalty, setLoyalty] = useState<Loyalty | null>(null);
+  const [boardPlace, setBoardPlace] = useState<number | null>(null);
 
   useEffect(() => {
     if (!publicKey) {
@@ -62,6 +63,7 @@ function AccountBody() {
       setPrestige(null);
       setFounder(null);
       setLoyalty(null);
+      setBoardPlace(null);
       return;
     }
     const w = publicKey.toBase58();
@@ -70,6 +72,12 @@ function AccountBody() {
     void getJson<Member>(`/membership/${w}`).then(setMember);
     void getJson<{ entered?: boolean }>(`/entry/${w}`).then((r) => setEntered(Boolean(r.entered)));
     void getJson<Prestige>(`/prestige/${w}`).then(setPrestige).catch(() => setPrestige(null));
+    void getJson<{ ranked?: { wallet: string; place?: number }[] }>("/leaderboard")
+      .then((r) => {
+        const row = r.ranked?.find((x) => x.wallet === w);
+        setBoardPlace(row?.place ?? (row ? (r.ranked!.indexOf(row) + 1) : null));
+      })
+      .catch(() => setBoardPlace(null));
     void connection.getBalance(publicKey).then((l) => setSol(l / LAMPORTS_PER_SOL));
     void tokenBalance(connection, publicKey).then(setUsdc).catch(() => setUsdc(null));
   }, [publicKey, connection]);
@@ -97,7 +105,10 @@ function AccountBody() {
         <dt className="text-cream/45">{t.accGas}</dt>
         <dd className="text-right font-mono text-xs text-cream/60">{sol == null ? "—" : `${sol.toFixed(4)} SOL`}</dd>
         <dt className="text-cream/45">{t.accWeek}</dt>
-        <dd className="text-right">{entered ? "5 USDC" : "—"}</dd>
+        <dd className="text-right">
+          {entered ? "5 USDC" : "—"}
+          {boardPlace != null ? ` · #${boardPlace}` : ""}
+        </dd>
         <dt className="text-cream/45">{t.membership}</dt>
         <dd className="text-right">
           {member?.expiry ? (member.founding ? t.tierFounding : t.tierMember) : "—"}
