@@ -12,11 +12,9 @@ Not “another Solana CTF app.” Structural locks: [STRUCTURAL_LOCKS.md](STRUCT
 
 - Play: weekly curated official puzzles after this week’s 5 USDC entry · on-chain `submit` + `split_pot`.
 - Learn: `/learn` serves `backend/content/lessons/published/*.json`. Lessons and membership never write the race board or pot.
-- **Ops (AI keys, weekly bot, USDC, deploy):** [docs/OPS.md](docs/OPS.md)
+- **Ops (AI keys, weekly bot, USDC, deploy):** [docs/OPS.md](docs/OPS.md) — keep keypairs, PDA/ATA addresses, and host secrets out of this README.
 - How it works: [frontend docs](frontend/components/DocsView.tsx) and [protocol/README.md](protocol/README.md).
 - Implementer math: [protocol/zkctf.md](protocol/zkctf.md).
-
-
 
 ## Run
 
@@ -32,28 +30,28 @@ cd backend && node ../scripts/weekly-challenge-bot.mjs --dry-run
 cd backend && pnpm test
 ```
 
-Puzzles stay hidden until the round starts; set `ROUND_REVEAL_EARLY=1` locally to see them anyway.
+Copy `backend/.env.example` → `backend/.env` and set RPC, program id, USDC mint, and authority paths there — never commit real key material. Puzzles stay hidden until the round starts; local-only reveal flags belong in `.env`, not in production.
 
 ### Weekly bot
 
-The API runs the weekly cycle itself (`backend/src/scheduler.js`, every 5 minutes): settle the finished round on chain, mint the Finisher token to everyone who cleared it, generate next week's CTFs, publish their commitments with `create_round`, and sync the Founding list. Every step reads chain state first, so restarts and retries are safe. `GET /zk-api/bot/status` shows the last run, errors, the authority's SOL balance and recent history.
+The API runs the weekly cycle itself (`backend/src/scheduler.js`, every 5 minutes): settle the finished round on chain, mint the Finisher token to everyone who cleared it, generate next week's CTFs, publish their commitments with `create_round`, and sync the Founding list. Every step reads chain state first, so restarts and retries are safe. `GET /zk-api/bot/status` shows the last run, errors, and recent history.
 
 Each CTF comes from a puzzle type in `backend/src/ctfgen.js`, built on a documented vulnerability class (`backend/content/ctf-docs/index.json`, with CWE / SWC / RFC references shown to players). The answer is computed by code and re-derived from the player-visible data by a separate solver; a level is published only if that gives exactly one answer equal to the flag. `ANTHROPIC_API_KEY` (or OpenRouter) is optional and only adds a story intro, which is rejected if it contains digits, URLs or the answer.
 
-The authority wallet pays the fees: about 0.003 SOL per round plus about 0.002 SOL per new Finisher token holder. Keep at least 0.5 SOL on it; the bot warns below `BOT_MIN_SOL`.
+The authority wallet pays settle and mint fees. Keep it funded; the bot warns when SOL is low (`BOT_MIN_SOL`). Exact balances, mint addresses, and keypair paths live in host env / [docs/OPS.md](docs/OPS.md).
 
 ```bash
-cd backend && node ../scripts/loyalty-init.mjs        # once: prints LOYALTY_MINT (soulbound Token-2022 mint)
-cd backend && node ../scripts/founders-snapshot.mjs   # first 100 buyers → snapshots/founders-devnet.json
+cd backend && node ../scripts/loyalty-init.mjs        # once: prints LOYALTY_MINT
+cd backend && node ../scripts/founders-snapshot.mjs   # first 100 buyers → snapshot file
 cd backend && node ../scripts/settle-round.mjs        # manual settle, same code as the bot
 ```
 
-For mainnet, set `FOUNDER_SNAPSHOT` to the exported snapshot: those wallets get the Founding price once, on their first purchase (their seat is a regular tier 0 seat, so renewals are at the full price), and keep the Founder badge. Devnet seats are paid with free faucet USDC, so a permanent mainnet discount would be easy to farm. Signed-but-unconfirmed Founding checkouts hold a seat for 2 minutes so two simultaneous buyers cannot both take the last one; the mainnet program should enforce the cap on chain from its first deploy.
+For mainnet, set `FOUNDER_SNAPSHOT` to the exported snapshot: those wallets get the Founding price once, on their first purchase (their seat is a regular tier 0 seat, so renewals are at the full price), and keep the Founder badge. Devnet seats are paid with free faucet USDC, so a permanent mainnet discount would be easy to farm. Signed-but-unconfirmed Founding checkouts hold a seat briefly so two simultaneous buyers cannot both take the last one; the mainnet program should enforce the cap on chain from its first deploy.
 
 ### Publishing the weekly lessons (AI draft → human review → publish)
 
 ```bash
-# 1. AI draft (needs ANTHROPIC_API_KEY=sk-ant-…; --blank for an empty template)
+# 1. AI draft (needs ANTHROPIC_API_KEY; --blank for an empty template)
 node scripts/lesson.mjs draft --track security --case "Wormhole 2022"
 node scripts/lesson.mjs draft --track math --topic "ECDSA nonce reuse"
 # 2. Edit backend/content/lessons/drafts/<file>.json: fact-check the case + sources, solve the exercise yourself
@@ -71,21 +69,12 @@ cd circuits && bash scripts/setup.sh
 # Program — rustc 1.79 (matches Solana platform-tools / cargo-build-sbf).
 cargo build-sbf --manifest-path programs/zkctf/Cargo.toml
 solana program deploy target/deploy/zkctf.so --program-id target/deploy/zkctf-keypair.json
-# Right after deploy: initialize + create_round (authority = AUTHORITY_KEYPAIR in backend/.env)
+# Right after deploy: initialize + create_round (authority from backend/.env)
 cd backend && node ../scripts/init-devnet.mjs && cd ..
-# Pot vault USDC account (script prints the exact command if missing)
-spl-token create-account 4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU --owner 8GTsVAHxdNmF7swwv9191oojUcByqtoeKHKzTQoQUDQ6 -u devnet
+# Create the pot USDC ATA for the pot vault PDA if missing (script prints the command).
 ```
 
-Devnet deployment: program `34Kut3tQ4HTJMF2gVvnT6shhmenPE6463xnGk5sxDtz7`, round PDA `85gksERjbotjcxTsq1CnaxWxEFNTr9ZFK8fbLQoVJmT5`, pot USDC ATA `WRfM4bnfCbeJTABqJhR1furvuQCo1XT9yu7jCyUJNsU`.
-
-Phantom **Devnet**, then fund the wallet:
-
-1. **SOL (gas):** [faucet.solana.com](https://faucet.solana.com)
-2. **USDC (entry):** program mint is Circle Devnet USDC
-  `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`  
-   Get it from [faucet.circle.com](https://faucet.circle.com/) → **Solana Devnet** → paste your wallet → request USDC (~20 USDC / 2h).  
-   In Phantom: Devnet → token list → add mint above if USDC does not show.
+**Play on Devnet:** Phantom → Devnet. Fund SOL from [faucet.solana.com](https://faucet.solana.com) and Circle Devnet USDC from [faucet.circle.com](https://faucet.circle.com/) (Solana Devnet). Program id and USDC mint are in `backend/.env.example` / the live `/zk-api/health` response — do not paste authority keypairs or vault ATAs into public docs.
 
 Join → Enter (5 USDC) → Play. (`enter_round` rejects any other mint.)
 
@@ -102,15 +91,14 @@ Install the recommended **rust-analyzer** extension (`.vscode/extensions.json`).
 One service. The root `Dockerfile` builds both apps; `scripts/start.sh` runs the API on `127.0.0.1:8787` and Next.js on `$PORT`, which proxies `/zk-api` to the API inside the container.
 
 - Root Directory: `/` (the root `Dockerfile` is auto-detected)
-- Variables: `AUTHORITY_KEYPAIR_JSON`, `ZKCTF_PROGRAM_ID`, `SOLANA_RPC`, `USDC_MINT`, `TREASURY_WALLET`, `ZKCTF_DATA_DIR=/data` (**required** for profiles/entries to survive redeploys — Dockerfile defaults this; confirm the volume is mounted at `/data`). Check `/zk-api/health` → `dataPersistent: true` and `profiles` count after deploy.
-- Optional build-time: `NEXT_PUBLIC_SOLANA_RPC`, `NEXT_PUBLIC_PROGRAM_ID`
-- `FOUNDING_EXCLUDE` (**Railway Variables**, production): comma-separated team/test wallets — they never reduce Founding seats left, never appear on the public Founders list, and never show as Founding in the UI. Set this on the cloud service env, not only in a local `.env`.
-- Weekly bot: `BOT_CHAIN=1` (only on the production service, so a dev machine never publishes rounds), `LOYALTY_MINT`, optional `BOT_ALERT_WEBHOOK` (Discord or Slack webhook for failures, low SOL and each settle), `BOT_MIN_SOL`, `ANTHROPIC_API_KEY` (optional story intros / lesson drafts)
-- Volume mounted at `/data`; custom domain `zkctf.com`
+- Variables: set program id, RPC, USDC mint, treasury, and `ZKCTF_DATA_DIR=/data` on the **host secret store** (Railway Variables). Attach a volume at `/data` so profiles/entries survive redeploys. Confirm `/zk-api/health` → `dataPersistent: true` after deploy.
+- Optional build-time public RPC / program id for the frontend (`NEXT_PUBLIC_*`)
+- `FOUNDING_EXCLUDE`: comma-separated team/test wallets on the cloud service only (not in git)
+- Weekly bot: `BOT_CHAIN=1` only on production; `LOYALTY_MINT`; optional alert webhook; `ANTHROPIC_API_KEY` for story intros / lesson drafts
+- Authority key material (`AUTHORITY_KEYPAIR_JSON` or path) stays in host secrets only — never in the repo, README, or client bundles
 
-`AUTHORITY_KEYPAIR_JSON` is the keypair array (`[12,34,…]`); keep it only in the host's secret variables. `backend/Dockerfile` still builds the API alone if it ever needs its own service.
+`backend/Dockerfile` still builds the API alone if it ever needs its own service. Full checklist: [docs/OPS.md](docs/OPS.md).
 
 ## License
 
 Apache License 2.0 — see [LICENSE](LICENSE) and [NOTICE](NOTICE).
-

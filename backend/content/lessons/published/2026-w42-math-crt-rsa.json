@@ -1,0 +1,29 @@
+{
+  "id": "2026-w42-math-crt-rsa",
+  "week": "2026-W42",
+  "track": "math",
+  "title": "One number, many moduli: the Chinese Remainder Theorem",
+  "summary": "RSA and many side-channel attacks lean on a simple fact: if you know a secret modulo coprime pieces, there is exactly one answer modulo their product. We recover that unique x by hand on tiny moduli.",
+  "case": {
+    "name": "RSA-CRT fault attacks (Boneh–DeMillo–Lipton lineage)",
+    "date": "1997-01-01",
+    "impact": "A single faulty RSA-CRT signature can leak the factorization of n; hardware glitching and bit flips turned the CRT speedup into a key-recovery oracle",
+    "sources": [
+      "https://link.springer.com/chapter/10.1007/3-540-69053-0_4",
+      "https://eprint.iacr.org/2004/240"
+    ]
+  },
+  "authors": {
+    "ai": null,
+    "human": "ZKCTF editor"
+  },
+  "reviewed": true,
+  "status": "published",
+  "teaser": false,
+  "publishedAt": "2026-10-17T21:00:40.667Z",
+  "rights": {
+    "holder": "ZKCTF",
+    "notice": "© ZKCTF Academy. Licensed for personal study by active members only. No scraping, training use, or republication of the full body.",
+    "license": "AllRightsReserved"
+  }
+}

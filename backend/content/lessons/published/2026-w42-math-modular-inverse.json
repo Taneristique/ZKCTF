@@ -1,0 +1,29 @@
+{
+  "id": "2026-w42-math-modular-inverse",
+  "week": "2026-W42",
+  "track": "math",
+  "title": "Dividing in a clock: modular inverses",
+  "summary": "ECDSA, RSA, and Diffie–Hellman all need division modulo a prime. Fermat's little theorem turns that into an exponentiation. We compute a⁻¹ mod p on numbers small enough to check by hand.",
+  "case": {
+    "name": "ECDSA / RFC 6979 dependence on modular inversion",
+    "date": "2013-08-01",
+    "impact": "Signature and key-agreement formulas are undefined without a⁻¹ mod n; bugs and leaked partial inverses have repeatedly turned into private-key recovery",
+    "sources": [
+      "https://www.rfc-editor.org/rfc/rfc6979",
+      "https://en.wikipedia.org/wiki/Fermat%27s_little_theorem"
+    ]
+  },
+  "authors": {
+    "ai": null,
+    "human": "ZKCTF editor"
+  },
+  "reviewed": true,
+  "status": "published",
+  "teaser": false,
+  "publishedAt": "2026-10-17T21:00:40.785Z",
+  "rights": {
+    "holder": "ZKCTF",
+    "notice": "© ZKCTF Academy. Licensed for personal study by active members only. No scraping, training use, or republication of the full body.",
+    "license": "AllRightsReserved"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "2026-w42-math-birthday-collisions",
+  "week": "2026-W42",
+  "track": "math",
+  "title": "Why 2^{n/2} beats 2^n: the birthday bound",
+  "summary": "Hash security against collisions is not \"try every output.\" It is the birthday paradox: about square-root many samples already collide with high probability. We compute the bound on a 16-bit toy hash.",
+  "case": {
+    "name": "MD5 chosen-prefix collisions (certificates and tooling)",
+    "date": "2008-12-30",
+    "impact": "Once collision resistance collapsed for MD5, attackers could forge colliding X.509 certificates and break assumptions in tools that still trusted the hash",
+    "sources": [
+      "https://www.win.tue.nl/hashclash/rogue-ca/",
+      "https://www.rfc-editor.org/rfc/rfc6151"
+    ]
+  },
+  "authors": {
+    "ai": null,
+    "human": "ZKCTF editor"
+  },
+  "reviewed": true,
+  "status": "published",
+  "teaser": false,
+  "publishedAt": "2026-10-17T21:00:40.538Z",
+  "rights": {
+    "holder": "ZKCTF",
+    "notice": "© ZKCTF Academy. Licensed for personal study by active members only. No scraping, training use, or republication of the full body.",
+    "license": "AllRightsReserved"
+  }
+}
