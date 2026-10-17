@@ -13,7 +13,7 @@
 import { createRequire } from "node:module";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const BACKEND = join(ROOT, "backend");
@@ -96,31 +96,13 @@ function template({ track, topic, caseName }) {
   };
 }
 
-async function openrouter(messages) {
-  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      "Content-Type": "application/json",
-      "HTTP-Referer": process.env.PUBLIC_APP_URL ?? "https://zkctf.local",
-      "X-Title": "ZKCTF",
-    },
-    body: JSON.stringify({
-      model: process.env.OPENROUTER_MODEL ?? "anthropic/claude-sonnet-4",
-      max_tokens: 6000,
-      messages,
-    }),
-  });
-  if (!res.ok) {
-    const tip = res.status === 401 ? " (needs an OpenRouter key from openrouter.ai/keys)" : "";
-    throw new Error(`openrouter ${res.status}: ${(await res.text()).slice(0, 300)}${tip}`);
-  }
-  const data = await res.json();
-  const text = String(data?.choices?.[0]?.message?.content ?? "");
+async function draftFromAi(messages) {
+  const { chat, aiModelLabel } = await import(pathToFileURL(join(BACKEND, "src/ai.js")).href);
+  const text = await chat(messages, { maxTokens: 6000 });
   const a = text.indexOf("{");
   const b = text.lastIndexOf("}");
   if (a < 0 || b <= a) throw new Error("model reply had no JSON object");
-  return JSON.parse(text.slice(a, b + 1));
+  return { json: JSON.parse(text.slice(a, b + 1)), model: aiModelLabel() };
 }
 
 function prompt({ track, topic, caseName }) {
@@ -148,21 +130,20 @@ async function draft() {
   const topic = typeof args.topic === "string" ? args.topic : null;
   const caseName = typeof args.case === "string" ? args.case : null;
   let lesson = template({ track, topic, caseName });
-  const key = process.env.OPENROUTER_API_KEY ?? "";
-  if (!args.blank && key) {
-    if (!key.startsWith("sk-or-")) console.warn("OPENROUTER_API_KEY does not look like an OpenRouter key (sk-or-…).");
-    const ai = await openrouter([{ role: "user", content: prompt({ track, topic, caseName }) }]);
+  const { aiConfigured } = await import(pathToFileURL(join(BACKEND, "src/ai.js")).href);
+  if (!args.blank && aiConfigured()) {
+    const { json, model } = await draftFromAi([{ role: "user", content: prompt({ track, topic, caseName }) }]);
     lesson = {
       ...lesson,
-      ...ai,
+      ...json,
       track,
-      authors: { ai: process.env.OPENROUTER_MODEL ?? "anthropic/claude-sonnet-4", human: null },
+      authors: { ai: model ?? "claude", human: null },
       reviewed: false,
       status: "draft",
       publishedAt: null,
     };
   } else if (!args.blank) {
-    console.warn("No OPENROUTER_API_KEY — writing a blank template to fill by hand.");
+    console.warn("No ANTHROPIC_API_KEY / OPENROUTER_API_KEY — writing a blank template to fill by hand.");
   }
   mkdirSync(DRAFTS, { recursive: true });
   const name = `${lesson.week.toLowerCase()}-${slug(lesson.title.replace(/^TODO title( about)?/, "") || topic || caseName || track)}`;

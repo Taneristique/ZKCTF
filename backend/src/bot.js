@@ -7,6 +7,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildRound, checkLevel } from "./ctfgen.js";
+import { aiConfigured, chat } from "./ai.js";
 
 const DOCS = JSON.parse(
   readFileSync(join(dirname(fileURLToPath(import.meta.url)), "../content/ctf-docs/index.json"), "utf8"),
@@ -15,27 +16,6 @@ const DOCS = JSON.parse(
 export function docFor(id) {
   const d = DOCS[id];
   return d ? { id, title: d.title, refs: d.refs } : null;
-}
-
-async function openrouter(prompt) {
-  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    signal: AbortSignal.timeout(45_000),
-    headers: {
-      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      "Content-Type": "application/json",
-      "HTTP-Referer": process.env.PUBLIC_APP_URL ?? "https://zkctf.com",
-      "X-Title": "ZKCTF",
-    },
-    body: JSON.stringify({
-      model: process.env.OPENROUTER_MODEL ?? "anthropic/claude-sonnet-4",
-      max_tokens: 300,
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
-  if (!res.ok) throw new Error(`openrouter ${res.status}`);
-  const data = await res.json();
-  return String(data?.choices?.[0]?.message?.content ?? "").trim();
 }
 
 function introProblems(intro, lv) {
@@ -50,10 +30,18 @@ function introProblems(intro, lv) {
 async function withIntro(lv) {
   const doc = DOCS[lv.doc];
   const intro = (
-    await openrouter(`Write a 2-sentence scenario that sets the scene for a beginner CTF puzzle about "${doc.title}".
+    await chat(
+      [
+        {
+          role: "user",
+          content: `Write a 2-sentence scenario that sets the scene for a beginner CTF puzzle about "${doc.title}".
 Background (stay consistent with it): ${doc.summary}
 Real incident for tone: ${doc.incidents[0]}
-Rules: plain prose only, no numbers or digits, no code, no URLs, do not describe how to solve it, do not invent data. Reply with the two sentences only.`)
+Rules: plain prose only, no numbers or digits, no code, no URLs, do not describe how to solve it, do not invent data. Reply with the two sentences only.`,
+        },
+      ],
+      { maxTokens: 300 },
+    )
   ).replace(/^["']|["']$/g, "");
   const problems = introProblems(intro, lv);
   if (problems.length) throw new Error(`intro rejected (${problems.join(", ")})`);
@@ -64,7 +52,7 @@ Rules: plain prose only, no numbers or digits, no code, no URLs, do not describe
 }
 
 /** Never throws for AI problems: any failed intro just keeps the procedural statement. */
-export async function generateRound({ count = 4, avoid = [], ai = Boolean(process.env.OPENROUTER_API_KEY), log = console.log } = {}) {
+export async function generateRound({ count = 4, avoid = [], ai = aiConfigured(), log = console.log } = {}) {
   let levels = buildRound({ count, avoid });
   let source = "procedural";
   if (ai && process.env.BOT_AI !== "0") {

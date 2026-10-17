@@ -38,7 +38,7 @@ Puzzles stay hidden until the round starts; set `ROUND_REVEAL_EARLY=1` locally t
 
 The API runs the weekly cycle itself (`backend/src/scheduler.js`, every 5 minutes): settle the finished round on chain, mint the Finisher token to everyone who cleared it, generate next week's CTFs, publish their commitments with `create_round`, and sync the Founding list. Every step reads chain state first, so restarts and retries are safe. `GET /zk-api/bot/status` shows the last run, errors, the authority's SOL balance and recent history.
 
-Each CTF comes from a puzzle type in `backend/src/ctfgen.js`, built on a documented vulnerability class (`backend/content/ctf-docs/index.json`, with CWE / SWC / RFC references shown to players). The answer is computed by code and re-derived from the player-visible data by a separate solver; a level is published only if that gives exactly one answer equal to the flag. `OPENROUTER_API_KEY` is optional and only adds a story intro, which is rejected if it contains digits, URLs or the answer.
+Each CTF comes from a puzzle type in `backend/src/ctfgen.js`, built on a documented vulnerability class (`backend/content/ctf-docs/index.json`, with CWE / SWC / RFC references shown to players). The answer is computed by code and re-derived from the player-visible data by a separate solver; a level is published only if that gives exactly one answer equal to the flag. `ANTHROPIC_API_KEY` (or OpenRouter) is optional and only adds a story intro, which is rejected if it contains digits, URLs or the answer.
 
 The authority wallet pays the fees: about 0.003 SOL per round plus about 0.002 SOL per new Finisher token holder. Keep at least 0.5 SOL on it; the bot warns below `BOT_MIN_SOL`.
 
@@ -53,7 +53,7 @@ For mainnet, set `FOUNDER_SNAPSHOT` to the exported snapshot: those wallets get 
 ### Publishing the weekly lessons (AI draft → human review → publish)
 
 ```bash
-# 1. AI draft (needs OPENROUTER_API_KEY=sk-or-…; --blank for an empty template)
+# 1. AI draft (needs ANTHROPIC_API_KEY=sk-ant-…; --blank for an empty template)
 node scripts/lesson.mjs draft --track security --case "Wormhole 2022"
 node scripts/lesson.mjs draft --track math --topic "ECDSA nonce reuse"
 # 2. Edit backend/content/lessons/drafts/<file>.json: fact-check the case + sources, solve the exercise yourself
@@ -105,7 +105,7 @@ One service. The root `Dockerfile` builds both apps; `scripts/start.sh` runs the
 - Variables: `AUTHORITY_KEYPAIR_JSON`, `ZKCTF_PROGRAM_ID`, `SOLANA_RPC`, `USDC_MINT`, `TREASURY_WALLET`, `ZKCTF_DATA_DIR=/data` (**required** for profiles/entries to survive redeploys — Dockerfile defaults this; confirm the volume is mounted at `/data`). Check `/zk-api/health` → `dataPersistent: true` and `profiles` count after deploy.
 - Optional build-time: `NEXT_PUBLIC_SOLANA_RPC`, `NEXT_PUBLIC_PROGRAM_ID`
 - `FOUNDING_EXCLUDE` (**Railway Variables**, production): comma-separated team/test wallets — they never reduce Founding seats left, never appear on the public Founders list, and never show as Founding in the UI. Set this on the cloud service env, not only in a local `.env`.
-- Weekly bot: `BOT_CHAIN=1` (only on the production service, so a dev machine never publishes rounds), `LOYALTY_MINT`, optional `BOT_ALERT_WEBHOOK` (Discord or Slack webhook for failures, low SOL and each settle), `BOT_MIN_SOL`, `OPENROUTER_API_KEY`
+- Weekly bot: `BOT_CHAIN=1` (only on the production service, so a dev machine never publishes rounds), `LOYALTY_MINT`, optional `BOT_ALERT_WEBHOOK` (Discord or Slack webhook for failures, low SOL and each settle), `BOT_MIN_SOL`, `ANTHROPIC_API_KEY` (optional story intros / lesson drafts)
 - Volume mounted at `/data`; custom domain `zkctf.com`
 
 `AUTHORITY_KEYPAIR_JSON` is the keypair array (`[12,34,…]`); keep it only in the host's secret variables. `backend/Dockerfile` still builds the API alone if it ever needs its own service.

@@ -8,7 +8,7 @@
  *   CHAIN_DEPLOY=1 node ../scripts/weekly-challenge-bot.mjs            # …and publish create_round
  *
  * Flags are computed by code and re-derived by an independent solver per puzzle type
- * (backend/src/ctfgen.js); OPENROUTER_API_KEY only adds a story intro.
+ * (backend/src/ctfgen.js); ANTHROPIC_API_KEY (or OPENROUTER) only adds a story intro.
  */
 import { createRequire } from "node:module";
 import { join, dirname } from "node:path";
