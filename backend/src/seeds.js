@@ -1,8 +1,9 @@
-import { randomBytes } from "node:crypto";
+import { createHash } from "node:crypto";
 import { createCommitment, hex32 } from "./relation.mjs";
 
+/** Stable per-level delta so fallback seeds match across restarts (never randomBytes here). */
 function level(id, title, statement, flag, artifacts = [], hints = [], walkthrough = "") {
-  const delta = randomBytes(32);
+  const delta = createHash("sha256").update(`zkctf-seed-v1:${id}:${flag}`).digest();
   const { h } = createCommitment(flag, delta);
   return {
     id,

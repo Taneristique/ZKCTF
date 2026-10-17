@@ -254,10 +254,19 @@ fn create_round(program_id: &Pubkey, accounts: &[AccountInfo], rest: &[u8]) -> P
         return Err(ProgramError::InvalidSeeds);
     }
     // Allow a new week only after the previous window ended or settled.
+    // Exception: same start/end while live → refresh commitments only (keeps entries/pot).
+    // Used when host round.json was lost and puzzles must be republished to match the API.
     if !round.data_is_empty() {
         if let Ok(prev) = Round::try_from_slice(&round.data.borrow()) {
             let now = solana_program::clock::Clock::get()?.unix_timestamp;
             if prev.settled == 0 && now <= prev.end {
+                if start == prev.start && end == prev.end {
+                    let mut row = prev;
+                    row.level_count = level_count;
+                    row.commitments = commitments;
+                    row.serialize(&mut &mut round.data.borrow_mut()[..])?;
+                    return Ok(());
+                }
                 return Err(ProgramError::Custom(4));
             }
         }

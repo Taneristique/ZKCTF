@@ -121,7 +121,11 @@ export async function prepareNextRound({ log = console.log, onChainStart = null 
   const stored = readRound();
   if (stored.start === start.toISOString()) return null;
   if (onChainStart === Math.floor(start.getTime() / 1000)) {
-    throw new Error(`chain already has a round for ${start.toISOString()} but round.json does not; restore round.json from backup.`);
+    // Do not invent a new round.json that cannot match lost on-chain commitments.
+    // Ops: restore /data/round.json or run scripts/rescue-round.mjs (same-window commitment refresh).
+    throw new Error(
+      `chain already has a round for ${start.toISOString()} but round.json does not; restore round.json from backup or run: node scripts/rescue-round.mjs`,
+    );
   }
   const { levels, source } = await generateRound({ avoid: (stored.levels ?? []).map((l) => l.type).filter(Boolean), log });
   return writeRound({ start: start.toISOString(), end: end.toISOString(), levels, source });

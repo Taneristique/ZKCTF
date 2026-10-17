@@ -182,13 +182,24 @@ export default function PlayPage() {
         progress?: Progress;
         error?: string;
         proveError?: string;
+        hostOnly?: boolean;
+        boardNote?: string;
       }>("/prove-assist", {
         wallet: publicKey.toBase58(),
         level: level.id,
         c: (flags[level.id] ?? "").trim(),
         prove: true,
       });
-      if (!assist.ok) throw new Error("Rejected.");
+      if (!assist.ok) throw new Error(assist.error ?? "Rejected.");
+      if (assist.proveError) throw new Error(assist.proveError);
+      if (assist.hostOnly) {
+        if (assist.progress) {
+          setProgress(assist.progress);
+          if (assist.progress.next != null) setOpenId(assist.progress.next);
+        } else await refreshProgress(publicKey.toBase58());
+        setNote(assist.boardNote ?? t.saved);
+        return;
+      }
       if (!assist.proof) {
         setNote(t.flagOkPending);
         return;

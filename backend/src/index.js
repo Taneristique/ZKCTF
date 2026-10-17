@@ -702,6 +702,36 @@ app.post("/prove-assist", express.json(), async (req, res) => {
     res.status(403).json({ error: "Wrong flag." });
     return;
   }
+  // Host puzzles must match on-chain commitments, or Groth16 verify fails with Custom(14).
+  let commitmentMismatch = false;
+  try {
+    const chain = await onChainRound(connection);
+    const hostH = String(level.h ?? "").replace(/^0x/, "").toLowerCase();
+    const chainH = String(chain?.commitments?.[levelId] ?? "").toLowerCase();
+    commitmentMismatch = Boolean(chain && hostH && chainH && hostH !== chainH);
+  } catch (e) {
+    console.error("commitment check failed", e);
+  }
+
+  // Rescue: lost round.json — credit host progress so Play works; on-chain pot uses Entry bits (may lag).
+  const hostRescue = commitmentMismatch || process.env.RESCUE_HOST_SOLVE === "1";
+  if (hostRescue && commitmentMismatch) {
+    recordSolve(wallet, levelId, meta.start);
+    const prestige = awardSolve(wallet, levelId, meta.start);
+    const progress = solveProgress(wallet, meta.start, publicLevels().length);
+    res.json({
+      ok: true,
+      hostOnly: true,
+      level: levelId,
+      h: level.h,
+      prestige,
+      progress,
+      boardNote:
+        "Host rescue: on-chain commitments do not match this server’s puzzles (missing round.json). Progress is saved on the host; pot settlement still follows on-chain Entry bits.",
+    });
+    return;
+  }
+
   const nonce = nonceHex ? fromHex(nonceHex) : Buffer.alloc(32, 2);
   const P = new PublicKey(wallet).toBytes();
   const play = buildC(P, flag, nonce);
