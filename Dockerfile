@@ -37,6 +37,8 @@ ENV NEXT_PUBLIC_SOLANA_RPC=$NEXT_PUBLIC_SOLANA_RPC \
 RUN cd frontend && pnpm build
 
 COPY scripts/start.sh scripts/start.sh
+COPY scripts/fixtures scripts/fixtures
+COPY scripts/ensure-round.mjs scripts/ensure-round.mjs
 
 ENV NODE_ENV=production
 CMD ["bash", "scripts/start.sh"]
