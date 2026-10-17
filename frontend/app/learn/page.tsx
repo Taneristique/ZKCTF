@@ -25,6 +25,7 @@ type LessonMeta = {
 type Lesson = LessonMeta & {
   body: string;
   exercise: { statement: string; artifacts?: string[]; hints?: string[] };
+  rights?: { holder?: string; notice?: string; license?: string };
 };
 
 function errorText(e: unknown) {
@@ -182,6 +183,9 @@ export default function LearnPage() {
                     {p}
                   </p>
                 ))}
+                {open.rights?.notice && (
+                  <p className="mt-4 text-[11px] leading-5 text-cream/40">{open.rights.notice}</p>
+                )}
                 {open.case?.sources && open.case.sources.length > 0 && (
                   <div className="mt-4 text-xs text-cream/50">
                     {t.lessonSources}:{" "}

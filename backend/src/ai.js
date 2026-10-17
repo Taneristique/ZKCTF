@@ -61,14 +61,19 @@ async function chatAnthropic(messages, maxTokens, apiKey) {
   };
   if (system) body.system = system;
 
+  const headers = {
+    "content-type": "application/json",
+    "x-api-key": apiKey,
+    "anthropic-version": "2023-06-01",
+  };
+  // Multi-workspace / identity-linked keys require this (console → Settings → Workspaces).
+  const workspace = process.env.ANTHROPIC_WORKSPACE_ID?.trim();
+  if (workspace) headers["anthropic-workspace-id"] = workspace;
+
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     signal: AbortSignal.timeout(60_000),
-    headers: {
-      "content-type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-    },
+    headers,
     body: JSON.stringify(body),
   });
   if (!res.ok) {

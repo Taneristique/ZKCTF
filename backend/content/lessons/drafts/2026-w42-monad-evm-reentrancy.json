@@ -1,0 +1,41 @@
+{
+  "id": "2026-w42-monad-evm-reentrancy",
+  "week": "2026-W42",
+  "track": "security",
+  "title": "Monad EVM: reentrancy is still the same bug",
+  "summary": "Monad runs an EVM-compatible execution environment. That means classic Ethereum bugs travel with the bytecode. We rebuild the 2016 DAO reentrancy pattern and the checks-effects-interactions fix Monad builders must keep.",
+  "case": {
+    "name": "The DAO reentrancy (Ethereum; applies to EVM-compatible chains including Monad)",
+    "date": "2016-06-17",
+    "impact": "~3.6M ETH drained; led to the Ethereum / Ethereum Classic split",
+    "sources": [
+      "https://hackingdistributed.com/2016/06/18/analysis-of-the-dao-exploit/",
+      "https://ethereum.org/en/history/#the-dao"
+    ]
+  },
+  "body": "Monad markets itself as a high-throughput L1 with EVM bytecode compatibility. Compatibility is a feature for developers and a warning for security. If the virtual machine accepts Solidity-style contracts, it accepts Solidity-style failure modes. Reentrancy does not care that the chain finalizes faster.\n\nThe DAO (2016) held ETH in a contract that paid a withdrawal by sending Ether before updating the caller's balance. The attacker contract's fallback called withdraw again. Each nested call still saw the old balance, so the contract paid many times. The pattern is: external call → state not yet updated → same privilege reused.\n\nThe standard fix is checks-effects-interactions: validate, update storage, then call out. Mutexes (nonReentrant) and pull-over-push payments add defense in depth. On an EVM-compatible Monad deployment the same rules apply to any contract that moves value or calls untrusted addresses.\n\nSolana's model makes classic ETH reentrancy rarer because programs do not freely call arbitrary foreign programs with shared mutable lamport balances the same way, but Solana has its own CPI and account-trust bugs (Wormhole, Cashio). Monad builders coming from Ethereum must not drop reentrancy habits; builders coming from Solana must learn them.\n\nReproduction exercise: the Solidity snippet below is a vulnerable vault. Name the Solidity statement that should run before the external call so a nested withdraw cannot reuse the old balance.",
+  "exercise": {
+    "statement": "In the vulnerable withdraw, the balance clear runs after the external call. What snake_case name do we give the fix pattern that does checks, then storage updates, then calls? Answer ZKCTF{pattern}.",
+    "artifacts": [
+      "mapping(address => uint256) public bal;\n\nfunction withdraw() external {\n    uint256 amount = bal[msg.sender];\n    require(amount > 0);\n    (bool ok, ) = msg.sender.call{value: amount}(\"\");\n    require(ok);\n    bal[msg.sender] = 0; // too late\n}"
+    ],
+    "hints": [
+      "Three words, often abbreviated CEI.",
+      "Order: require checks, write effects, then interactions."
+    ]
+  },
+  "flag": "ZKCTF{checks_effects_interactions}",
+  "authors": {
+    "ai": null,
+    "human": "ZKCTF editor"
+  },
+  "reviewed": false,
+  "status": "draft",
+  "teaser": false,
+  "publishedAt": null,
+  "rights": {
+    "holder": "ZKCTF",
+    "notice": "© ZKCTF Academy. Licensed for personal study by active members only. No scraping, training use, or republication of the full body.",
+    "license": "AllRightsReserved"
+  }
+}

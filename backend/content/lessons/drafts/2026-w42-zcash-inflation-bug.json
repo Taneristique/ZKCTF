@@ -1,0 +1,44 @@
+{
+  "id": "2026-w42-zcash-inflation-bug",
+  "week": "2026-W42",
+  "track": "security",
+  "title": "Zcash 2019: inflation hiding in the proof system",
+  "summary": "A cryptographic flaw in Sapling allowed undetectable counterfeiting of ZEC. No wallet was hacked; the math permitted minting outside the transparent supply schedule. We explain the class without reconstructing a forge.",
+  "case": {
+    "name": "Zcash Sapling inflation vulnerability (disclosed)",
+    "date": "2019-02-05",
+    "impact": "Potential undetectable counterfeiting of shielded ZEC; fixed in network upgrade before public detail",
+    "sources": [
+      "https://electriccoin.co/blog/zcash-counterfeiting-vulnerability-successfully-remediated/",
+      "https://electriccoin.co/blog/statement-on-the-sapling-mpc/"
+    ]
+  },
+  "body": "Zcash adds a shielded pool where amounts and addresses are hidden with zero-knowledge proofs. Transparent ZEC still exists, but the interesting security claim is that you cannot create shielded value from nothing: every note must be backed by a valid proof under the circuit's rules and the accumulated commitment tree.\n\nIn early 2019 Electric Coin Co. disclosed that a vulnerability in the Sapling proof system could have allowed counterfeiting — creating ZEC that no one deposited. The bug was not a hot-wallet theft and not a missing access control check in a Solidity contract. It sat in the relation between what the circuit was supposed to enforce and what an adversarial prover could satisfy. Because the pool is shielded, naive observers might not see an inflated supply the way they see an ERC-20 totalSupply glitch.\n\nThe remediation landed through a network upgrade before full public technical detail of a weaponized exploit was appropriate. The lesson for protocol designers is broader than Zcash: when value is defined by a proving system, soundness bugs are inflation bugs. Trusted setup quality, circuit audits and formal bounds on what statements are proveable matter as much as key management.\n\nZKCTF uses Groth16 so players can prove they know a flag without putting the flag on-chain. That is the honest use of a proof system. The Zcash incident is the dual: a proof system that accepted statements that should have been impossible. Race puzzles never ask you to forge a proof; the on-chain verifier rejects anything that does not match the published verifying key and public inputs.\n\nReproduction exercise: the conceptual checklist below lists four controls. Which one specifically targets \"the circuit allows a statement that mints value\" rather than \"the operator's keys leaked\"?",
+  "exercise": {
+    "statement": "Pick the control that best addresses a soundness / inflation bug in a shielded proving system. Answer ZKCTF{snake_case_name} using one of the artifact labels.",
+    "artifacts": [
+      "hot_wallet_multisig",
+      "circuit_soundness_audit",
+      "rpc_tls_only",
+      "ui_phishing_warning"
+    ],
+    "hints": [
+      "Key custody does not fix a mathematical hole in the relation.",
+      "The answer names an audit focused on what can be proved, not who holds keys."
+    ]
+  },
+  "flag": "ZKCTF{circuit_soundness_audit}",
+  "authors": {
+    "ai": null,
+    "human": "ZKCTF editor"
+  },
+  "reviewed": false,
+  "status": "draft",
+  "teaser": false,
+  "publishedAt": null,
+  "rights": {
+    "holder": "ZKCTF",
+    "notice": "© ZKCTF Academy. Licensed for personal study by active members only. No scraping, training use, or republication of the full body.",
+    "license": "AllRightsReserved"
+  }
+}
