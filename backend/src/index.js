@@ -211,12 +211,47 @@ app.get("/u/:name", async (req, res) => {
   }
   const profile = profileFor(wallet);
   try {
+    const meta = windowMeta();
+    const levels = publicLevels();
     const [loyalty, founder, member, prestige] = await Promise.all([
       loyaltyStatus(connection, wallet),
       Promise.resolve(founderFor(wallet)),
       memberStatus(connection, wallet).catch(() => null),
-      Promise.resolve(getPrestige(wallet, windowMeta().start)),
+      Promise.resolve(getPrestige(wallet, meta.start)),
     ]);
+    const progress = solveProgress(wallet, meta.start, levels.length);
+    const board = rankSolvers(meta.start, levels.length);
+    const boardIdx = board.findIndex((r) => r.wallet === wallet);
+    const liveWeek =
+      boardIdx >= 0
+        ? {
+            place: boardIdx + 1,
+            cleared: true,
+            finishTime: board[boardIdx].time,
+            source: "host-preview",
+            projected: true,
+            note: "Live board place. Settled rank and week-winner NFT appear after Saturday settle.",
+          }
+        : progress.cleared
+          ? {
+              place: null,
+              cleared: true,
+              finishTime: progress.finishTime,
+              source: "host",
+              projected: true,
+              note: "Full clear on host; waiting for board sync / settle.",
+            }
+          : progress.solved.length > 0
+            ? {
+                place: null,
+                cleared: false,
+                solved: progress.solved.length,
+                levelCount: levels.length,
+                source: "host",
+                projected: true,
+              }
+            : null;
+
     const nfts = weekNftsFor(wallet);
     const wins = nfts.filter((n) => n.rank >= 1 && n.rank <= 10);
     const firstPlaces = wins.filter((n) => n.rank === 1).length;
@@ -236,6 +271,22 @@ app.get("/u/:name", async (req, res) => {
       host: n.host || { id: "zkctf", name: "ZKCTF", logo: "/logo.png" },
       medal: n.rank === 1 ? "gold" : n.rank === 2 ? "silver" : n.rank === 3 ? "bronze" : "paid",
     }));
+    // Live week appears above settled history so full clears show before NFT mint.
+    if (liveWeek?.cleared && liveWeek.place) {
+      const startMs = Date.parse(meta.start) || Date.now();
+      activity.unshift({
+        at: liveWeek.finishTime ?? Date.now(),
+        date: new Date(startMs).toISOString().slice(0, 7),
+        day: new Date(startMs).toISOString().slice(0, 10),
+        round: Math.floor(startMs / 1000),
+        rank: liveWeek.place,
+        prizeUsdc: 0,
+        title: "This week’s race (live)",
+        host: { id: "zkctf", name: "ZKCTF", logo: "/logo.png" },
+        medal: liveWeek.place === 1 ? "gold" : liveWeek.place === 2 ? "silver" : liveWeek.place === 3 ? "bronze" : "paid",
+        live: true,
+      });
+    }
     res.json({
       profile,
       wallet,
@@ -250,6 +301,7 @@ app.get("/u/:name", async (req, res) => {
       prestige: prestige
         ? { points: prestige.points, badge: prestige.badge, lifetime: prestige.lifetime }
         : null,
+      liveWeek,
       firstPlaces,
       secondPlaces,
       thirdPlaces,

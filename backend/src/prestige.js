@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { DATA_DIR } from "./dataDir.js";
+import { solvedIds } from "./solves.js";
 
 const PATH = join(DATA_DIR, "prestige.json");
 
@@ -47,9 +48,33 @@ export function awardSolve(wallet, levelId, startIso) {
   return publicPrestige(wallet, startIso, all[wallet]);
 }
 
+/** If solves.json has levels prestige missed (redeploy / rescue), credit them. */
+function syncFromSolves(wallet, startIso, all) {
+  const ids = solvedIds(wallet, startIso);
+  if (!ids.length) return all[wallet];
+  const season = seasonId(startIso);
+  const row = all[wallet] ?? { seasons: {} };
+  const seasonRow = row.seasons[season] ?? { points: 0, levels: [] };
+  let changed = false;
+  for (const level of ids) {
+    if (!seasonRow.levels.includes(level)) {
+      seasonRow.levels.push(level);
+      seasonRow.points += POINTS_PER_SOLVE;
+      changed = true;
+    }
+  }
+  if (changed) {
+    row.seasons[season] = seasonRow;
+    all[wallet] = row;
+    save(all);
+  }
+  return all[wallet];
+}
+
 export function getPrestige(wallet, startIso) {
   const all = load();
-  return publicPrestige(wallet, startIso, all[wallet]);
+  const row = syncFromSolves(wallet, startIso, all);
+  return publicPrestige(wallet, startIso, row);
 }
 
 function publicPrestige(wallet, startIso, row) {
