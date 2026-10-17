@@ -72,8 +72,16 @@ function problems(l) {
   if (!Array.isArray(l.exercise?.hints) || l.exercise.hints.length < 1) out.push("exercise.hints: at least one");
   if (!FLAG_RE.test(String(l.flag ?? ""))) out.push("flag must look like ZKCTF{...} (letters, digits, _ or -)");
   if (/TODO/.test(JSON.stringify(l))) out.push("remove every TODO before publishing");
+  if (!l.rights?.holder || !l.rights?.notice) out.push("rights.holder + rights.notice required (copyright)");
   return out;
 }
+
+const DEFAULT_RIGHTS = {
+  holder: "ZKCTF",
+  notice:
+    "© ZKCTF Academy. Licensed for personal study by active members only. No scraping, training use, or republication of the full body.",
+  license: "AllRightsReserved",
+};
 
 function template({ track, topic, caseName }) {
   const now = new Date();
@@ -93,6 +101,7 @@ function template({ track, topic, caseName }) {
     reviewed: false,
     status: "draft",
     publishedAt: null,
+    rights: { ...DEFAULT_RIGHTS },
   };
 }
 
@@ -141,6 +150,7 @@ async function draft() {
       reviewed: false,
       status: "draft",
       publishedAt: null,
+      rights: { ...DEFAULT_RIGHTS, ...(json.rights ?? {}) },
     };
   } else if (!args.blank) {
     console.warn("No ANTHROPIC_API_KEY / OPENROUTER_API_KEY — writing a blank template to fill by hand.");

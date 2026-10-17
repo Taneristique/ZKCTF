@@ -104,6 +104,18 @@ You cannot stop a paying member from copy-pasting. Goal: **stolen text is not th
 
 If `backend/content/lessons/published/` is already on a public remote, treat it as leaked marketing and move new full bodies to a private path / server-only volume.
 
+**Volume curriculum (recommended):** put reviewed member lessons at `$ZKCTF_DATA_DIR/lessons/published/*.json` (Railway `/data/lessons/published/`). The API merges them over repo files with the same `id`. Keep at most one `teaser: true` lesson in the public git tree. Every lesson JSON should include:
+
+```json
+"rights": {
+  "holder": "ZKCTF",
+  "notice": "© ZKCTF Academy. … members only …",
+  "license": "AllRightsReserved"
+}
+```
+
+`ANTHROPIC_WORKSPACE_ID=wrkspc_…` is required when your Anthropic key is not scoped to a single workspace (Console → Settings → Workspaces).
+
 ---
 
 ## 4. Academy membership (USDC)

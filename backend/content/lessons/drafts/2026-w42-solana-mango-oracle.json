@@ -1,0 +1,41 @@
+{
+  "id": "2026-w42-solana-mango-oracle",
+  "week": "2026-W42",
+  "track": "security",
+  "title": "Mango Markets 2022: the price the protocol believed",
+  "summary": "A Solana perpetual DEX let one trader move an illiquid spot oracle, mark a huge position in profit, and drain the insurance fund. We rebuild how on-chain prices become attacker-shaped when liquidity is thin.",
+  "case": {
+    "name": "Mango Markets exploit",
+    "date": "2022-10-11",
+    "impact": "~$114M drained from the protocol (partially returned under settlement talks)",
+    "sources": [
+      "https://mangomarkets.medium.com/",
+      "https://www.justice.gov/usao-sdny/pr/former-head-trading-firm-charged-fraudulent-scheme-involving-decentralized-cryptocurrency"
+    ]
+  },
+  "body": "Perpetual futures on Solana need a mark price. That price usually comes from an oracle that aggregates spot venues. If the oracle can be moved with a modest trade on a thin market, then an attacker can make a leveraged position look solvent when it is not, or look massively profitable when the rest of the book cannot exit.\n\nIn October 2022, Mango Markets used oracle prices that could be influenced through related spot markets. The attacker opened large long and short positions, pushed the illiquid MNGO spot price upward so the oracle reported a spike, and then withdrew outsized unsettled profits against the protocol's shared funds. The chain of trust was: thin spot → movable oracle → inflated account equity → withdrawal.\n\nThis is not a missing PDA check. It is an economic oracle problem. Solana programs that read Pyth, Switchboard or a custom TWAP still inherit the quality of the underlying markets. A correct account address does not mean a safe price. Defenses include liquidity requirements, confidence intervals, TWAP windows, open-interest caps and delaying large withdrawals when oracle confidence is poor.\n\nZKCTF's race pot does not take an oracle price for entry: the fee is a fixed USDC amount. That is a deliberate design choice. Any future feature that prices collateral or prizes from an on-chain feed must treat the feed as adversarial input, the same way Wormhole had to treat the Instructions sysvar as adversarial until its address was checked.\n\nReproduction exercise: the snippet below is a simplified margin check. Name the condition the protocol should require of the oracle update before trusting px for equity.",
+  "exercise": {
+    "statement": "In the simplified snippet, equity uses oracle.price with no quality check. Which single field (snake_case) on a typical oracle price account should be required to be below a max threshold before px is used? Answer ZKCTF{field_name}.",
+    "artifacts": [
+      "fn equity_ok(oracle: &OraclePx, position: i64, withdraw: u64) -> bool {\n    let px = oracle.price; // attacker-shaped if spot is thin\n    let equity = position.saturating_mul(px);\n    equity > 0 && (equity as u64) >= withdraw\n}"
+    ],
+    "hints": [
+      "Pyth-style feeds expose how uncertain the price is, not only the mid.",
+      "The field name is one word about how much the publisher trusts the print."
+    ]
+  },
+  "flag": "ZKCTF{confidence}",
+  "authors": {
+    "ai": null,
+    "human": "ZKCTF editor"
+  },
+  "reviewed": false,
+  "status": "draft",
+  "teaser": false,
+  "publishedAt": null,
+  "rights": {
+    "holder": "ZKCTF",
+    "notice": "© ZKCTF Academy. Licensed for personal study by active members only. No scraping, training use, or republication of the full body.",
+    "license": "AllRightsReserved"
+  }
+}
