@@ -5,7 +5,11 @@
  */
 
 function anthropicModel() {
-  const raw = (process.env.ANTHROPIC_MODEL || process.env.OPENROUTER_MODEL || "claude-sonnet-4").trim();
+  const raw = (
+    process.env.ANTHROPIC_MODEL ||
+    process.env.OPENROUTER_MODEL ||
+    "claude-sonnet-4-5-20250929"
+  ).trim();
   // openrouter style → native: anthropic/claude-sonnet-4 → claude-sonnet-4
   return raw.replace(/^anthropic\//, "");
 }
