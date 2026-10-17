@@ -4,7 +4,8 @@ import express from "express";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { recordSolve, rankSolvers, canAttempt, progress as solveProgress } from "./solves.js";
 import { publicLevels, levelById, readRound, roundOpen } from "./roundStore.js";
-import { getEntry, putEntry, listEntries, lessonSolves, recordLessonSolve } from "./store.js";
+import { getEntry, putEntry, listEntries, lessonSolves, recordLessonSolve, DATA_DIR, dataPath, load } from "./store.js";
+import { dataPersistent } from "./dataDir.js";
 import {
   ENTRY_USDC,
   ENTRY_ATOMS,
@@ -119,6 +120,10 @@ app.get("/health", async (_req, res) => {
     cluster: CLUSTER,
     linearCtf: true,
     founding,
+    dataDir: DATA_DIR,
+    dataPersistent,
+    profiles: Object.keys(load(dataPath("profiles.json")).byWallet ?? {}).length,
+    entries: Object.keys(load(dataPath("entries.json"))).length,
   });
 });
 
@@ -883,6 +888,11 @@ const scheduler = startScheduler({ connection, authority, authorityStatus });
 
 app.listen(PORT, "::", () => {
   console.log(`ZKCTF api [::]:${PORT} program=${PROGRAM_ID.toBase58()}`);
+  const nProfiles = Object.keys(load(dataPath("profiles.json")).byWallet ?? {}).length;
+  console.log(`dataDir=${DATA_DIR} persistent=${dataPersistent} profiles=${nProfiles}`);
+  if (!dataPersistent) {
+    console.error("WARNING: dataDir is ephemeral — redeploys wipe profiles/entries. Set ZKCTF_DATA_DIR=/data and mount a volume.");
+  }
   void authorityStatus().then((a) => {
     if (a.ok) console.log(`authority ok ${a.server} (${a.source})`);
     else

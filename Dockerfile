@@ -40,5 +40,6 @@ COPY scripts/start.sh scripts/start.sh
 COPY scripts/fixtures scripts/fixtures
 COPY scripts/ensure-round.mjs scripts/ensure-round.mjs
 
-ENV NODE_ENV=production
+ENV NODE_ENV=production \
+    ZKCTF_DATA_DIR=/data
 CMD ["bash", "scripts/start.sh"]

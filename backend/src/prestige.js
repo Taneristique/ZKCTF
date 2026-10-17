@@ -1,12 +1,8 @@
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { DATA_DIR } from "./dataDir.js";
 
-const dir = process.env.ZKCTF_DATA_DIR
-  ? process.env.ZKCTF_DATA_DIR
-  : join(dirname(fileURLToPath(import.meta.url)), "../data");
-mkdirSync(dir, { recursive: true });
-const PATH = join(dir, "prestige.json");
+const PATH = join(DATA_DIR, "prestige.json");
 
 /** Points per unique official level solve in a season week. Soulbound: wallet-keyed only. */
 export const POINTS_PER_SOLVE = 10;

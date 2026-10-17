@@ -102,7 +102,8 @@ Install the recommended **rust-analyzer** extension (`.vscode/extensions.json`).
 One service. The root `Dockerfile` builds both apps; `scripts/start.sh` runs the API on `127.0.0.1:8787` and Next.js on `$PORT`, which proxies `/zk-api` to the API inside the container.
 
 - Root Directory: `/` (the root `Dockerfile` is auto-detected)
-- Variables: `AUTHORITY_KEYPAIR_JSON`, `ZKCTF_PROGRAM_ID`, `SOLANA_RPC`, `USDC_MINT`, `TREASURY_WALLET`, `ZKCTF_DATA_DIR=/data`; optional build-time `NEXT_PUBLIC_SOLANA_RPC`, `NEXT_PUBLIC_PROGRAM_ID`
+- Variables: `AUTHORITY_KEYPAIR_JSON`, `ZKCTF_PROGRAM_ID`, `SOLANA_RPC`, `USDC_MINT`, `TREASURY_WALLET`, `ZKCTF_DATA_DIR=/data` (**required** for profiles/entries to survive redeploys — Dockerfile defaults this; confirm the volume is mounted at `/data`). Check `/zk-api/health` → `dataPersistent: true` and `profiles` count after deploy.
+- Optional build-time: `NEXT_PUBLIC_SOLANA_RPC`, `NEXT_PUBLIC_PROGRAM_ID`
 - `FOUNDING_EXCLUDE` (**Railway Variables**, production): comma-separated team/test wallets — they never reduce Founding seats left, never appear on the public Founders list, and never show as Founding in the UI. Set this on the cloud service env, not only in a local `.env`.
 - Weekly bot: `BOT_CHAIN=1` (only on the production service, so a dev machine never publishes rounds), `LOYALTY_MINT`, optional `BOT_ALERT_WEBHOOK` (Discord or Slack webhook for failures, low SOL and each settle), `BOT_MIN_SOL`, `OPENROUTER_API_KEY`
 - Volume mounted at `/data`; custom domain `zkctf.com`
