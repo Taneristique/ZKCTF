@@ -31,5 +31,10 @@
   "reviewed": true,
   "status": "published",
   "teaser": true,
-  "publishedAt": "2026-10-03T12:00:00.000Z"
+  "publishedAt": "2026-10-03T12:00:00.000Z",
+  "rights": {
+    "holder": "ZKCTF",
+    "notice": "© ZKCTF Academy. Licensed for personal study by active members only. No scraping, training use, or republication of the full body.",
+    "license": "AllRightsReserved"
+  }
 }

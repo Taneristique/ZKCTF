@@ -22,3 +22,4 @@ id.json
 *.tsbuildinfo
 next-env.d.ts
 backend/content/lessons/drafts/*.published
+node_modules:idlscript

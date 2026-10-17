@@ -27,12 +27,12 @@
   "flag": "ZKCTF{program_id}",
   "authors": {
     "ai": null,
-    "human": "ZKCTF editor"
+    "human": "Taneristique"
   },
-  "reviewed": false,
-  "status": "draft",
+  "reviewed": true,
+  "status": "published",
   "teaser": false,
-  "publishedAt": null,
+  "publishedAt": "2026-10-17T20:47:52.036Z",
   "rights": {
     "holder": "ZKCTF",
     "notice": "© ZKCTF Academy. Licensed for personal study by active members only. No scraping, training use, or republication of the full body.",

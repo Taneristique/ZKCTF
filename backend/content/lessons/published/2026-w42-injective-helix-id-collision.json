@@ -28,10 +28,10 @@
     "ai": "claude-sonnet-4-5-20250929 (outline; rewritten to BlockSec facts)",
     "human": "ZKCTF editor"
   },
-  "reviewed": false,
-  "status": "draft",
+  "reviewed": true,
+  "status": "published",
   "teaser": false,
-  "publishedAt": null,
+  "publishedAt": "2026-10-17T20:49:39.638Z",
   "rights": {
     "holder": "ZKCTF",
     "notice": "© ZKCTF Academy. Licensed for personal study by active members only. No scraping, training use, or republication of the full body.",

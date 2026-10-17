@@ -1,0 +1,41 @@
+{
+  "id": "2026-w42-solana-cashio-fake-collateral",
+  "week": "2026-W42",
+  "track": "security",
+  "title": "Cashio 2022: collateral that was never there",
+  "summary": "A Solana stablecoin printed CASH against a bank that held nothing of value because the program trusted account data without proving the mint and vault were the ones it created. We rebuild the trust boundary and the one check that would have stopped it.",
+  "case": {
+    "name": "Cashio infinite mint",
+    "date": "2022-03-23",
+    "impact": "~$50M of unbacked CASH minted and dumped",
+    "sources": [
+      "https://slowmist.medium.com/slowmist-analysis-of-the-cashio-attack-6c1f8c8f0c0a",
+      "https://twitter.com/CashioApp/status/1506738848012345345"
+    ]
+  },
+  "body": "Cashio was a Solana protocol that minted a stablecoin, CASH, against deposits sitting in a bank account. On Solana that bank is not a special system object. It is an ordinary account owned by the Cashio program, with fields the program interprets as collateral type, amount and related mints. The mint instruction was supposed to read that bank, confirm enough collateral, then mint CASH to the user.\n\nThe attacker did not break the cryptography of the mint. They built a fake bank account whose bytes looked like a fully funded vault, then passed that account into the mint instruction where the real bank belonged. The program decoded the attacker-controlled data, believed the collateral was present, and minted CASH with no real backing. The CASH was sold into the market before the gap was obvious.\n\nThe missing step is familiar if you know Wormhole's sysvar bug. Every AccountInfo a Solana program receives is chosen by the caller until the program proves otherwise. Proving otherwise means checking the account address (or PDA seeds), checking the owner program, and checking a type discriminator before reading fields. Cashio's mint path trusted the bank account's layout without binding it to the bank PDA the program had created at initialization.\n\nThe general class is fake account / account confusion. It is not unique to stablecoins. Any instruction that reads a vault, oracle, config or mint authority account without verifying identity is one forged account away from the same failure. ZKCTF's enter_round path checks that the pot token account's token-owner is the pot vault PDA before moving USDC for that reason.\n\nReproduction exercise: the snippet below is a simplified mint handler. Name the field or property the code should compare against a known PDA before trusting bank_data.",
+  "exercise": {
+    "statement": "In the simplified mint handler, the program deserializes whatever account the caller labeled bank. Which AccountInfo field must equal the program's known bank PDA before bank_data is trusted? Answer ZKCTF{field_name}.",
+    "artifacts": [
+      "fn mint_cash(accounts: &[AccountInfo], amount: u64) -> ProgramResult {\n    let acc = &mut accounts.iter();\n    let user = next_account_info(acc)?;\n    let bank = next_account_info(acc)?; // should be the bank PDA\n    let cash_mint = next_account_info(acc)?;\n    let bank_data = Bank::try_from_slice(&bank.data.borrow())?;\n    if bank_data.collateral_atoms < amount {\n        return Err(ProgramError::InsufficientFunds);\n    }\n    // mint `amount` of CASH to user…\n    Ok(())\n}"
+    ],
+    "hints": [
+      "PDA checks compare a derived Pubkey to the account the caller passed in.",
+      "In solana_program, that Pubkey lives on AccountInfo under a short name for the address."
+    ]
+  },
+  "flag": "ZKCTF{key}",
+  "authors": {
+    "ai": null,
+    "human": "ZKCTF editor"
+  },
+  "reviewed": true,
+  "status": "published",
+  "teaser": false,
+  "publishedAt": "2026-10-17T20:49:39.759Z",
+  "rights": {
+    "holder": "ZKCTF",
+    "notice": "© ZKCTF Academy. Licensed for personal study by active members only. No scraping, training use, or republication of the full body.",
+    "license": "AllRightsReserved"
+  }
+}
