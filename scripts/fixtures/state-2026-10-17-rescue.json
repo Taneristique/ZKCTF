@@ -1,0 +1,52 @@
+{
+  "note": "Host rescue after ephemeral /data wipe (no Railway volume). Merge-only: never overwrites existing wallets.",
+  "roundStart": "2026-10-17T15:00:00.000Z",
+  "roundEnd": "2026-10-18T15:00:00.000Z",
+  "profiles": {
+    "byWallet": {
+      "4X6f8bMcUrCxwmrRSb57HqrNXvFQdEZN4wjs2B7dpqqG": {
+        "pseudonym": "jovemjeune",
+        "createdAt": 1792252200000,
+        "updatedAt": 1792252200000,
+        "renameCount": 0
+      }
+    },
+    "byName": {
+      "jovemjeune": "4X6f8bMcUrCxwmrRSb57HqrNXvFQdEZN4wjs2B7dpqqG"
+    }
+  },
+  "entries": {
+    "4X6f8bMcUrCxwmrRSb57HqrNXvFQdEZN4wjs2B7dpqqG": {
+      "usdc": 5,
+      "asset": "USDC",
+      "start": "2026-10-17T15:00:00.000Z",
+      "end": "2026-10-18T15:00:00.000Z",
+      "demo": false,
+      "cluster": "devnet",
+      "rescued": true
+    }
+  },
+  "solves": {
+    "2026-10-17T15:00:00.000Z::4X6f8bMcUrCxwmrRSb57HqrNXvFQdEZN4wjs2B7dpqqG": {
+      "wallet": "4X6f8bMcUrCxwmrRSb57HqrNXvFQdEZN4wjs2B7dpqqG",
+      "start": "2026-10-17T15:00:00.000Z",
+      "firstTs": 1792252800000,
+      "levels": {
+        "0": 1792253400000,
+        "1": 1792254000000,
+        "2": 1792254600000,
+        "3": 1792255200000
+      }
+    }
+  },
+  "prestige": {
+    "4X6f8bMcUrCxwmrRSb57HqrNXvFQdEZN4wjs2B7dpqqG": {
+      "seasons": {
+        "2026-10-17": {
+          "points": 40,
+          "levels": [0, 1, 2, 3]
+        }
+      }
+    }
+  }
+}
