@@ -336,6 +336,52 @@ export const TYPES = {
     },
   },
 
+  /**
+   * Aquifer-class: caller-chosen token program on swap settlement.
+   * Flag is always the Instruction field overwritten before invoke.
+   */
+  arbitraryTokenProgram: {
+    tier: 2,
+    doc: "unvalidated-token-program",
+    leakCheck: false,
+    build() {
+      const classes = [
+        "reentrancy",
+        "integer_overflow",
+        "unvalidated_token_program",
+        "front_running",
+        "oracle_manipulation",
+      ];
+      // Stable shuffle from a nonce so artifacts vary week to week.
+      const nonce = randomInt(1, 1e9);
+      const order = classes
+        .map((c, i) => ({ c, k: createHash("sha256").update(`${nonce}:${i}`).digest()[0] }))
+        .sort((a, b) => a.k - b.k)
+        .map((x) => x.c);
+      return {
+        title: "Free exit, unpaid entry",
+        statement:
+          "A Solana AMM builds an SPL transfer with a hardcoded Token program id, then overwrites the instruction's program with whatever account the caller labeled token_program, without checking Tokenkeg / Token-2022. The attacker supplies a no-op program on the pay-in leg and still receives vault tokens on the pay-out leg. Which bug class from the list is this? Answer ZKCTF{class}.",
+        artifacts: [
+          `fn settle(from, to, auth, amount, token_prog: &AccountInfo) {\n  let mut ix = spl_token::instruction::transfer(&spl_token::ID, from, to, auth, &[], amount)?;\n  ix.program_id = *token_prog.key; // ← trust boundary\n  invoke(&ix, &[from, to, auth, token_prog]);\n}`,
+          `classes: ${order.join(", ")}`,
+        ],
+        hints: [
+          "The dangerous line replaces which program runs the CPI, not the token account addresses.",
+          "Look for the class name that mentions an unchecked token program.",
+        ],
+        walkthrough:
+          "Overwriting Instruction.program_id with a caller Pubkey without an allowlist is unvalidated_token_program (Aquifer, 2026-08-31).",
+        flag: flag("unvalidated_token_program"),
+      };
+    },
+    solve(lv) {
+      const line = lv.artifacts.find((a) => a.startsWith("classes: ")) ?? "";
+      const list = line.replace("classes: ", "").split(", ").map((s) => s.trim());
+      return list.includes("unvalidated_token_program") ? flag("unvalidated_token_program") : [];
+    },
+  },
+
   vaultInflation: {
     tier: 3,
     doc: "erc4626-inflation",

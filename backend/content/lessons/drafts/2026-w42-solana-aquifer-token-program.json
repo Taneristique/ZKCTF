@@ -1,0 +1,41 @@
+{
+  "id": "2026-w42-solana-aquifer-token-program",
+  "week": "2026-W42",
+  "track": "security",
+  "title": "Aquifer 2026: the Token Program the caller chose",
+  "summary": "A Solana prop AMM paid real vault tokens for free because swap settlement let the caller pick which program ran each SPL transfer. We rebuild the one assignment that turned an allowlisted constant into attacker-controlled CPI.",
+  "case": {
+    "name": "Aquifer Solana AMM drain",
+    "date": "2026-08-31",
+    "impact": "~$2.47M across 212 swaps in ~40 minutes (USDC, USDT, HYPE, cbBTC, CASH, …)",
+    "sources": [
+      "https://blocksec.com/blog/web3-security-injective-aquifer-exploits",
+      "https://bitquery.io/investigations/aquifer-solana-hack-2-5-million"
+    ]
+  },
+  "body": "Aquifer was a proprietary market-maker AMM on Solana. Jupiter and other routers could settle swaps against its vaults. Each swap is supposed to move tokens both ways: the user pays an input mint into Aquifer, and Aquifer pays an output mint out of a vault. On Solana those movements are CPI calls into the SPL Token program (or Token-2022).\n\nPublic analysis of the drain (31 August 2026) shows that Aquifer's swap path built transfer instructions with a hardcoded Token program id, then overwrote that program id with whatever account the caller had labeled as the token program — and never ran the allowlist check that elsewhere accepted only Tokenkeg and Token-2022. The attacker supplied their own no-op program for the leg that should have pulled funds from the user. That program returned success while moving nothing. The outgoing leg still used the real Token program and paid vault assets. Repeated across hundreds of swaps, the vaults emptied.\n\nThis is the same trust class as Wormhole's fake Instructions sysvar and Cashio's fake bank: every AccountInfo is attacker-chosen until the program proves its identity. For token settlement the identity that matters is the program id of the CPI target, not only the token account addresses. Hardcoding Tokenkeg when building the instruction is useless if a later line replaces it with a caller key.\n\nZKCTF's enter_round path transfers USDC only through the real Token program constant and checks that the pot ATA's token-owner is the pot vault PDA. It never lets the player choose which program executes the transfer.\n\nReproduction exercise: the snippet below is a simplified settlement helper recovered in spirit from the public analyses (not Aquifer's private source). Find the assignment that makes the CPI target attacker-controlled.",
+  "exercise": {
+    "statement": "In the vulnerable settle_leg helper, which field of Instruction is overwritten with a caller-supplied Pubkey right before invoke, skipping the Token Program allowlist? Answer ZKCTF{field_name}.",
+    "artifacts": [
+      "fn settle_leg(\n    from: &AccountInfo,\n    to: &AccountInfo,\n    authority: &AccountInfo,\n    amount: u64,\n    token_prog: &AccountInfo, // caller-chosen\n) -> ProgramResult {\n    // allowlist exists elsewhere but is NOT called on this path\n    let mut ix = spl_token::instruction::transfer(\n        &spl_token::ID, // hardcoded Tokenkeg — looks safe\n        from.key,\n        to.key,\n        authority.key,\n        &[],\n        amount,\n    )?;\n    // --- critical line: trust boundary collapse ---\n    ix.program_id = *token_prog.key;\n    invoke(&ix, &[from.clone(), to.clone(), authority.clone(), token_prog.clone()])\n}"
+    ],
+    "hints": [
+      "The transfer builder already filled a Pubkey identifying which program should run.",
+      "That Pubkey lives on the Instruction struct under a two-word snake_case name ending in _id."
+    ]
+  },
+  "flag": "ZKCTF{program_id}",
+  "authors": {
+    "ai": null,
+    "human": "ZKCTF editor"
+  },
+  "reviewed": false,
+  "status": "draft",
+  "teaser": false,
+  "publishedAt": null,
+  "rights": {
+    "holder": "ZKCTF",
+    "notice": "© ZKCTF Academy. Licensed for personal study by active members only. No scraping, training use, or republication of the full body.",
+    "license": "AllRightsReserved"
+  }
+}

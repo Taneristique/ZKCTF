@@ -99,5 +99,24 @@
       { "label": "EIP-4626: Tokenized Vaults", "url": "https://eips.ethereum.org/EIPS/eip-4626" },
       { "label": "OpenZeppelin ERC-4626: inflation attack", "url": "https://docs.openzeppelin.com/contracts/5.x/erc4626" }
     ]
+  },
+  "id-collision": {
+    "title": "Ambiguous identifier encoding",
+    "summary": "IDs built by concatenating variable-length fields without separators or length prefixes can collide: two different field tuples hash to the same digest. Downstream logic then binds the wrong resource (for example the wrong insurance fund).",
+    "incidents": ["Injective Helix binary options, 2026-08: insurance fund id collision enabled phantom deficits and ~$4.8M drainage."],
+    "refs": [
+      { "label": "BlockSec: Injective & Aquifer exploits", "url": "https://blocksec.com/blog/web3-security-injective-aquifer-exploits" },
+      { "label": "CWE-334: Small Space of Random Values", "url": "https://cwe.mitre.org/data/definitions/334.html" }
+    ]
+  },
+  "unvalidated-token-program": {
+    "title": "Unvalidated Token Program CPI (Aquifer class)",
+    "summary": "On Solana, SPL transfers must CPI into Tokenkeg or Token-2022. If a swap path lets the caller supply that program id — or overwrites a hardcoded id with a caller account — a no-op program can fake a successful pay-in while the real Token program still pays out vault assets.",
+    "incidents": ["Aquifer Solana AMM, 2026-08-31: ~$2.47M drained across 212 swaps by substituting a malicious program on the input transfer leg."],
+    "refs": [
+      { "label": "BlockSec: Injective & Aquifer exploits", "url": "https://blocksec.com/blog/web3-security-injective-aquifer-exploits" },
+      { "label": "Bitquery: Aquifer investigation", "url": "https://bitquery.io/investigations/aquifer-solana-hack-2-5-million" },
+      { "label": "CWE-345: Insufficient Verification of Data Authenticity", "url": "https://cwe.mitre.org/data/definitions/345.html" }
+    ]
   }
 }
