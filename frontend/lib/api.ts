@@ -2,7 +2,16 @@ export const API = process.env.NEXT_PUBLIC_API ?? "/zk-api";
 
 async function failure(res: Response) {
   const type = res.headers.get("content-type") ?? "";
-  if (type.includes("application/json")) return new Error(await res.text());
+  if (type.includes("application/json")) {
+    const body = await res.text();
+    try {
+      const j = JSON.parse(body) as { error?: string };
+      if (j?.error) return new Error(j.error);
+    } catch {
+      /* use raw body */
+    }
+    return new Error(body || `HTTP ${res.status}`);
+  }
   return new Error(`API unavailable (HTTP ${res.status})`);
 }
 

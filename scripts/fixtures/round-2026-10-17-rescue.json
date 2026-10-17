@@ -1,0 +1,72 @@
+{
+  "start": "2026-10-17T15:00:00.000Z",
+  "end": "2026-10-18T15:00:00.000Z",
+  "source": "rescue-seeds",
+  "updatedAt": "2026-10-17T15:31:40.538Z",
+  "levels": [
+    {
+      "id": 0,
+      "title": "Hidden word",
+      "statement": "A short lowercase English word was XOR-ed byte by byte with the repeating key \"ctf\" (c, t, f, c, t, …). The result in hex is 1306090c12. Undo the XOR to recover the word. Answer ZKCTF{word}.",
+      "artifacts": [
+        "1306090c12"
+      ],
+      "hints": [
+        "XOR is its own inverse: XOR each byte with the same key letter again.",
+        "c = 0x63, t = 0x74, f = 0x66. The first byte is 0x13 ^ 0x63."
+      ],
+      "walkthrough": "Bytes 13 06 09 0c 12 XOR key 63 74 66 63 74: 0x13^0x63=0x70 'p', 0x06^0x74=0x72 'r', 0x09^0x66=0x6f 'o', 0x0c^0x63=0x6f 'o', 0x12^0x74=0x66 'f' → proof.",
+      "flag": "ZKCTF{proof}",
+      "delta": "43560d594ee9faffb32bf03095625d773c01a48d305ce8b66927ecf531cf0c47",
+      "h": "6dd763e9d8a6e16090e379238bc05f3ce97bbd15421af1685d736b33d1c2be8e"
+    },
+    {
+      "id": 1,
+      "title": "One number, three rules",
+      "statement": "Find a whole number x between 0 and 104 that fits all three: divide by 3 and the remainder is 2; divide by 5 and the remainder is 3; divide by 7 and the remainder is 2. Answer ZKCTF{x}.",
+      "artifacts": [],
+      "hints": [
+        "3 × 5 × 7 = 105, so there is only one such x in 0..104.",
+        "Numbers with remainder 2 after dividing by 7 are 2, 9, 16, … — check each against the other two rules."
+      ],
+      "walkthrough": "Candidates with x mod 7 = 2: 2, 9, 16, 23, … 2 mod 5 = 2 ✗, 9 mod 5 = 4 ✗, 16 mod 5 = 1 ✗, 23 mod 5 = 3 ✓ and 23 mod 3 = 2 ✓ → 23.",
+      "flag": "ZKCTF{23}",
+      "delta": "f8e5c7eb1b8d4d0d620c736a11e341346c3111125f9dccbde8baac042d2b76cd",
+      "h": "a8cfe343af8da404018ea39a17ca2c25ee43af7d2848804069201d168447402e"
+    },
+    {
+      "id": 2,
+      "title": "Power leftover",
+      "statement": "Multiply 3 by itself 16 times, then divide that huge number by 17. What is the remainder (the leftover, 0–16)? You do not need to write the huge number out. Answer ZKCTF{the leftover}.",
+      "artifacts": [],
+      "hints": [
+        "You only need the leftover after dividing by 17, not the full number.",
+        "Square repeatedly: find 3², 3⁴, 3⁸, 3¹⁶, keeping only the leftover mod 17 at each step."
+      ],
+      "walkthrough": "3² = 9; 3⁴ = 81 → 81 − 68 = 13; 3⁸ = 13² = 169 → 169 − 153 = 16; 3¹⁶ = 16² = 256 → 256 − 255 = 1. (Also Fermat: 3¹⁶ ≡ 1 mod 17.)",
+      "flag": "ZKCTF{1}",
+      "delta": "cf150c5b4f395f4171c288905d6516d2828075320d19488a5788fad2d51b143d",
+      "h": "52a705029ddb6a176af0360059bcfe530fe3393f62cd9afabb0da4a55cea3f92"
+    },
+    {
+      "id": 3,
+      "title": "Anyone can take over",
+      "statement": "A contract stores owner = 0xA1. Its function setOwner(newPerson) writes the new owner with no check on who is calling, so any wallet can make itself owner. Which bug class from the list below is this? Answer ZKCTF{class}.",
+      "artifacts": [
+        "reentrancy",
+        "integer_overflow",
+        "missing_auth",
+        "front_running",
+        "oracle_manipulation"
+      ],
+      "hints": [
+        "Who is allowed to call setOwner?",
+        "Nothing re-enters, no arithmetic, no price feed — only a missing caller check."
+      ],
+      "walkthrough": "setOwner never checks msg.sender (no onlyOwner). A privileged function callable by anyone is missing authorization → missing_auth. The other classes need re-entrant calls, arithmetic wrap, transaction ordering, or a price oracle.",
+      "flag": "ZKCTF{missing_auth}",
+      "delta": "3a87d68464195c87ceb8787f68bd9de66762aae88958d7ddedaacd405f816e7f",
+      "h": "96a33c680be6262c84d0ac348e200d9f64d49a90a73fb2c6f7965e313a38e755"
+    }
+  ]
+}
