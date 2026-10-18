@@ -55,6 +55,7 @@ export const en = {
   accWeek: "This week",
   accExpired: "expired",
   accFounder: "Founding member",
+  lifetimePoints: "Career points",
   seasonPoints: "Season points",
   seasonBadge: "Badge",
   prestigeNote: "Season points stay with this wallet and cannot be transferred.",
