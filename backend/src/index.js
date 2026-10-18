@@ -670,11 +670,20 @@ app.get("/bot/status", (_req, res) => {
   });
 });
 
-app.get("/entry/:wallet", (req, res) => {
+app.get("/entry/:wallet", async (req, res) => {
   const meta = windowMeta();
   const row = getEntry(req.params.wallet, meta.start);
+  let onChain = null;
+  try {
+    onChain = await entryForRound(connection, req.params.wallet);
+  } catch {
+    /* RPC blip — fall back to host index */
+  }
+  // Live race unlock = paid on-chain Entry for this round (5 USDC). Host row alone is not enough.
+  const entered = Boolean(onChain) || (Boolean(row) && process.env.ALLOW_HOST_ENTRY === "1");
   res.json({
-    entered: Boolean(row),
+    entered,
+    paidOnChain: Boolean(onChain),
     entryUsdc: ENTRY_USDC,
     asset: ASSET,
     nWinners: N_WINNERS,
@@ -730,10 +739,18 @@ app.post("/enter", express.json(), async (req, res) => {
     }
   }
 
+  let paidOnChain = false;
+  try {
+    paidOnChain = Boolean(await entryForRound(connection, wallet));
+  } catch {
+    /* ignore */
+  }
   res.json({
     ok: true,
-    demo: !txB64,
-    entered: true,
+    demo: !txB64 && !paidOnChain,
+    // Play unlocks only after the 5 USDC enter_round tx (or an existing on-chain Entry).
+    entered: paidOnChain,
+    paidOnChain,
     ...row,
     nWinners: N_WINNERS,
     tx: txB64,
@@ -741,7 +758,9 @@ app.post("/enter", express.json(), async (req, res) => {
     potAta: potAta().toBase58(),
     note:
       chainNote ??
-      "5 USDC listed. On-chain enter moves USDC into the pot; this host also records entry for Play.",
+      (paidOnChain
+        ? "Already entered on-chain for this round."
+        : "Sign the 5 USDC enter transaction — Play unlocks only after it confirms."),
   });
 });
 
@@ -751,8 +770,21 @@ app.post("/prove-assist", express.json(), async (req, res) => {
   const flag = String(req.body?.c ?? req.body?.flag ?? "");
   const nonceHex = String(req.body?.n ?? req.body?.nonce ?? "");
   const meta = windowMeta();
-  const entered = getEntry(wallet, meta.start);
-  if (!entered) {
+  // Hard gate: on-chain Entry for this round exists only after enter_round moved 5 USDC into the pot.
+  let paid = null;
+  try {
+    paid = await entryForRound(connection, wallet);
+  } catch (e) {
+    res.status(502).json({ error: `Could not verify entry on-chain: ${String(e.message ?? e)}` });
+    return;
+  }
+  if (!paid && process.env.ALLOW_HOST_ENTRY !== "1") {
+    res.status(403).json({
+      error: "Pay the 5 USDC entry on-chain before submitting. Host-only enter does not unlock the live race.",
+    });
+    return;
+  }
+  if (!paid && !getEntry(wallet, meta.start)) {
     res.status(403).json({ error: "Enter this week’s race first." });
     return;
   }
@@ -845,13 +877,15 @@ app.post("/confirm-solve", express.json(), async (req, res) => {
     return;
   }
   const meta = windowMeta();
-  if (!getEntry(wallet, meta.start)) {
-    res.status(403).json({ error: "Enter this week’s race first." });
-    return;
-  }
   try {
     const row = await entryForRound(connection, wallet);
-    if (!row || levelId < 0 || levelId > 7 || !(row.solvedMask & (1 << levelId))) {
+    if (!row) {
+      res.status(403).json({
+        error: "Pay the 5 USDC entry on-chain before submitting.",
+      });
+      return;
+    }
+    if (levelId < 0 || levelId > 7 || !(row.solvedMask & (1 << levelId))) {
       res.status(409).json({
         ok: false,
         error: "Level not verified on-chain yet. Submit the Groth16 proof first.",
