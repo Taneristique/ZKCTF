@@ -57,7 +57,6 @@ type PublicCard = {
   activity?: (Activity & { live?: boolean })[];
   weekNfts: { round: number; rank: number; mint: string }[];
   sharePath?: string;
-  research?: { id: string; label: string; handle: string; href?: string | null; verified?: boolean }[];
 };
 
 function medalDot(medal: string) {
@@ -134,31 +133,6 @@ export default function PublicProfilePage() {
           {shareNote && <p className="mt-1 text-[11px] text-cream/45">{shareNote}</p>}
         </div>
       </div>
-
-      {(card.research?.length ?? 0) > 0 && (
-        <div className="mt-6 flex flex-wrap gap-2">
-          {card.research!.map((r) =>
-            r.href ? (
-              <a
-                key={r.id}
-                href={r.href}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-full border border-cream/15 px-3 py-1.5 font-mono text-xs text-teal"
-              >
-                {r.label} · {r.handle}
-              </a>
-            ) : (
-              <span
-                key={r.id}
-                className="rounded-full border border-cream/15 px-3 py-1.5 font-mono text-xs text-cream/70"
-              >
-                {r.label} · {r.handle}
-              </span>
-            ),
-          )}
-        </div>
-      )}
 
       {live?.cleared && live.place != null && (
         <div className="mt-8 rounded-3xl border border-teal/35 bg-teal/[0.07] px-5 py-4">
