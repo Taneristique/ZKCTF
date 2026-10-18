@@ -1,14 +1,17 @@
 /**
- * Academy gift: clear N full rounds (Finisher balance) → claim 1 month membership once.
+ * Academy gift: clear N full rounds (Finisher balance / host clears) → claim 1 month once.
  * Requires the member wallet to sign mint_seat (program rule); no USDC transfer.
  */
 import { PublicKey } from "@solana/web3.js";
 import { dataPath, load, save } from "./store.js";
 import { loyaltyCount } from "./loyalty.js";
+import { hostFinishCount } from "./solves.js";
+import { weekNftsFor } from "./weekNft.js";
 import { memberStatus } from "./membership.js";
 import { mintSeatIx, recentTx } from "./chain.js";
 
 const PATH = dataPath("academy-gifts.json");
+const LOYALTY_PATH = dataPath("loyalty.json");
 export const GIFT_FINISHES = Number(process.env.ACADEMY_GIFT_FINISHES ?? 3);
 export const GIFT_MONTHS = 1;
 
@@ -18,6 +21,33 @@ function db() {
 
 export function giftClaimed(wallet) {
   return Boolean(db()[wallet]?.claimedAt);
+}
+
+/** Rounds recorded as minted (or in-flight) in loyalty.json for this wallet. */
+function loyaltyFileFinishCount(wallet) {
+  const all = load(LOYALTY_PATH);
+  let n = 0;
+  for (const round of Object.values(all)) {
+    if (!round || typeof round !== "object") continue;
+    const row = round[wallet];
+    if (row?.status === "ok" || row?.status === "sent") n++;
+  }
+  return n;
+}
+
+/**
+ * Best available finish count for this wallet:
+ * on-chain Finisher balance, host full clears, week placements, loyalty mint ledger.
+ */
+export async function finishCountForGift(connection, wallet) {
+  const [onChain, host, file] = await Promise.all([
+    loyaltyCount(connection, wallet).catch(() => 0),
+    Promise.resolve(hostFinishCount(wallet)),
+    Promise.resolve(loyaltyFileFinishCount(wallet)),
+  ]);
+  const week = weekNftsFor(wallet).filter((n) => n.rank >= 1 && n.rank <= 10).length;
+  const finishes = Math.max(onChain, host, file, week);
+  return { finishes, onChain, host, file, week };
 }
 
 /** Prevent two parallel authority-signed gift txs before confirm lands. */
@@ -43,24 +73,36 @@ export function releaseGiftClaim(wallet) {
 }
 
 export async function giftStatus(connection, wallet) {
-  const finishes = await loyaltyCount(connection, wallet);
+  const counts = await finishCountForGift(connection, wallet);
+  const finishes = counts.finishes;
   const claimed = giftClaimed(wallet);
   const held = giftHeld(wallet);
   const member = await memberStatus(connection, wallet);
-  const eligible = finishes >= GIFT_FINISHES && !claimed && !held;
+  const need = GIFT_FINISHES;
+  const left = Math.max(0, need - finishes);
+  const eligible = finishes >= need && !claimed && !held;
   return {
     finishes,
-    need: GIFT_FINISHES,
+    need,
+    left,
     months: GIFT_MONTHS,
     claimed,
     claimedAt: db()[wallet]?.claimedAt ?? null,
     eligible,
     alreadyMember: Boolean(member?.active),
+    sources: {
+      onChain: counts.onChain,
+      host: counts.host,
+      loyaltyFile: counts.file,
+      weekPlacements: counts.week,
+    },
     note: eligible
       ? `Claim ${GIFT_MONTHS} month of Academy (once). No USDC — you only sign the seat tx.`
       : claimed
         ? "Academy gift already claimed on this wallet."
-        : `Finish ${GIFT_FINISHES} full races (Finisher balance) to unlock 1 free Academy month.`,
+        : left === 0
+          ? `Ready — ${finishes}/${need} races finished.`
+          : `You have finished ${finishes} of ${need} full races. ${left} more to unlock 1 free Academy month.`,
   };
 }
 

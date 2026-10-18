@@ -188,13 +188,14 @@ export const tr: Dict = {
   place3: "3.",
   placeN: "{n}.",
   giftTitle: "Academy hediyesi",
-  giftLead:
-    "3 yarışı tam bitir (Finisher bakiyesi) ve bir kez ücretsiz 1 ay Academy talep et — cüzdan başına bir kez, USDC yok.",
+  giftLead: "3 tam yarış bitir ve bir aylık ücretsiz Academy al — cüzdan başına bir kez, USDC yok.",
   giftProgress: "Bitirilen yarış",
   giftReward: "Hediye",
   giftClaim: "1 ay ücretsiz al",
   giftClaimed: "Academy hediyesi zincir üstünde alındı.",
   giftDone: "Bu cüzdanda hediye zaten kullanıldı.",
+  giftNoteNeed: "{have} / {need} tam yarış bitirdin. Hediyeyi açmak için {left} yarış daha.",
+  giftNoteReady: "Talep etmeye hazır — bir imza, USDC yok.",
 
   legal: "Yasal",
   legalTitle: "Yasal",
