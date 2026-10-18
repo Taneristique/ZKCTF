@@ -30,3 +30,9 @@ export async function postJson<T>(path: string, body: unknown, headers?: Record<
   if (!res.ok) throw await failure(res);
   return res.json() as Promise<T>;
 }
+
+export async function deleteJson<T>(path: string, headers?: Record<string, string>): Promise<T> {
+  const res = await fetch(`${API}${path}`, { method: "DELETE", headers });
+  if (!res.ok) throw await failure(res);
+  return res.json() as Promise<T>;
+}

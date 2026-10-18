@@ -25,6 +25,7 @@ const FILES = [
   "loyalty.json",
   "founders.json",
   "academy-gifts.json",
+  "contests.json",
 ];
 
 function isUseful(name, raw) {

@@ -35,6 +35,7 @@ import {
 import { profileFor, setProfile, nameAvailable, namesFor, displayName, walletForName } from "./profiles.js";
 import { giftStatus, buildGiftTx, markGiftClaimed, GIFT_FINISHES, GIFT_MONTHS } from "./academyGift.js";
 import { weekNftsFor, weekMeta } from "./weekNft.js";
+import { contestPortfolio, addContest, removeContest, PLATFORMS } from "./contests.js";
 import { TRACKS, lessonCatalog, lessonFor, lessonFlag } from "./lessons.js";
 import { walletFromRequest } from "./walletAuth.js";
 import {
@@ -328,6 +329,8 @@ app.get("/u/:name", async (req, res) => {
         earnedUsdc: Math.round(earnedUsdc * 1e6) / 1e6,
       },
       activity,
+      contests: contestPortfolio(wallet),
+      sharePath: `/u/${profile.pseudonym}`,
     });
   } catch (e) {
     res.status(502).json({ error: String(e.message ?? e) });
@@ -340,8 +343,42 @@ app.get("/profile/:wallet", (req, res) => {
     profile,
     displayName: displayName(req.params.wallet),
     weekNfts: weekNftsFor(req.params.wallet),
+    contests: contestPortfolio(req.params.wallet),
     publicPath: profile?.pseudonym ? `/u/${profile.pseudonym}` : null,
   });
+});
+
+/** Add an external contest / bounty row (does not affect race pot or prestige). */
+app.post("/contests", express.json(), (req, res) => {
+  const wallet = walletFromRequest(req);
+  if (!wallet) {
+    res.status(401).json({ error: "Sign in with your wallet to add contest results." });
+    return;
+  }
+  const out = addContest(wallet, req.body ?? {});
+  if (!out.ok) {
+    res.status(400).json(out);
+    return;
+  }
+  res.json({ ok: true, item: out.item, portfolio: contestPortfolio(wallet) });
+});
+
+app.delete("/contests/:id", (req, res) => {
+  const wallet = walletFromRequest(req);
+  if (!wallet) {
+    res.status(401).json({ error: "Sign in with your wallet to remove a contest row." });
+    return;
+  }
+  const out = removeContest(wallet, String(req.params.id ?? ""));
+  if (!out.ok) {
+    res.status(404).json(out);
+    return;
+  }
+  res.json({ ok: true, portfolio: contestPortfolio(wallet) });
+});
+
+app.get("/contests/platforms", (_req, res) => {
+  res.json({ platforms: PLATFORMS });
 });
 
 app.post("/profile", express.json(), async (req, res) => {
