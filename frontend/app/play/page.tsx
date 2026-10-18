@@ -141,23 +141,32 @@ export default function PlayPage() {
     setBusy(true);
     setNote(null);
     try {
-      const out = await postJson<{ entered?: boolean; note?: string; tx?: string }>("/enter", {
-        wallet: publicKey.toBase58(),
-      });
-      setEntered(Boolean(out.entered));
+      const out = await postJson<{ entered?: boolean; paidOnChain?: boolean; note?: string; tx?: string }>(
+        "/enter",
+        { wallet: publicKey.toBase58() },
+      );
       if (out.tx) {
         try {
           await sendB64Tx(connection, sendTransaction, out.tx);
+          setEntered(true);
           setNote(out.note ?? t.entered);
         } catch (e) {
+          setEntered(false);
           setNote(
             e instanceof Error
-              ? `${t.entered} (USDC tx: ${e.message})`
-              : `${t.entered} (USDC tx skipped)`,
+              ? `5 USDC entry failed — Play stays locked until the pot payment confirms. (${e.message})`
+              : "5 USDC entry failed — Play stays locked until the pot payment confirms.",
           );
+          return;
         }
-      } else if (out.note) setNote(out.note);
-      else setNote(t.entered);
+      } else if (out.paidOnChain || out.entered) {
+        setEntered(true);
+        setNote(out.note ?? t.entered);
+      } else {
+        setEntered(false);
+        setNote(out.note ?? "On-chain 5 USDC entry is required before Play unlocks.");
+        return;
+      }
       await refreshProgress(publicKey.toBase58());
     } catch (e) {
       setNote(e instanceof Error ? e.message : "Rejected.");
