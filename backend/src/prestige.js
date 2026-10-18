@@ -1,23 +1,17 @@
-import { readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
-import { DATA_DIR } from "./dataDir.js";
+import { dataPath, load as loadJson, save as saveJson } from "./store.js";
 import { solvedIds } from "./solves.js";
 
-const PATH = join(DATA_DIR, "prestige.json");
+const PATH = dataPath("prestige.json");
 
 /** Points per unique official level solve in a season week. Soulbound: wallet-keyed only. */
 export const POINTS_PER_SOLVE = 10;
 
 function load() {
-  try {
-    return JSON.parse(readFileSync(PATH, "utf8"));
-  } catch {
-    return {};
-  }
+  return loadJson(PATH);
 }
 
 function save(all) {
-  writeFileSync(PATH, JSON.stringify(all, null, 2));
+  saveJson(PATH, all);
 }
 
 function seasonId(startIso) {

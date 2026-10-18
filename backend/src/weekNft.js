@@ -40,6 +40,40 @@ export function weekNftsFor(wallet) {
   return out.sort((a, b) => b.round - a.round);
 }
 
+/**
+ * Persist top placements on the volume immediately (no mint required).
+ * Profile /u activity and medals read this file — never wait on Token-2022 success.
+ * Does not overwrite an existing row for (round, wallet).
+ */
+export function recordHostPlacements(roundKey, winners, opts = {}) {
+  const key = String(roundKey);
+  if (!key || !Array.isArray(winners) || !winners.length) return { added: 0, total: 0 };
+  const all = db();
+  const round = (all[key] ??= {});
+  const host = raceHost(Number(roundKey) || Date.now() / 1000);
+  const paysUsdc = opts.paysUsdc ?? [];
+  const source = opts.source ?? "host";
+  let added = 0;
+  for (let i = 0; i < winners.length; i++) {
+    const wallet = winners[i];
+    if (!wallet || round[wallet]) continue;
+    const rank = i + 1;
+    round[wallet] = {
+      rank,
+      pseudonym: displayName(wallet),
+      mint: `${source}-${key}-rank${rank}`,
+      status: source === "settle" ? "pending-mint" : source,
+      at: Date.now(),
+      prizeUsdc: Number(paysUsdc[i] ?? 0),
+      host: { id: host.id, name: host.name, logo: host.logo },
+      title: `${host.name} Saturday race`,
+    };
+    added++;
+  }
+  if (added) save(PATH, all);
+  return { added, total: Object.keys(round).length };
+}
+
 export function weekMeta(roundKey) {
   const winners = db()[String(roundKey)] ?? {};
   const list = Object.entries(winners).map(([wallet, row]) => ({
@@ -121,7 +155,7 @@ export async function awardWeekWinners(connection, authority, roundKey, winners,
   for (let i = 0; i < winners.length; i++) {
     const wallet = winners[i];
     if (round[wallet]?.status === "ok") continue;
-    const rank = i + 1;
+    const rank = round[wallet]?.rank ?? i + 1;
     const pseudo = displayName(wallet);
     const short = pseudo.length > 12 ? `${pseudo.slice(0, 12)}` : pseudo;
     const name = `ZK W${String(roundKey).slice(-4)} #${rank} ${short}`.slice(0, 32);
@@ -140,8 +174,9 @@ export async function awardWeekWinners(connection, authority, roundKey, winners,
       createMintToInstruction(mint, ata, authority.publicKey, 1, [], TOKEN_2022_PROGRAM_ID),
     );
     const sig = await sendAndConfirm(connection, tx, [authority]);
-    const prizeUsdc = Number(paysUsdc[i] ?? 0);
+    const prizeUsdc = Number(paysUsdc[i] ?? round[wallet]?.prizeUsdc ?? 0);
     round[wallet] = {
+      ...round[wallet],
       rank,
       pseudonym: pseudo,
       mint: mint.toBase58(),

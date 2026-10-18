@@ -27,8 +27,10 @@ import { awardRound, loyaltyMint } from "./loyalty.js";
 import { treasuryOwner } from "./membership.js";
 import { N_WINNERS, saturdayWindow } from "./race.js";
 import { readRound, roundCommitments, writeRound } from "./roundStore.js";
+import { dataPersistent } from "./dataDir.js";
 import { dataPath, load, save } from "./store.js";
-import { awardWeekWinners } from "./weekNft.js";
+import { rankSolvers } from "./solves.js";
+import { awardWeekWinners, recordHostPlacements } from "./weekNft.js";
 
 const PATH = dataPath("scheduler.json");
 const TICK_MS = Number(process.env.BOT_TICK_MS ?? 5 * 60_000);
@@ -150,7 +152,13 @@ export function startScheduler({ connection, authority, authorityStatus }) {
       const auth = await authorityStatus();
       const sol = (await connection.getBalance(authority.publicKey)) / 1e9;
       last = { ...last, sol, authorityOk: auth.ok };
-      const canWrite = chainWrites && auth.ok;
+      if (chainWrites && !dataPersistent) {
+        await notify(
+          "CRITICAL: dataDir is not on a volume — chain bot paused so redeploys cannot wipe profile reputation.",
+          "ephemeral",
+        );
+      }
+      const canWrite = chainWrites && auth.ok && dataPersistent;
       if (!chainWrites) await notify("BOT_CHAIN is not 1: levels are generated, but settle / loyalty / create_round are skipped.", "nochain");
       if (chainWrites && !auth.ok) await notify(`authority mismatch: server ${auth.server}, chain ${auth.onChain}. Chain steps paused.`, "auth");
       if (canWrite && sol < MIN_SOL) await notify(`authority ${auth.server} has ${sol.toFixed(4)} SOL, below ${MIN_SOL}. Top it up.`, "sol");
@@ -158,11 +166,39 @@ export function startScheduler({ connection, authority, authorityStatus }) {
       const now = Math.floor(Date.now() / 1000);
       let round = await onChainRound(connection);
 
+      // Host board → volume as soon as the Saturday window ends (mint optional).
+      {
+        const host = readRound();
+        const hostEndMs = Date.parse(host.end);
+        const hostStartS = Math.floor(Date.parse(host.start) / 1000);
+        if (
+          Number.isFinite(hostEndMs) &&
+          Number.isFinite(hostStartS) &&
+          Date.now() > hostEndMs &&
+          !s.rounds[hostStartS]?.hostBoard
+        ) {
+          const ranked = rankSolvers(host.start, host.levels?.length ?? 0)
+            .slice(0, N_WINNERS)
+            .map((r) => r.wallet);
+          const snap = recordHostPlacements(hostStartS, ranked, { source: "host" });
+          s.rounds[hostStartS] = { ...s.rounds[hostStartS], hostBoard: snap };
+          remember(s, "hostBoard", { round: hostStartS, added: snap.added, total: snap.total });
+          if (snap.added) await notify(`host board saved for ${host.start}: ${snap.total} placement(s) on volume`);
+        }
+      }
+
       if (canWrite && round && !round.settled && now > round.end + SETTLE_GRACE_S) {
         const out = await settleOnChain({ connection, authority, round });
         s.rounds[round.start] = { ...s.rounds[round.start], settled: out };
         remember(s, "settled", { round: round.start, sig: out.sig, winners: out.winners.length });
         await notify(`settled round ${new Date(round.start * 1000).toISOString()}: ${out.winners.length} winner(s), tx ${out.sig}`);
+        // Reputation first: write ranks before NFT mint can fail.
+        if (out.winners?.length) {
+          recordHostPlacements(round.start, out.winners, {
+            source: "settle",
+            paysUsdc: out.paysUsdc,
+          });
+        }
         round = await onChainRound(connection);
       }
 
@@ -179,6 +215,10 @@ export function startScheduler({ connection, authority, authorityStatus }) {
           (await finishersOnChain(connection, round)).slice(0, N_WINNERS).map((f) => f.wallet);
         if (winners.length) {
           const settled = s.rounds[round.start]?.settled;
+          recordHostPlacements(round.start, winners, {
+            source: "settle",
+            paysUsdc: settled?.paysUsdc,
+          });
           const out = await awardWeekWinners(connection, authority, round.start, winners, {
             paysUsdc: settled?.paysUsdc,
           });

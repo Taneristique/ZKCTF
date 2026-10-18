@@ -1,19 +1,13 @@
-import { readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
-import { DATA_DIR } from "./dataDir.js";
+import { dataPath, load as loadJson, save as saveJson } from "./store.js";
 
-const PATH = join(DATA_DIR, "solves.json");
+const PATH = dataPath("solves.json");
 
 function load() {
-  try {
-    return JSON.parse(readFileSync(PATH, "utf8"));
-  } catch {
-    return {};
-  }
+  return loadJson(PATH);
 }
 
 function save(all) {
-  writeFileSync(PATH, JSON.stringify(all, null, 2));
+  saveJson(PATH, all);
 }
 
 function keyOf(startIso, wallet) {

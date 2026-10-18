@@ -12,9 +12,11 @@ export ZKCTF_DATA_DIR="$DATA_DIR"
 if [[ -z "${RAILWAY_VOLUME_MOUNT_PATH:-}" ]]; then
   echo "[start] CRITICAL: RAILWAY_VOLUME_MOUNT_PATH unset — /data is ephemeral; attach a volume at /data (no trailing space) or every redeploy wipes profiles."
 fi
-# Restore round.json + known host state after ephemeral wipes (no curl/nano on Railway).
+# Reputation durability on the volume: restore backups → merge fixtures → snapshot again.
+node scripts/backup-reputation.mjs || echo "[start] backup-reputation failed (continuing)"
 node scripts/ensure-round.mjs || echo "[start] ensure-round failed (continuing)"
 node scripts/ensure-state.mjs || echo "[start] ensure-state failed (continuing)"
+node scripts/backup-reputation.mjs || echo "[start] backup-reputation (post-ensure) failed (continuing)"
 
 # Must match the /zk-api rewrite default in frontend/next.config.ts.
 (cd backend && PORT=8787 exec node src/index.js) &
