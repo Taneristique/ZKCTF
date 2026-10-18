@@ -1,8 +1,10 @@
 /**
  * Pseudonym profiles: independent of CTF entry and Academy membership.
  * One wallet → one unique name. Create free; at most ONE rename for life, then locked.
+ * Optional research handles (Sherlock Watson etc.) are links only — not scraped findings.
  */
 import { dataPath, load, save } from "./store.js";
+import { publicResearch, sanitizeResearch } from "./researchLinks.js";
 
 const PATH = dataPath("profiles.json");
 const NAME_RE = /^[A-Za-z0-9_]{3,20}$/;
@@ -70,6 +72,7 @@ export function profileFor(wallet) {
     renameCount,
     renamesLeft,
     canRename: renamesLeft > 0,
+    research: publicResearch(row.research),
   };
 }
 
@@ -113,9 +116,26 @@ export function setProfile(wallet, raw) {
     createdAt: prev?.createdAt ?? now,
     updatedAt: now,
     renameCount: prev ? renameCountOf(prev) + 1 : 0,
+    research: prev?.research ?? {},
   };
   all.byWallet[wallet] = row;
   all.byName[check.name.toLowerCase()] = wallet;
+  save(PATH, all);
+  return { ok: true, profile: profileFor(wallet) };
+}
+
+/** Set external research handles (does not rename). */
+export function setResearch(wallet, rawLinks) {
+  const all = db();
+  const prev = all.byWallet[wallet];
+  if (!prev) return { ok: false, error: "Create a pseudonym first." };
+  const cleaned = sanitizeResearch(rawLinks);
+  if (cleaned.error) return { ok: false, error: cleaned.error };
+  all.byWallet[wallet] = {
+    ...prev,
+    research: cleaned.links ?? {},
+    updatedAt: Date.now(),
+  };
   save(PATH, all);
   return { ok: true, profile: profileFor(wallet) };
 }

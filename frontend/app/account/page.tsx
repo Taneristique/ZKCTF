@@ -7,7 +7,7 @@ import { getJson } from "@/lib/api";
 import { useLang } from "@/lib/lang";
 import { tokenBalance } from "@/lib/program";
 import { ProfileCard } from "@/components/ProfileCard";
-import { ContestForm } from "@/components/ContestForm";
+import { ResearchLinksForm } from "@/components/ResearchLinksForm";
 import { PrizeClaimCard } from "@/components/PrizeClaimCard";
 import { AcademyGiftCard } from "@/components/AcademyGiftCard";
 
@@ -133,7 +133,7 @@ function AccountBody() {
 
       <PrizeClaimCard />
       <ProfileCard />
-      <ContestForm />
+      <ResearchLinksForm />
       <AcademyGiftCard />
 
       <section className="mt-8 rounded-3xl border border-teal/40 bg-teal/[0.07] p-5">

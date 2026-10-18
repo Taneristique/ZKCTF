@@ -57,23 +57,7 @@ type PublicCard = {
   activity?: (Activity & { live?: boolean })[];
   weekNfts: { round: number; rank: number; mint: string }[];
   sharePath?: string;
-  contests?: {
-    items: ContestItem[];
-    platforms: Record<string, { id: string; label: string }>;
-    summary: { count: number; payouts: number; firstPlaces: number; earnedUsdc: number };
-  };
-};
-
-type ContestItem = {
-  id: string;
-  platform: string;
-  title: string;
-  url?: string | null;
-  rank?: number | null;
-  prizeUsdc?: number;
-  severity?: string | null;
-  finding?: string | null;
-  at: number;
+  research?: { id: string; label: string; handle: string; href?: string | null; verified?: boolean }[];
 };
 
 function medalDot(medal: string) {
@@ -89,7 +73,6 @@ export default function PublicProfilePage() {
   const name = String(params?.name ?? "");
   const [card, setCard] = useState<PublicCard | null>(null);
   const [err, setErr] = useState<string | null>(null);
-  const [contestFilter, setContestFilter] = useState("all");
   const [shareNote, setShareNote] = useState<string | null>(null);
 
   useEffect(() => {
@@ -104,7 +87,7 @@ export default function PublicProfilePage() {
     const url = typeof window !== "undefined" ? `${window.location.origin}${path}` : path;
     try {
       await navigator.clipboard.writeText(url);
-      setShareNote(t.contestsShared);
+      setShareNote(t.profileShared);
     } catch {
       setShareNote(url);
     }
@@ -130,16 +113,6 @@ export default function PublicProfilePage() {
   const live = card.liveWeek;
   const prestige = card.prestige;
   const hasPrestige = Boolean(prestige && (prestige.points > 0 || prestige.lifetime > 0));
-  const contests = card.contests;
-  const contestItems = (contests?.items ?? []).filter(
-    (c) => contestFilter === "all" || c.platform === contestFilter,
-  );
-  const platformTabs = [
-    "all",
-    ...Object.keys(contests?.platforms ?? {}).filter((id) =>
-      (contests?.items ?? []).some((c) => c.platform === id),
-    ),
-  ];
 
   return (
     <div className="mx-auto max-w-lg">
@@ -156,11 +129,36 @@ export default function PublicProfilePage() {
             onClick={() => void copyShare()}
             className="mt-3 text-xs text-teal underline"
           >
-            {t.contestsShare}
+            {t.profileShare}
           </button>
           {shareNote && <p className="mt-1 text-[11px] text-cream/45">{shareNote}</p>}
         </div>
       </div>
+
+      {(card.research?.length ?? 0) > 0 && (
+        <div className="mt-6 flex flex-wrap gap-2">
+          {card.research!.map((r) =>
+            r.href ? (
+              <a
+                key={r.id}
+                href={r.href}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-full border border-cream/15 px-3 py-1.5 font-mono text-xs text-teal"
+              >
+                {r.label} · {r.handle}
+              </a>
+            ) : (
+              <span
+                key={r.id}
+                className="rounded-full border border-cream/15 px-3 py-1.5 font-mono text-xs text-cream/70"
+              >
+                {r.label} · {r.handle}
+              </span>
+            ),
+          )}
+        </div>
+      )}
 
       {live?.cleared && live.place != null && (
         <div className="mt-8 rounded-3xl border border-teal/35 bg-teal/[0.07] px-5 py-4">
@@ -320,62 +318,6 @@ export default function PublicProfilePage() {
           </ul>
         </section>
       )}
-
-      <section className="mt-10">
-        <p className="text-xs uppercase tracking-[0.2em] text-cream/45">{t.contestsTitle}</p>
-        <p className="mt-2 text-sm text-cream/50">{t.contestsLead}</p>
-        {contests && contests.summary.count > 0 && (
-          <p className="mt-3 font-mono text-xs text-cream/45">
-            {contests.summary.count} · {contests.summary.payouts} payouts
-            {contests.summary.firstPlaces > 0 ? ` · ${contests.summary.firstPlaces}× 1st` : ""}
-            {contests.summary.earnedUsdc > 0 ? ` · ${contests.summary.earnedUsdc.toFixed(2)} USDC` : ""}
-          </p>
-        )}
-        {platformTabs.length > 1 && (
-          <div className="mt-4 flex flex-wrap gap-2">
-            {platformTabs.map((id) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setContestFilter(id)}
-                className={`rounded-full px-3 py-1 text-xs ${
-                  contestFilter === id ? "bg-cream text-ink" : "border border-cream/15 text-cream/65"
-                }`}
-              >
-                {id === "all" ? t.contestsFilterAll : contests?.platforms[id]?.label ?? id}
-              </button>
-            ))}
-          </div>
-        )}
-        {contestItems.length === 0 ? (
-          <p className="mt-5 text-sm text-cream/40">{t.contestsEmpty}</p>
-        ) : (
-          <ul className="mt-5 space-y-4">
-            {contestItems.map((c) => (
-              <li key={c.id} className="rounded-2xl border border-cream/10 p-4">
-                <p className="font-mono text-[10px] uppercase tracking-wider text-cream/40">
-                  {new Date(c.at).toISOString().slice(0, 7)} · {contests?.platforms[c.platform]?.label ?? c.platform}
-                </p>
-                <p className="mt-2 text-sm font-medium text-cream/90">
-                  {c.url ? (
-                    <a href={c.url} target="_blank" rel="noreferrer" className="text-teal underline">
-                      {c.title}
-                    </a>
-                  ) : (
-                    c.title
-                  )}
-                </p>
-                {c.finding && <p className="mt-1 text-xs text-cream/55">{c.finding}</p>}
-                <p className="mt-2 font-mono text-xs text-teal">
-                  {c.rank != null ? `#${c.rank}` : "—"}
-                  {c.severity ? ` · ${c.severity}` : ""}
-                  {(c.prizeUsdc ?? 0) > 0 ? ` · ${Number(c.prizeUsdc).toFixed(2)} USDC` : ""}
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
 
       <p className="mt-8 text-sm text-cream/50">
         <Link href="/play" className="text-teal underline">
