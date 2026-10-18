@@ -19,7 +19,12 @@ import {
   splitPot,
 } from "./race.js";
 import { founders, founderFor, syncFounders, snapshotFounder, isExcludedFounder } from "./founders.js";
-import { loyaltyStatus, TIERS } from "./loyalty.js";
+import {
+  loyaltyStatus,
+  TIERS,
+  claimableFinisherRounds,
+  executeFinisherClaim,
+} from "./loyalty.js";
 import { startScheduler } from "./scheduler.js";
 import { authorityKeypair, authoritySource } from "./authority.js";
 import {
@@ -821,6 +826,43 @@ app.get("/founders/:wallet", (req, res) => {
     carried: Boolean(carried),
     excluded: false,
   });
+});
+
+app.get("/loyalty/claims/:wallet", (req, res) => {
+  res.json({ claimable: claimableFinisherRounds(req.params.wallet) });
+});
+
+/** Mint a missed Finisher token for one settled round (wallet signature required). */
+app.post("/loyalty/claim", express.json(), async (req, res) => {
+  const wallet = walletFromRequest(req);
+  if (!wallet) {
+    res.status(401).json({ error: "Sign in with your wallet to claim a Finisher token." });
+    return;
+  }
+  const roundKey = String(req.body?.round ?? "");
+  if (!roundKey) {
+    res.status(400).json({ error: "round required." });
+    return;
+  }
+  const auth = await authorityStatus();
+  if (!auth.ok) {
+    res.status(503).json({ error: PAYMENTS_PAUSED });
+    return;
+  }
+  try {
+    const out = await executeFinisherClaim({ connection, authority, wallet, roundKey });
+    if (!out.ok) {
+      res.status(400).json(out);
+      return;
+    }
+    res.json({
+      ...out,
+      claimable: claimableFinisherRounds(wallet),
+      loyalty: await loyaltyStatus(connection, wallet),
+    });
+  } catch (e) {
+    res.status(502).json({ error: String(e.message ?? e) });
+  }
 });
 
 app.get("/loyalty/:wallet", async (req, res) => {

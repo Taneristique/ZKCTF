@@ -9,6 +9,7 @@ import { tokenBalance } from "@/lib/program";
 import { ProfileCard } from "@/components/ProfileCard";
 import { PrizeClaimCard } from "@/components/PrizeClaimCard";
 import { AcademyGiftCard } from "@/components/AcademyGiftCard";
+import { FinisherClaimCard } from "@/components/FinisherClaimCard";
 
 type Member = {
   active: boolean;
@@ -30,6 +31,8 @@ type Loyalty = {
   tier: "finisher" | "veteran" | "elite" | null;
   perks: string[];
   next: { id: string; min: number } | null;
+  claimable?: { round: number; day?: string }[];
+  hostFinishes?: number;
 };
 
 const PERK_KEY = {
@@ -137,22 +140,26 @@ function AccountBody() {
       <section className="mt-8 rounded-3xl border border-teal/40 bg-teal/[0.07] p-5">
         <p className="text-xs uppercase tracking-[0.2em] text-teal">{t.loyaltyTitle}</p>
         <p className="mt-2 text-sm leading-6 text-cream/70">{t.loyaltyLead}</p>
-        {loyalty?.tier ? (
-          <>
-            <dl className="mt-4 grid grid-cols-2 gap-2 text-sm">
+        <dl className="mt-4 grid grid-cols-2 gap-2 text-sm">
+          <dt className="text-cream/45">{t.loyaltyCount}</dt>
+          <dd className="text-right font-mono">{loyalty?.count ?? (connected ? "…" : "—")}</dd>
+          {loyalty?.tier && (
+            <>
               <dt className="text-cream/45">{t.loyaltyTier}</dt>
               <dd className="text-right font-medium text-teal">{t[TIER_KEY[loyalty.tier]]}</dd>
-              <dt className="text-cream/45">{t.loyaltyCount}</dt>
-              <dd className="text-right font-mono">{loyalty.count}</dd>
-              {loyalty.next && (
-                <>
-                  <dt className="text-cream/45">{t.loyaltyNext}</dt>
-                  <dd className="text-right font-mono text-xs">
-                    {loyalty.next.min} · {t[TIER_KEY[loyalty.next.id as keyof typeof TIER_KEY]]}
-                  </dd>
-                </>
-              )}
-            </dl>
+            </>
+          )}
+          {loyalty?.next && (
+            <>
+              <dt className="text-cream/45">{t.loyaltyNext}</dt>
+              <dd className="text-right font-mono text-xs">
+                {loyalty.next.min} · {t[TIER_KEY[loyalty.next.id as keyof typeof TIER_KEY]]}
+              </dd>
+            </>
+          )}
+        </dl>
+        {loyalty?.tier ? (
+          <>
             <p className="mt-4 text-xs uppercase tracking-[0.2em] text-cream/45">{t.loyaltyPerks}</p>
             <ul className="mt-2 space-y-1 text-sm text-cream/75">
               {loyalty.perks.map((p) => (
@@ -163,6 +170,12 @@ function AccountBody() {
         ) : (
           <p className="mt-3 text-sm text-cream/55">{connected ? t.loyaltyNone : t.connectFirst}</p>
         )}
+        <FinisherClaimCard
+          onMinted={() => {
+            if (!publicKey) return;
+            void getJson<Loyalty>(`/loyalty/${publicKey.toBase58()}`).then(setLoyalty).catch(() => undefined);
+          }}
+        />
       </section>
     </div>
   );
