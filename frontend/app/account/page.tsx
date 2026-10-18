@@ -7,6 +7,7 @@ import { getJson } from "@/lib/api";
 import { useLang } from "@/lib/lang";
 import { tokenBalance } from "@/lib/program";
 import { ProfileCard } from "@/components/ProfileCard";
+import { ContestForm } from "@/components/ContestForm";
 import { AcademyGiftCard } from "@/components/AcademyGiftCard";
 
 type Member = {
@@ -130,6 +131,7 @@ function AccountBody() {
       <p className="mt-3 text-xs text-cream/45">{t.prestigeNote}</p>
 
       <ProfileCard />
+      <ContestForm />
       <AcademyGiftCard />
 
       <section className="mt-8 rounded-3xl border border-teal/40 bg-teal/[0.07] p-5">
