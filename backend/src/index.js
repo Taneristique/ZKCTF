@@ -125,6 +125,19 @@ app.get("/health", async (_req, res) => {
     railwayVolume: process.env.RAILWAY_VOLUME_MOUNT_PATH?.trim() || null,
     profiles: Object.keys(load(dataPath("profiles.json")).byWallet ?? {}).length,
     entries: Object.keys(load(dataPath("entries.json"))).length,
+    reputation: (() => {
+      const prestige = load(dataPath("prestige.json"));
+      const weekNfts = load(dataPath("week-nfts.json"));
+      const solves = load(dataPath("solves.json"));
+      let placements = 0;
+      for (const round of Object.values(weekNfts)) placements += Object.keys(round ?? {}).length;
+      return {
+        prestigeWallets: Object.keys(prestige).length,
+        weekPlacements: placements,
+        solveRows: Object.keys(solves).length,
+        backupsDir: `${DATA_DIR}/backups`,
+      };
+    })(),
   });
 });
 

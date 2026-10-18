@@ -84,15 +84,19 @@ let restored = 0;
   }
 }
 
-// prestige
+// prestige (merge missing seasons; never wipe existing season rows)
 {
   let n = 0;
   const cur = load("prestige.json") ?? {};
   for (const [wallet, row] of Object.entries(fixture.prestige ?? {})) {
-    if (cur[wallet]?.seasons && Object.keys(cur[wallet].seasons).length) continue;
-    cur[wallet] = row;
-    n++;
-    console.log(`[ensure-state] restored prestige ${wallet.slice(0, 4)}…`);
+    cur[wallet] ??= { seasons: {} };
+    cur[wallet].seasons ??= {};
+    for (const [season, seasonRow] of Object.entries(row.seasons ?? {})) {
+      if (cur[wallet].seasons[season]?.points > 0) continue;
+      cur[wallet].seasons[season] = seasonRow;
+      n++;
+      console.log(`[ensure-state] restored prestige ${wallet.slice(0, 4)}… season ${season}`);
+    }
   }
   if (n) {
     save("prestige.json", cur);
