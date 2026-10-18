@@ -11,6 +11,8 @@ type Row = {
   place?: number;
   displayName?: string;
   pseudonym?: string | null;
+  imageUrl?: string | null;
+  emoji?: string | null;
   prizeUsdc?: number;
   paid?: boolean;
   finishTs?: number;
@@ -80,7 +82,13 @@ export function Leaderboard() {
           return (
             <li key={r.wallet} className="flex items-start gap-3 px-4 py-3.5">
               <span className="mt-0.5 w-8 shrink-0 font-mono text-sm text-cream/40">{place}</span>
-              <Avatar seed={r.pseudonym ?? r.wallet} size="md" className="mt-0.5" />
+              <Avatar
+                seed={r.pseudonym ?? r.wallet}
+                src={r.imageUrl}
+                emoji={r.emoji}
+                size="md"
+                className="mt-0.5"
+              />
               <div className="min-w-0 flex-1">
                 <p className={`truncate text-sm font-medium ${paid ? "text-teal" : "text-cream/85"}`}>
                   {r.pseudonym ? (

@@ -32,7 +32,9 @@ import {
   holdFoundingSeat,
   releaseFoundingSeat,
 } from "./membership.js";
-import { profileFor, setProfile, nameAvailable, namesFor, displayName, walletForName } from "./profiles.js";
+import { profileFor, setProfile, setEmoji, nameAvailable, namesFor, imageUrlsFor, emojisFor, displayName, walletForName } from "./profiles.js";
+import { saveProfileImage, removeProfileImage, readProfileImage, MAX_BYTES } from "./profileImage.js";
+import { AVATAR_EMOJIS } from "./avatarEmojis.js";
 import { giftStatus, buildGiftTx, markGiftClaimed, GIFT_FINISHES, GIFT_MONTHS } from "./academyGift.js";
 import { weekNftsFor, weekMeta } from "./weekNft.js";
 import { claimsFor, claimableFor, executeClaim } from "./prizeClaims.js";
@@ -179,7 +181,10 @@ app.get("/leaderboard", async (_req, res) => {
     /* RPC optional for preview */
   }
   const top = ranked.slice(0, 25);
-  const labels = namesFor(top.map((r) => r.wallet));
+  const wallets = top.map((r) => r.wallet);
+  const labels = namesFor(wallets);
+  const images = imageUrlsFor(wallets);
+  const emojis = emojisFor(wallets);
   const paidSlots = Math.min(top.length, N_WINNERS);
   const { pays, treasury } = splitPot(potAtoms, paidSlots);
   const paysUsdc = pays.map((a) => a / 1e6);
@@ -193,6 +198,8 @@ app.get("/leaderboard", async (_req, res) => {
         place,
         pseudonym: labels[r.wallet] ?? null,
         displayName: labels[r.wallet] ?? displayName(r.wallet),
+        imageUrl: images[r.wallet] ?? null,
+        emoji: emojis[r.wallet] ?? null,
         prizeUsdc,
         paid: prizeUsdc > 0,
       };
@@ -215,6 +222,10 @@ app.get("/leaderboard", async (_req, res) => {
 /** Pseudonym profile (independent of race entry / Academy). */
 app.get("/profile/check/:name", (req, res) => {
   res.json(nameAvailable(req.params.name));
+});
+
+app.get("/profile/emojis", (_req, res) => {
+  res.json({ emojis: AVATAR_EMOJIS });
 });
 
 /** Public Watson-style card: /u/:name → achievements (no private balances). */
@@ -399,12 +410,82 @@ app.post("/profile", express.json(), async (req, res) => {
     res.status(403).json({ error: "Wallet mismatch." });
     return;
   }
-  const out = setProfile(wallet, req.body?.pseudonym ?? req.body?.name);
+  const out = setProfile(wallet, req.body?.pseudonym ?? req.body?.name, {
+    emoji: req.body?.emoji,
+  });
   if (!out.ok) {
     res.status(400).json(out);
     return;
   }
   res.json(out);
+});
+
+/** Change emoji anytime; clearPhoto switches display back from an uploaded image. */
+app.post("/profile/emoji", express.json(), (req, res) => {
+  const wallet = walletFromRequest(req);
+  if (!wallet) {
+    res.status(401).json({ error: "Sign in with your wallet to change your emoji." });
+    return;
+  }
+  const clearPhoto = Boolean(req.body?.clearPhoto);
+  if (clearPhoto) {
+    const cleared = removeProfileImage(wallet);
+    if (!cleared.ok) {
+      res.status(400).json(cleared);
+      return;
+    }
+  }
+  const out = setEmoji(wallet, req.body?.emoji, { clearPhoto: false });
+  if (!out.ok) {
+    res.status(400).json(out);
+    return;
+  }
+  res.json(out);
+});
+
+/** Personal photo on the Railway volume (JPEG/PNG/WebP, max ~300 KB). Not an NFT. */
+app.get("/avatars/:wallet", (req, res) => {
+  const img = readProfileImage(req.params.wallet);
+  if (!img) {
+    res.status(404).end();
+    return;
+  }
+  res.setHeader("Content-Type", img.mime);
+  res.setHeader("Cache-Control", "public, max-age=86400, immutable");
+  res.setHeader("ETag", `"${img.at}"`);
+  if (req.headers["if-none-match"] === `"${img.at}"`) {
+    res.status(304).end();
+    return;
+  }
+  res.send(img.buf);
+});
+
+app.post("/profile/avatar", express.json({ limit: "500kb" }), (req, res) => {
+  const wallet = walletFromRequest(req);
+  if (!wallet) {
+    res.status(401).json({ error: "Sign in with your wallet to upload a photo." });
+    return;
+  }
+  const out = saveProfileImage(wallet, req.body?.image ?? req.body?.dataUrl);
+  if (!out.ok) {
+    res.status(400).json(out);
+    return;
+  }
+  res.json({ ...out, profile: profileFor(wallet), maxBytes: MAX_BYTES });
+});
+
+app.delete("/profile/avatar", (req, res) => {
+  const wallet = walletFromRequest(req);
+  if (!wallet) {
+    res.status(401).json({ error: "Sign in with your wallet to remove a photo." });
+    return;
+  }
+  const out = removeProfileImage(wallet);
+  if (!out.ok) {
+    res.status(400).json(out);
+    return;
+  }
+  res.json({ ...out, profile: profileFor(wallet) });
 });
 
 app.get("/gift/academy/:wallet", async (req, res) => {

@@ -32,7 +32,12 @@ type LiveWeek = {
 };
 
 type PublicCard = {
-  profile: { pseudonym: string; createdAt: number } | null;
+  profile: {
+    pseudonym: string;
+    createdAt: number;
+    imageUrl?: string | null;
+    emoji?: string | null;
+  } | null;
   wallet: string;
   shortWallet: string;
   finishes: number;
@@ -117,7 +122,12 @@ export default function PublicProfilePage() {
     <div className="mx-auto max-w-lg">
       <p className="text-xs uppercase tracking-[0.2em] text-teal">{t.publicProfileBadge}</p>
       <div className="mt-4 flex items-center gap-4">
-        <Avatar seed={card.profile.pseudonym} size="xl" />
+        <Avatar
+          seed={card.profile.pseudonym}
+          src={card.profile.imageUrl}
+          emoji={card.profile.emoji}
+          size="xl"
+        />
         <div className="min-w-0 flex-1">
           <h1 className="font-mono text-3xl font-semibold text-cream sm:text-4xl">{card.profile.pseudonym}</h1>
           <p className="mt-2 font-mono text-xs text-cream/45">
