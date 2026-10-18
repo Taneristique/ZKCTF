@@ -132,10 +132,18 @@ export default function PublicProfilePage() {
         </div>
         {hasPrestige && (
           <>
-            <div>
-              <dt className="text-cream/45">{t.seasonPoints}</dt>
-              <dd className="mt-1 font-mono text-xl text-teal">{prestige!.points}</dd>
-            </div>
+            {prestige!.lifetime > 0 && (
+              <div>
+                <dt className="text-cream/45">{t.lifetimePoints}</dt>
+                <dd className="mt-1 font-mono text-xl text-teal">{prestige!.lifetime}</dd>
+              </div>
+            )}
+            {prestige!.points > 0 && (
+              <div>
+                <dt className="text-cream/45">{t.seasonPoints}</dt>
+                <dd className="mt-1 font-mono text-xl text-teal">{prestige!.points}</dd>
+              </div>
+            )}
             {prestige!.badge && prestige!.badge !== "none" && (
               <div>
                 <dt className="text-cream/45">{t.seasonBadge}</dt>

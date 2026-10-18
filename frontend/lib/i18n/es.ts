@@ -56,6 +56,7 @@ export const es: Dict = {
   accWeek: "Esta semana",
   accExpired: "vencida",
   accFounder: "Miembro fundador",
+  lifetimePoints: "Puntos de carrera",
   seasonPoints: "Puntos de temporada",
   seasonBadge: "Insignia",
   prestigeNote: "Los puntos de temporada quedan en esta wallet y no se pueden transferir.",

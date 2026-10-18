@@ -56,6 +56,7 @@ export const tr: Dict = {
   accWeek: "Bu hafta",
   accExpired: "süresi doldu",
   accFounder: "Kurucu üye",
+  lifetimePoints: "Kariyer puanı",
   seasonPoints: "Sezon puanı",
   seasonBadge: "Rozet",
   prestigeNote: "Sezon puanları bu cüzdanda kalır ve başka cüzdana aktarılamaz.",
