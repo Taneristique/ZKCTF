@@ -19,6 +19,9 @@ type Activity = {
   host: Host;
   medal: string;
   mint?: string;
+  claimStatus?: string | null;
+  claimable?: boolean;
+  live?: boolean;
 };
 
 type LiveWeek = {
@@ -294,6 +297,9 @@ export default function PublicProfilePage() {
                       #{a.rank}
                       {a.prizeUsdc > 0 ? ` · ${a.prizeUsdc.toFixed(2)} USDC` : ""}
                       {a.live ? ` · ${t.liveWeekBadge}` : ""}
+                      {a.claimable ? ` · ${t.prizeClaimPending}` : ""}
+                      {a.claimStatus === "claimed" ? ` · ${t.prizeClaimed}` : ""}
+                      {a.claimStatus === "paid-settle" ? ` · ${t.prizePaidSettle}` : ""}
                     </p>
                   </div>
                 </div>

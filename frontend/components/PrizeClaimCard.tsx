@@ -21,23 +21,33 @@ type Claim = {
 export function PrizeClaimCard() {
   const { t } = useLang();
   const { publicKey, signMessage, connected } = useWallet();
-  const [claims, setClaims] = useState<Claim[]>([]);
+  const [claimable, setClaimable] = useState<Claim[]>([]);
+  const [history, setHistory] = useState<Claim[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
 
   const load = useCallback(() => {
     if (!publicKey) {
-      setClaims([]);
+      setClaimable([]);
+      setHistory([]);
       return;
     }
     void getJson<{ claimable?: Claim[]; claims?: Claim[] }>(`/prize/claims/${publicKey.toBase58()}`)
-      .then((r) => setClaims(r.claimable?.length ? r.claimable : (r.claims ?? []).filter((c) => c.status === "claimable")))
-      .catch(() => setClaims([]));
+      .then((r) => {
+        const open = (r.claimable ?? []).filter((c) => c.status === "claimable" && c.atoms > 0);
+        setClaimable(open);
+        setHistory((r.claims ?? []).filter((c) => c.status === "claimed" || c.status === "paid-settle"));
+      })
+      .catch(() => {
+        setClaimable([]);
+        setHistory([]);
+      });
   }, [publicKey]);
 
   useEffect(load, [load]);
 
-  if (!connected || !publicKey || claims.length === 0) return null;
+  if (!connected || !publicKey) return null;
+  if (claimable.length === 0 && history.length === 0) return null;
 
   async function claim(round: number | string) {
     if (!publicKey || !signMessage) return;
@@ -64,29 +74,41 @@ export function PrizeClaimCard() {
     <section className="mt-8 rounded-3xl border border-teal/35 bg-teal/[0.06] p-5">
       <p className="text-xs uppercase tracking-[0.2em] text-teal">{t.prizeClaimTitle}</p>
       <p className="mt-2 text-sm leading-6 text-cream/70">{t.prizeClaimLead}</p>
-      <ul className="mt-4 space-y-3">
-        {claims.map((c) => (
-          <li
-            key={String(c.round)}
-            className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-cream/10 px-4 py-3"
-          >
-            <div>
-              <p className="font-mono text-sm text-cream">
-                #{c.rank} · {c.day ?? c.round} · {Number(c.prizeUsdc).toFixed(2)} USDC
-              </p>
-              <p className="mt-1 text-[11px] text-cream/45">{t.prizeClaimRescue}</p>
-            </div>
-            <button
-              type="button"
-              disabled={busy === String(c.round)}
-              onClick={() => void claim(c.round)}
-              className="min-h-11 rounded-2xl bg-cream px-4 text-sm font-medium text-ink disabled:opacity-40"
+      {claimable.length > 0 && (
+        <ul className="mt-4 space-y-3">
+          {claimable.map((c) => (
+            <li
+              key={`open-${String(c.round)}`}
+              className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-cream/10 px-4 py-3"
             >
-              {busy === String(c.round) ? "…" : t.prizeClaimAction}
-            </button>
-          </li>
-        ))}
-      </ul>
+              <div>
+                <p className="font-mono text-sm text-cream">
+                  #{c.rank} · {c.day ?? c.round} · {Number(c.prizeUsdc).toFixed(2)} USDC
+                </p>
+                <p className="mt-1 text-[11px] text-cream/45">{t.prizeClaimRescue}</p>
+              </div>
+              <button
+                type="button"
+                disabled={busy === String(c.round)}
+                onClick={() => void claim(c.round)}
+                className="min-h-11 rounded-2xl bg-cream px-4 text-sm font-medium text-ink disabled:opacity-40"
+              >
+                {busy === String(c.round) ? "…" : t.prizeClaimAction}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {history.length > 0 && (
+        <ul className="mt-4 space-y-2 border-t border-cream/10 pt-4">
+          {history.map((c) => (
+            <li key={`hist-${String(c.round)}`} className="font-mono text-xs text-cream/50">
+              #{c.rank} · {c.day ?? c.round} · {Number(c.prizeUsdc).toFixed(2)} USDC ·{" "}
+              {c.status === "paid-settle" ? t.prizePaidSettle : t.prizeClaimed}
+            </li>
+          ))}
+        </ul>
+      )}
       {note && <p className="mt-3 text-xs text-cream/55">{note}</p>}
     </section>
   );

@@ -279,24 +279,65 @@ app.get("/u/:name", async (req, res) => {
             : null;
 
     const nfts = weekNftsFor(wallet);
-    const wins = nfts.filter((n) => n.rank >= 1 && n.rank <= 10);
+    const prizeClaims = claimsFor(wallet);
+    const claimByRound = new Map(prizeClaims.map((c) => [Number(c.round), c]));
+    // Merge week-nft placements + prize ledger so /u CV works even when NFT mint failed.
+    const winMap = new Map();
+    for (const n of nfts) {
+      if (n.rank >= 1 && n.rank <= 10) winMap.set(Number(n.round), { ...n });
+    }
+    for (const c of prizeClaims) {
+      const rk = Number(c.round);
+      const prev = winMap.get(rk);
+      if (!prev) {
+        winMap.set(rk, {
+          round: rk,
+          rank: c.rank,
+          prizeUsdc: c.prizeUsdc,
+          at: c.at ?? c.claimedAt,
+          mint: null,
+          title: "ZKCTF Saturday race",
+          host: { id: "zkctf", name: "ZKCTF", logo: "/logo.png" },
+          claimStatus: c.status,
+        });
+      } else {
+        winMap.set(rk, {
+          ...prev,
+          prizeUsdc: Number(prev.prizeUsdc) > 0 ? prev.prizeUsdc : c.prizeUsdc,
+          rank: prev.rank || c.rank,
+          claimStatus: c.status,
+          claimSig: c.claimSig ?? prev.claimSig,
+        });
+      }
+    }
+    const wins = [...winMap.values()].sort((a, b) => Number(b.round) - Number(a.round));
     const firstPlaces = wins.filter((n) => n.rank === 1).length;
     const secondPlaces = wins.filter((n) => n.rank === 2).length;
     const thirdPlaces = wins.filter((n) => n.rank === 3).length;
     const payouts = wins.filter((n) => Number(n.prizeUsdc) > 0).length;
-    const earnedUsdc = wins.reduce((s, n) => s + Number(n.prizeUsdc || 0), 0);
-    const activity = wins.slice(0, 40).map((n) => ({
-      at: n.at ?? n.round * 1000,
-      date: new Date((n.at ?? n.round * 1000)).toISOString().slice(0, 7),
-      day: new Date(n.round * 1000).toISOString().slice(0, 10),
-      round: n.round,
-      rank: n.rank,
-      prizeUsdc: Number(n.prizeUsdc || 0),
-      mint: n.mint,
-      title: n.title || "ZKCTF Saturday race",
-      host: n.host || { id: "zkctf", name: "ZKCTF", logo: "/logo.png" },
-      medal: n.rank === 1 ? "gold" : n.rank === 2 ? "silver" : n.rank === 3 ? "bronze" : "paid",
-    }));
+    const earnedUsdc = wins.reduce((s, n) => {
+      const st = n.claimStatus || claimByRound.get(Number(n.round))?.status;
+      if (st === "claimable" || st === "claiming") return s;
+      return s + Number(n.prizeUsdc || 0);
+    }, 0);
+    const activity = wins.slice(0, 40).map((n) => {
+      const claim = claimByRound.get(Number(n.round));
+      const status = n.claimStatus || claim?.status || null;
+      return {
+        at: n.at ?? n.round * 1000,
+        date: new Date(n.at ?? n.round * 1000).toISOString().slice(0, 7),
+        day: new Date(n.round * 1000).toISOString().slice(0, 10),
+        round: n.round,
+        rank: n.rank,
+        prizeUsdc: Number(n.prizeUsdc || claim?.prizeUsdc || 0),
+        mint: n.mint,
+        title: n.title || "ZKCTF Saturday race",
+        host: n.host || { id: "zkctf", name: "ZKCTF", logo: "/logo.png" },
+        medal: n.rank === 1 ? "gold" : n.rank === 2 ? "silver" : n.rank === 3 ? "bronze" : "paid",
+        claimStatus: status,
+        claimable: status === "claimable",
+      };
+    });
     // Live week appears above settled history so full clears show before NFT mint.
     if (liveWeek?.cleared && liveWeek.place) {
       const startMs = Date.parse(meta.start) || Date.now();
@@ -340,7 +381,8 @@ app.get("/u/:name", async (req, res) => {
         earnedUsdc: Math.round(earnedUsdc * 1e6) / 1e6,
       },
       activity,
-      prizeClaims: claimsFor(wallet),
+      prizeClaims,
+      claimable: claimableFor(wallet),
       sharePath: `/u/${profile.pseudonym}`,
     });
   } catch (e) {
@@ -393,6 +435,7 @@ app.post("/prize/claim", express.json(), async (req, res) => {
       ok: true,
       ...out,
       claims: claimsFor(wallet),
+      claimable: claimableFor(wallet),
       note: "Prize sent from treasury USDC to your wallet ATA.",
     });
   } catch (e) {

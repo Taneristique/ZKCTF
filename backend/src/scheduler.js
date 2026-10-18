@@ -29,13 +29,16 @@ import { N_WINNERS, saturdayWindow } from "./race.js";
 import { readRound, roundCommitments, writeRound } from "./roundStore.js";
 import { dataPersistent } from "./dataDir.js";
 import { dataPath, load, save } from "./store.js";
-import { rankSolvers } from "./solves.js";
+import { rankSolvers, rankSolversUnix, inferLevelCount } from "./solves.js";
 import { awardWeekWinners, recordHostPlacements } from "./weekNft.js";
 import {
   recordSettlePaid,
   openRescueClaims,
   hostWinnersFromNfts,
+  reconcileTreasuryRound,
+  releaseStaleClaims,
 } from "./prizeClaims.js";
+import { ENTRY_ATOMS } from "./payout.js";
 
 const PATH = dataPath("scheduler.json");
 const TICK_MS = Number(process.env.BOT_TICK_MS ?? 5 * 60_000);
@@ -172,17 +175,20 @@ export function startScheduler({ connection, authority, authorityStatus }) {
       let round = await onChainRound(connection);
 
       // Host board → volume as soon as the Saturday window ends (mint optional).
+      // Re-run while empty so late-written solves still land before/after settle.
       {
         const host = readRound();
         const hostEndMs = Date.parse(host.end);
         const hostStartS = Math.floor(Date.parse(host.start) / 1000);
+        const prevBoard = s.rounds[hostStartS]?.hostBoard;
         if (
           Number.isFinite(hostEndMs) &&
           Number.isFinite(hostStartS) &&
           Date.now() > hostEndMs &&
-          !s.rounds[hostStartS]?.hostBoard
+          (!prevBoard || prevBoard.total === 0)
         ) {
-          const ranked = rankSolvers(host.start, host.levels?.length ?? 0)
+          const nLevels = host.levels?.length || inferLevelCount(host.start) || 0;
+          const ranked = rankSolvers(host.start, nLevels)
             .slice(0, N_WINNERS)
             .map((r) => r.wallet);
           const snap = recordHostPlacements(hostStartS, ranked, { source: "host" });
@@ -195,13 +201,19 @@ export function startScheduler({ connection, authority, authorityStatus }) {
       if (canWrite && round && !round.settled && now > round.end + SETTLE_GRACE_S) {
         // Snapshot host finishers BEFORE settle (Entry PDA may rotate on next create_round).
         const hostIso = new Date(round.start * 1000).toISOString();
-        const hostFinishers = rankSolvers(hostIso, round.levelCount)
+        const nLevels = round.levelCount || inferLevelCount(hostIso) || 0;
+        const hostFinishers = rankSolversUnix(round.start, nLevels)
           .slice(0, N_WINNERS)
           .map((r) => r.wallet);
 
         const out = await settleOnChain({ connection, authority, round });
         s.rounds[round.start] = { ...s.rounds[round.start], settled: out };
-        remember(s, "settled", { round: round.start, sig: out.sig, winners: out.winners.length });
+        remember(s, "settled", {
+          round: round.start,
+          sig: out.sig,
+          winners: out.winners.length,
+          potAtoms: out.potAtoms,
+        });
         await notify(`settled round ${new Date(round.start * 1000).toISOString()}: ${out.winners.length} winner(s), tx ${out.sig}`);
 
         if (out.winners?.length) {
@@ -211,22 +223,86 @@ export function startScheduler({ connection, authority, authorityStatus }) {
           });
           recordSettlePaid(round.start, out.winners, out.paysUsdc, out.sig);
         } else {
-          // Pot went to treasury (k=0). Open claimable prizes for host full-clears of that window.
+          // Pot → treasury (k=0). Open claimable prizes for every host full-clear.
           const ranked = hostFinishers.length ? hostFinishers : hostWinnersFromNfts(round.start);
+          const potAtoms = out.potAtoms || ranked.length * ENTRY_ATOMS;
           recordHostPlacements(round.start, ranked, { source: "host" });
           const rescue = openRescueClaims(round.start, {
-            potAtoms: out.potAtoms,
+            potAtoms,
             hostWinners: ranked,
             settleSig: out.sig,
           });
+          s.rounds[round.start] = {
+            ...s.rounds[round.start],
+            prizeClaims: rescue,
+            hostBoard: { total: ranked.length, added: ranked.length },
+          };
+          save(PATH, s);
           if (rescue.opened) {
-            remember(s, "prizeClaims", { round: round.start, opened: rescue.opened });
+            remember(s, "prizeClaims", { round: round.start, opened: rescue.opened, potAtoms });
             await notify(
               `settle paid 0 on-chain; opened ${rescue.opened} treasury claim(s) for host finishers (round ${round.start})`,
+            );
+          } else if (ranked.length) {
+            await notify(
+              `settle k=0 but opened 0 claims (round ${round.start}, finishers=${ranked.length}, pot=${potAtoms})`,
+              `claims0:${round.start}`,
             );
           }
         }
         round = await onChainRound(connection);
+      }
+
+      // Backfill treasury claims for past k=0 settles that missed host finishers (e.g. ISO mismatch).
+      releaseStaleClaims();
+      for (const h of s.history ?? []) {
+        if (h.event !== "settled" || (h.winners ?? 0) > 0 || !h.round) continue;
+        const rk = String(h.round);
+        s.rounds[rk] ??= {};
+        if (!s.rounds[rk].settled) {
+          s.rounds[rk].settled = {
+            sig: h.sig,
+            winners: [],
+            potAtoms: h.potAtoms ?? 0,
+            paysUsdc: [],
+          };
+        } else if (!s.rounds[rk].settled.potAtoms && h.potAtoms) {
+          s.rounds[rk].settled.potAtoms = h.potAtoms;
+        }
+      }
+      for (const [rk, meta] of Object.entries(s.rounds ?? {})) {
+        const settled = meta?.settled;
+        if (!settled) continue;
+        const paidN = Array.isArray(settled.winners) ? settled.winners.length : Number(settled.winners) || 0;
+        if (paidN > 0) continue;
+        // Retry until we have host finishers on the ledger (solves may land after settle).
+        if (meta?.prizeClaims?.reconciled && (meta.prizeClaims.finishers ?? 0) > 0) continue;
+        const potAtoms = Number(settled.potAtoms) || 0;
+        const out = reconcileTreasuryRound(rk, {
+          potAtoms: potAtoms || undefined,
+          settleSig: settled.sig,
+          levelCount: settled.levelCount,
+        });
+        if (out.ok) {
+          s.rounds[rk] = {
+            ...s.rounds[rk],
+            prizeClaims: { ...out, reconciled: true },
+            hostBoard: { total: out.wallets?.length ?? 0, added: out.placements?.added ?? 0 },
+          };
+          save(PATH, s);
+          if (out.opened || out.updated) {
+            remember(s, "prizeClaims", {
+              round: Number(rk),
+              opened: out.opened,
+              updated: out.updated,
+              reconciled: true,
+              potAtoms: out.potAtoms,
+            });
+            await notify(
+              `reconciled treasury claims for round ${rk}: +${out.opened} open, ${out.updated} updated, ${out.finishers} finishers`,
+            );
+          }
+        }
       }
 
       if (canWrite && round?.settled && loyaltyMint() && !s.rounds[round.start]?.loyalty) {
