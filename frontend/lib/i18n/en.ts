@@ -150,12 +150,6 @@ export const en = {
   activityEmpty: "",
   profileShare: "Copy profile link",
   profileShared: "Link copied.",
-  researchTitle: "Research profiles",
-  researchLead:
-    "Link your Sherlock / Code4rena / Cantina handles. We only show the public profile URL — we do not import findings or earnings.",
-  researchNeedPseudo: "Create a pseudonym first, then link handles.",
-  researchSave: "Save handles",
-  researchSaved: "Research links saved.",
   prizeClaimTitle: "Claim race prize",
   prizeClaimLead:
     "If settle sent the pot to treasury because no on-chain full clear was found, host finishers can claim their share here. Sign once; USDC leaves the treasury ATA.",

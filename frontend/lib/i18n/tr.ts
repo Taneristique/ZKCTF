@@ -151,12 +151,6 @@ export const tr: Dict = {
   activityEmpty: "",
   profileShare: "Profil linkini kopyala",
   profileShared: "Link kopyalandı.",
-  researchTitle: "Araştırma profilleri",
-  researchLead:
-    "Sherlock / Code4rena / Cantina handle’larını bağla. Yalnızca herkese açık profil URL’si gösterilir — finding veya kazanç çekilmez.",
-  researchNeedPseudo: "Önce takma ad oluştur, sonra handle bağla.",
-  researchSave: "Handle’ları kaydet",
-  researchSaved: "Araştırma linkleri kaydedildi.",
   prizeClaimTitle: "Yarış ödülünü talep et",
   prizeClaimLead:
     "Settle zincirde full clear bulamayınca pot treasury’ye gittiyse, host’ta bitirenler paylarını burada talep eder. Bir imza; USDC treasury ATA’dan çıkar.",

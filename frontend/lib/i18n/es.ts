@@ -151,12 +151,6 @@ export const es: Dict = {
   activityEmpty: "",
   profileShare: "Copiar enlace del perfil",
   profileShared: "Enlace copiado.",
-  researchTitle: "Perfiles de investigación",
-  researchLead:
-    "Vincula tus handles de Sherlock / Code4rena / Cantina. Solo mostramos la URL pública — no importamos findings ni earnings.",
-  researchNeedPseudo: "Crea un seudónimo primero, luego vincula handles.",
-  researchSave: "Guardar handles",
-  researchSaved: "Enlaces de investigación guardados.",
   prizeClaimTitle: "Reclamar premio de la carrera",
   prizeClaimLead:
     "Si el settle mandó el pozo al tesoro porque no hubo full clear on-chain, los que cerraron en el host pueden reclamar su parte aquí. Una firma; el USDC sale del ATA del tesoro.",
