@@ -137,3 +137,33 @@ export function rankSolversUnix(roundStartS, levelCount) {
   const iso = new Date(Number(roundStartS) * 1000).toISOString();
   return rankSolvers(iso, levelCount);
 }
+
+/**
+ * How many distinct Saturday windows this wallet fully cleared on the host.
+ * Used for Academy gift progress when the on-chain Finisher mint lagged or was k=0.
+ */
+export function hostFinishCount(wallet) {
+  if (!wallet) return 0;
+  const all = load();
+  const starts = new Set();
+  for (const r of Object.values(all)) {
+    if (r.wallet !== wallet || !r.start) continue;
+    starts.add(r.start);
+  }
+  // Normalize to unix ms so equivalent ISO forms count once.
+  const seen = new Set();
+  let n = 0;
+  for (const start of starts) {
+    const ms = Date.parse(start);
+    const key = Number.isFinite(ms) ? String(ms) : start;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const nLevels = inferLevelCount(start);
+    if (nLevels <= 0) continue;
+    const row = Object.values(all).find((r) => r.wallet === wallet && sameRoundStart(r.start, start));
+    if (!row?.levels) continue;
+    const done = new Set(Object.keys(row.levels).map(Number).filter((x) => !Number.isNaN(x)));
+    if ([...Array(nLevels).keys()].every((i) => done.has(i))) n++;
+  }
+  return n;
+}

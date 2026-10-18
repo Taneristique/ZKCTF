@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { getJson, postJson } from "@/lib/api";
 import { walletAuth } from "@/lib/walletAuth";
@@ -10,6 +10,7 @@ import { useLang } from "@/lib/lang";
 type Gift = {
   finishes: number;
   need: number;
+  left?: number;
   months: number;
   claimed: boolean;
   eligible: boolean;
@@ -23,20 +24,31 @@ export function AcademyGiftCard() {
   const [gift, setGift] = useState<Gift | null>(null);
   const [note, setNote] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  function refresh(w: string) {
+  const refresh = useCallback((w: string) => {
+    setLoading(true);
     return getJson<Gift>(`/gift/academy/${w}`)
       .then(setGift)
-      .catch(() => setGift(null));
-  }
+      .catch(() => setGift(null))
+      .finally(() => setLoading(false));
+  }, []);
 
   useEffect(() => {
     if (!publicKey) {
       setGift(null);
       return;
     }
-    void refresh(publicKey.toBase58());
-  }, [publicKey]);
+    const w = publicKey.toBase58();
+    void refresh(w);
+    const id = setInterval(() => void refresh(w), 30_000);
+    const onFocus = () => void refresh(w);
+    window.addEventListener("focus", onFocus);
+    return () => {
+      clearInterval(id);
+      window.removeEventListener("focus", onFocus);
+    };
+  }, [publicKey, refresh]);
 
   async function claim() {
     if (!publicKey || !signMessage || !sendTransaction) return;
@@ -56,24 +68,35 @@ export function AcademyGiftCard() {
     }
   }
 
-  if (!connected) return null;
+  if (!connected || !publicKey) return null;
+
+  const finishes = gift?.finishes ?? null;
+  const need = gift?.need ?? 3;
+  const left = gift?.left ?? (finishes == null ? null : Math.max(0, need - finishes));
+
+  const progressNote =
+    gift?.claimed
+      ? t.giftDone
+      : gift?.eligible
+        ? t.giftNoteReady
+        : finishes != null && left != null
+          ? t.giftNoteNeed.replace("{have}", String(finishes)).replace("{need}", String(need)).replace("{left}", String(left))
+          : null;
 
   return (
     <section className="mt-8 rounded-3xl border border-teal/40 bg-teal/[0.07] p-5">
       <p className="text-xs uppercase tracking-[0.2em] text-teal">{t.giftTitle}</p>
       <p className="mt-2 text-sm leading-6 text-cream/70">{t.giftLead}</p>
-      {gift && (
-        <dl className="mt-4 grid grid-cols-2 gap-2 text-sm">
-          <dt className="text-cream/45">{t.giftProgress}</dt>
-          <dd className="text-right font-mono">
-            {gift.finishes} / {gift.need}
-          </dd>
-          <dt className="text-cream/45">{t.giftReward}</dt>
-          <dd className="text-right">
-            {gift.months} {t.month1.replace(/^1\s*/, "").trim() || "month"}
-          </dd>
-        </dl>
-      )}
+      <dl className="mt-4 grid grid-cols-2 gap-2 text-sm">
+        <dt className="text-cream/45">{t.giftProgress}</dt>
+        <dd className="text-right font-mono tabular-nums" data-wallet={publicKey.toBase58()}>
+          {loading && finishes == null ? "…" : `${finishes ?? 0} / ${need}`}
+        </dd>
+        <dt className="text-cream/45">{t.giftReward}</dt>
+        <dd className="text-right">
+          {gift?.months ?? 1} {t.month1.replace(/^1\s*/, "").trim() || "month"}
+        </dd>
+      </dl>
       {gift?.eligible && (
         <button
           type="button"
@@ -84,10 +107,7 @@ export function AcademyGiftCard() {
           {t.giftClaim}
         </button>
       )}
-      {gift?.claimed && <p className="mt-3 text-sm text-teal">{t.giftDone}</p>}
-      {gift && !gift.eligible && !gift.claimed && (
-        <p className="mt-3 text-sm text-cream/55">{gift.note}</p>
-      )}
+      {progressNote && <p className="mt-3 text-sm text-cream/55">{progressNote}</p>}
       {note && <p className="mt-3 text-xs text-cream/55">{note}</p>}
     </section>
   );

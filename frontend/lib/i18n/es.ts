@@ -188,13 +188,14 @@ export const es: Dict = {
   place3: "3.º",
   placeN: "{n}.º",
   giftTitle: "Regalo Academy",
-  giftLead:
-    "Completá 3 carreras enteras (saldo Finisher) y reclamá un mes gratis de Academy — una vez por wallet, sin USDC.",
+  giftLead: "Completá 3 carreras enteras y reclamá un mes gratis de Academy — una vez por wallet, sin USDC.",
   giftProgress: "Carreras terminadas",
   giftReward: "Regalo",
   giftClaim: "Reclamar 1 mes gratis",
   giftClaimed: "Regalo Academy reclamado on-chain.",
   giftDone: "Este wallet ya reclamó el regalo.",
+  giftNoteNeed: "Llevás {have} de {need} carreras enteras. Te faltan {left} para desbloquear el regalo.",
+  giftNoteReady: "Listo para reclamar — una firma, sin USDC.",
 
   legal: "Legal",
   legalTitle: "Legal",
