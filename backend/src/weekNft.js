@@ -54,10 +54,23 @@ export function recordHostPlacements(roundKey, winners, opts = {}) {
   const paysUsdc = opts.paysUsdc ?? [];
   const source = opts.source ?? "host";
   let added = 0;
+  let dirty = false;
   for (let i = 0; i < winners.length; i++) {
     const wallet = winners[i];
-    if (!wallet || round[wallet]) continue;
+    if (!wallet) continue;
     const rank = i + 1;
+    if (round[wallet]) {
+      // Fill missing prize / rank without clobbering a minted NFT row.
+      if (!(Number(round[wallet].prizeUsdc) > 0) && Number(paysUsdc[i]) > 0) {
+        round[wallet].prizeUsdc = Number(paysUsdc[i]);
+        dirty = true;
+      }
+      if (!round[wallet].rank) {
+        round[wallet].rank = rank;
+        dirty = true;
+      }
+      continue;
+    }
     round[wallet] = {
       rank,
       pseudonym: displayName(wallet),
@@ -69,9 +82,32 @@ export function recordHostPlacements(roundKey, winners, opts = {}) {
       title: `${host.name} Saturday race`,
     };
     added++;
+    dirty = true;
   }
-  if (added) save(PATH, all);
+  if (dirty) save(PATH, all);
   return { added, total: Object.keys(round).length };
+}
+
+/** Write prize amounts onto existing placement rows (CV /u activity). */
+export function applyPlacementPrizes(roundKey, winners, paysUsdc = []) {
+  const key = String(roundKey);
+  if (!key || !Array.isArray(winners) || !winners.length) return 0;
+  const all = db();
+  const round = all[key];
+  if (!round) return 0;
+  let n = 0;
+  for (let i = 0; i < winners.length; i++) {
+    const wallet = winners[i];
+    if (!wallet || !round[wallet]) continue;
+    const prize = Number(paysUsdc[i] ?? 0);
+    if (!(prize > 0)) continue;
+    if (Number(round[wallet].prizeUsdc) === prize) continue;
+    round[wallet].prizeUsdc = prize;
+    round[wallet].rank = round[wallet].rank || i + 1;
+    n++;
+  }
+  if (n) save(PATH, all);
+  return n;
 }
 
 export function weekMeta(roundKey) {

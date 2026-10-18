@@ -80,22 +80,46 @@ export function recordSolve(wallet, levelId, startIso) {
   return row;
 }
 
+/** True when a solve row belongs to the same Saturday window (ISO or ms-equal). */
+export function sameRoundStart(rowStart, startIso) {
+  if (!rowStart || !startIso) return false;
+  if (rowStart === startIso) return true;
+  const a = Date.parse(rowStart);
+  const b = Date.parse(startIso);
+  return Number.isFinite(a) && Number.isFinite(b) && a === b;
+}
+
+/** Infer level count for a round from the highest level id seen in solves. */
+export function inferLevelCount(startIso) {
+  const all = load();
+  let n = 0;
+  for (const r of Object.values(all)) {
+    if (!sameRoundStart(r.start, startIso)) continue;
+    for (const id of Object.keys(r.levels ?? {}).map(Number)) {
+      if (!Number.isNaN(id)) n = Math.max(n, id + 1);
+    }
+  }
+  return n;
+}
+
 /**
- * Rank for host preview / prestige index only.
- * Payout ranking must use on-chain Entry.solved_mask (`rankClearsOnChain` / settle-round).
+ * Rank for host preview / prestige / treasury-claim rescue.
+ * Payout ranking prefers on-chain Entry.solved_mask when settle finds k>0.
  * Only wallets that cleared every level; earlier finish time wins.
  */
 export function rankSolvers(startIso, levelCount) {
-  const n = Number(levelCount) || 0;
+  let n = Number(levelCount) || 0;
+  if (n <= 0) n = inferLevelCount(startIso);
+  if (n <= 0) return [];
   const all = load();
-  const rows = Object.values(all).filter((r) => r.start === startIso);
+  const rows = Object.values(all).filter((r) => sameRoundStart(r.start, startIso));
   return rows
     .map((r) => {
       const ids = Object.keys(r.levels)
         .map(Number)
         .filter((x) => !Number.isNaN(x));
       const done = new Set(ids);
-      const cleared = n > 0 && [...Array(n).keys()].every((i) => done.has(i));
+      const cleared = [...Array(n).keys()].every((i) => done.has(i));
       const times = Object.values(r.levels).map(Number);
       return {
         wallet: r.wallet,
@@ -106,4 +130,10 @@ export function rankSolvers(startIso, levelCount) {
     })
     .filter((r) => r.cleared)
     .sort((a, b) => a.time - b.time);
+}
+
+/** Rank by on-chain round start (unix seconds). */
+export function rankSolversUnix(roundStartS, levelCount) {
+  const iso = new Date(Number(roundStartS) * 1000).toISOString();
+  return rankSolvers(iso, levelCount);
 }
