@@ -32,10 +32,10 @@ import {
   holdFoundingSeat,
   releaseFoundingSeat,
 } from "./membership.js";
-import { profileFor, setProfile, nameAvailable, namesFor, displayName, walletForName } from "./profiles.js";
+import { profileFor, setProfile, setResearch, nameAvailable, namesFor, displayName, walletForName } from "./profiles.js";
 import { giftStatus, buildGiftTx, markGiftClaimed, GIFT_FINISHES, GIFT_MONTHS } from "./academyGift.js";
 import { weekNftsFor, weekMeta } from "./weekNft.js";
-import { contestPortfolio, addContest, removeContest, PLATFORMS } from "./contests.js";
+import { RESEARCH_PLATFORMS } from "./researchLinks.js";
 import { claimsFor, claimableFor, executeClaim } from "./prizeClaims.js";
 import { TRACKS, lessonCatalog, lessonFor, lessonFlag } from "./lessons.js";
 import { walletFromRequest } from "./walletAuth.js";
@@ -330,7 +330,7 @@ app.get("/u/:name", async (req, res) => {
         earnedUsdc: Math.round(earnedUsdc * 1e6) / 1e6,
       },
       activity,
-      contests: contestPortfolio(wallet),
+      research: profile.research ?? [],
       prizeClaims: claimsFor(wallet),
       sharePath: `/u/${profile.pseudonym}`,
     });
@@ -345,7 +345,8 @@ app.get("/profile/:wallet", (req, res) => {
     profile,
     displayName: displayName(req.params.wallet),
     weekNfts: weekNftsFor(req.params.wallet),
-    contests: contestPortfolio(req.params.wallet),
+    research: profile?.research ?? [],
+    researchPlatforms: RESEARCH_PLATFORMS,
     prizeClaims: claimsFor(req.params.wallet),
     publicPath: profile?.pseudonym ? `/u/${profile.pseudonym}` : null,
   });
@@ -392,37 +393,19 @@ app.post("/prize/claim", express.json(), async (req, res) => {
   }
 });
 
-/** Add an external contest / bounty row (does not affect race pot or prestige). */
-app.post("/contests", express.json(), (req, res) => {
+/** Link external research handles (Sherlock Watson-style). Links only — no scraped findings. */
+app.post("/profile/research", express.json(), (req, res) => {
   const wallet = walletFromRequest(req);
   if (!wallet) {
-    res.status(401).json({ error: "Sign in with your wallet to add contest results." });
+    res.status(401).json({ error: "Sign in with your wallet to link research profiles." });
     return;
   }
-  const out = addContest(wallet, req.body ?? {});
+  const out = setResearch(wallet, req.body?.links ?? req.body ?? {});
   if (!out.ok) {
     res.status(400).json(out);
     return;
   }
-  res.json({ ok: true, item: out.item, portfolio: contestPortfolio(wallet) });
-});
-
-app.delete("/contests/:id", (req, res) => {
-  const wallet = walletFromRequest(req);
-  if (!wallet) {
-    res.status(401).json({ error: "Sign in with your wallet to remove a contest row." });
-    return;
-  }
-  const out = removeContest(wallet, String(req.params.id ?? ""));
-  if (!out.ok) {
-    res.status(404).json(out);
-    return;
-  }
-  res.json({ ok: true, portfolio: contestPortfolio(wallet) });
-});
-
-app.get("/contests/platforms", (_req, res) => {
-  res.json({ platforms: PLATFORMS });
+  res.json({ ok: true, profile: out.profile, research: out.profile.research });
 });
 
 app.post("/profile", express.json(), async (req, res) => {
