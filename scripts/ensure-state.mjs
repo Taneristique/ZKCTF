@@ -125,5 +125,26 @@ let restored = 0;
   }
 }
 
+// prize claims (treasury claim after settle k=0)
+{
+  let n = 0;
+  const cur = load("prize-claims.json") ?? {};
+  for (const [roundKey, rows] of Object.entries(fixture.prizeClaims ?? {})) {
+    cur[roundKey] ??= {};
+    for (const [wallet, row] of Object.entries(rows)) {
+      const prev = cur[roundKey][wallet];
+      if (prev?.status === "claimed" || prev?.status === "paid-settle") continue;
+      if (prev?.status === "claimable" && prev.atoms > 0) continue;
+      cur[roundKey][wallet] = row;
+      n++;
+      console.log(`[ensure-state] restored prize claim #${row.rank ?? "?"} ${wallet.slice(0, 4)}…`);
+    }
+  }
+  if (n) {
+    save("prize-claims.json", cur);
+    restored += n;
+  }
+}
+
 if (!restored) console.log("[ensure-state] ok (nothing to merge)");
 else console.log(`[ensure-state] merged ${restored} item(s) → ${dataDir}`);

@@ -8,6 +8,7 @@ import { useLang } from "@/lib/lang";
 import { tokenBalance } from "@/lib/program";
 import { ProfileCard } from "@/components/ProfileCard";
 import { ContestForm } from "@/components/ContestForm";
+import { PrizeClaimCard } from "@/components/PrizeClaimCard";
 import { AcademyGiftCard } from "@/components/AcademyGiftCard";
 
 type Member = {
@@ -130,6 +131,7 @@ function AccountBody() {
       </dl>
       <p className="mt-3 text-xs text-cream/45">{t.prestigeNote}</p>
 
+      <PrizeClaimCard />
       <ProfileCard />
       <ContestForm />
       <AcademyGiftCard />

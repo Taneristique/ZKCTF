@@ -31,6 +31,11 @@ import { dataPersistent } from "./dataDir.js";
 import { dataPath, load, save } from "./store.js";
 import { rankSolvers } from "./solves.js";
 import { awardWeekWinners, recordHostPlacements } from "./weekNft.js";
+import {
+  recordSettlePaid,
+  openRescueClaims,
+  hostWinnersFromNfts,
+} from "./prizeClaims.js";
 
 const PATH = dataPath("scheduler.json");
 const TICK_MS = Number(process.env.BOT_TICK_MS ?? 5 * 60_000);
@@ -188,16 +193,38 @@ export function startScheduler({ connection, authority, authorityStatus }) {
       }
 
       if (canWrite && round && !round.settled && now > round.end + SETTLE_GRACE_S) {
+        // Snapshot host finishers BEFORE settle (Entry PDA may rotate on next create_round).
+        const hostIso = new Date(round.start * 1000).toISOString();
+        const hostFinishers = rankSolvers(hostIso, round.levelCount)
+          .slice(0, N_WINNERS)
+          .map((r) => r.wallet);
+
         const out = await settleOnChain({ connection, authority, round });
         s.rounds[round.start] = { ...s.rounds[round.start], settled: out };
         remember(s, "settled", { round: round.start, sig: out.sig, winners: out.winners.length });
         await notify(`settled round ${new Date(round.start * 1000).toISOString()}: ${out.winners.length} winner(s), tx ${out.sig}`);
-        // Reputation first: write ranks before NFT mint can fail.
+
         if (out.winners?.length) {
           recordHostPlacements(round.start, out.winners, {
             source: "settle",
             paysUsdc: out.paysUsdc,
           });
+          recordSettlePaid(round.start, out.winners, out.paysUsdc, out.sig);
+        } else {
+          // Pot went to treasury (k=0). Open claimable prizes for host full-clears of that window.
+          const ranked = hostFinishers.length ? hostFinishers : hostWinnersFromNfts(round.start);
+          recordHostPlacements(round.start, ranked, { source: "host" });
+          const rescue = openRescueClaims(round.start, {
+            potAtoms: out.potAtoms,
+            hostWinners: ranked,
+            settleSig: out.sig,
+          });
+          if (rescue.opened) {
+            remember(s, "prizeClaims", { round: round.start, opened: rescue.opened });
+            await notify(
+              `settle paid 0 on-chain; opened ${rescue.opened} treasury claim(s) for host finishers (round ${round.start})`,
+            );
+          }
         }
         round = await onChainRound(connection);
       }

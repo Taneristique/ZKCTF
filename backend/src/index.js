@@ -36,6 +36,7 @@ import { profileFor, setProfile, nameAvailable, namesFor, displayName, walletFor
 import { giftStatus, buildGiftTx, markGiftClaimed, GIFT_FINISHES, GIFT_MONTHS } from "./academyGift.js";
 import { weekNftsFor, weekMeta } from "./weekNft.js";
 import { contestPortfolio, addContest, removeContest, PLATFORMS } from "./contests.js";
+import { claimsFor, claimableFor, executeClaim } from "./prizeClaims.js";
 import { TRACKS, lessonCatalog, lessonFor, lessonFlag } from "./lessons.js";
 import { walletFromRequest } from "./walletAuth.js";
 import {
@@ -330,6 +331,7 @@ app.get("/u/:name", async (req, res) => {
       },
       activity,
       contests: contestPortfolio(wallet),
+      prizeClaims: claimsFor(wallet),
       sharePath: `/u/${profile.pseudonym}`,
     });
   } catch (e) {
@@ -344,8 +346,50 @@ app.get("/profile/:wallet", (req, res) => {
     displayName: displayName(req.params.wallet),
     weekNfts: weekNftsFor(req.params.wallet),
     contests: contestPortfolio(req.params.wallet),
+    prizeClaims: claimsFor(req.params.wallet),
     publicPath: profile?.pseudonym ? `/u/${profile.pseudonym}` : null,
   });
+});
+
+app.get("/prize/claims/:wallet", (req, res) => {
+  res.json({
+    claims: claimsFor(req.params.wallet),
+    claimable: claimableFor(req.params.wallet),
+  });
+});
+
+/** Claim a rescue/treasury prize for a past round (wallet signature required). */
+app.post("/prize/claim", express.json(), async (req, res) => {
+  const wallet = walletFromRequest(req);
+  if (!wallet) {
+    res.status(401).json({ error: "Sign in with your wallet to claim a prize." });
+    return;
+  }
+  const roundKey = String(req.body?.round ?? "");
+  if (!roundKey) {
+    res.status(400).json({ error: "round required." });
+    return;
+  }
+  const auth = await authorityStatus();
+  if (!auth.ok) {
+    res.status(503).json({ error: PAYMENTS_PAUSED });
+    return;
+  }
+  try {
+    const out = await executeClaim({ connection, authority, wallet, roundKey });
+    if (!out.ok) {
+      res.status(400).json(out);
+      return;
+    }
+    res.json({
+      ok: true,
+      ...out,
+      claims: claimsFor(wallet),
+      note: "Prize sent from treasury USDC to your wallet ATA.",
+    });
+  } catch (e) {
+    res.status(502).json({ error: String(e.message ?? e) });
+  }
 });
 
 /** Add an external contest / bounty row (does not affect race pot or prestige). */

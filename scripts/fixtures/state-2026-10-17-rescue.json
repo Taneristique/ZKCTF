@@ -57,9 +57,23 @@
         "mint": "host-rescue-2026-10-17-rank1",
         "status": "rescued",
         "at": 1792255200000,
-        "prizeUsdc": 0,
+        "prizeUsdc": 8,
         "host": { "id": "zkctf", "name": "ZKCTF", "logo": "/logo.png" },
         "title": "ZKCTF Saturday race"
+      }
+    }
+  },
+  "prizeClaims": {
+    "1792249200": {
+      "4X6f8bMcUrCxwmrRSb57HqrNXvFQdEZN4wjs2B7dpqqG": {
+        "rank": 1,
+        "prizeUsdc": 8,
+        "atoms": 8000000,
+        "status": "claimable",
+        "settleSig": "2z1jSH1q7TE8DLu4Jmd29Vn7tjuTjNV5k4n7Px9yEzTU8vaPa1syLuEVBDAyxgrYAPsgFmHmBNynLKK3oCk3mcRG",
+        "claimSig": null,
+        "reason": "settle-k0-host-board",
+        "at": 1792335778000
       }
     }
   }
