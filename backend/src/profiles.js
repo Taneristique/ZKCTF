@@ -3,6 +3,8 @@
  * One wallet → one unique name. Create free; at most ONE rename for life, then locked.
  */
 import { dataPath, load, save } from "./store.js";
+import { imageUrlFor } from "./profileImage.js";
+import { isAllowedEmoji, resolveEmoji } from "./avatarEmojis.js";
 
 const PATH = dataPath("profiles.json");
 const NAME_RE = /^[A-Za-z0-9_]{3,20}$/;
@@ -51,7 +53,7 @@ function renameCountOf(row) {
   return 0;
 }
 
-/** Stable avatar seed (pseudonym). Clients render via Dicebear — no image storage. */
+/** Fallback seed when no uploaded photo (emoji avatar). */
 export function avatarSeed(pseudonymOrWallet) {
   return String(pseudonymOrWallet ?? "zkctf").trim() || "zkctf";
 }
@@ -61,10 +63,15 @@ export function profileFor(wallet) {
   if (!row) return null;
   const renameCount = renameCountOf(row);
   const renamesLeft = Math.max(0, 1 - renameCount);
+  const imageUrl = imageUrlFor(wallet, row);
   return {
     wallet,
     pseudonym: row.pseudonym,
     avatarSeed: avatarSeed(row.pseudonym),
+    emoji: resolveEmoji(row),
+    emojiCustom: Boolean(row.emoji && isAllowedEmoji(row.emoji)),
+    imageUrl,
+    avatarKind: imageUrl ? "photo" : "emoji",
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     renameCount,
@@ -87,16 +94,28 @@ export function walletForName(raw) {
   return db().byName[name.toLowerCase()] ?? null;
 }
 
-export function setProfile(wallet, raw) {
+export function setProfile(wallet, raw, opts = {}) {
   const check = nameAvailable(raw, wallet);
   if (!check.ok) return check;
   const all = db();
   const prev = all.byWallet[wallet];
   const now = Date.now();
 
+  let emoji = prev?.emoji;
+  if (opts.emoji != null && opts.emoji !== "") {
+    if (!isAllowedEmoji(opts.emoji)) {
+      return { ok: false, error: "Pick an emoji from the list." };
+    }
+    emoji = opts.emoji;
+  }
+
   if (prev) {
     const same = prev.pseudonym.toLowerCase() === check.name.toLowerCase();
     if (same) {
+      if (opts.emoji != null && opts.emoji !== "" && emoji !== prev.emoji) {
+        all.byWallet[wallet] = { ...prev, emoji, updatedAt: now };
+        save(PATH, all);
+      }
       return { ok: true, profile: profileFor(wallet) };
     }
     if (renameCountOf(prev) >= 1) {
@@ -113,11 +132,31 @@ export function setProfile(wallet, raw) {
     createdAt: prev?.createdAt ?? now,
     updatedAt: now,
     renameCount: prev ? renameCountOf(prev) + 1 : 0,
+    ...(emoji ? { emoji } : {}),
+    ...(prev?.imageExt ? { imageExt: prev.imageExt, imageAt: prev.imageAt } : {}),
   };
   all.byWallet[wallet] = row;
   all.byName[check.name.toLowerCase()] = wallet;
   save(PATH, all);
   return { ok: true, profile: profileFor(wallet) };
+}
+
+/** Set (or change) profile emoji anytime. Optionally drop uploaded photo. */
+export function setEmoji(wallet, rawEmoji, { clearPhoto = false } = {}) {
+  const all = db();
+  const prev = all.byWallet?.[wallet];
+  if (!prev?.pseudonym) return { ok: false, error: "Create a pseudonym first." };
+  if (!isAllowedEmoji(rawEmoji)) return { ok: false, error: "Pick an emoji from the list." };
+
+  const now = Date.now();
+  const next = { ...prev, emoji: rawEmoji, updatedAt: now };
+  if (clearPhoto && prev.imageExt) {
+    delete next.imageExt;
+    delete next.imageAt;
+  }
+  all.byWallet[wallet] = next;
+  save(PATH, all);
+  return { ok: true, profile: profileFor(wallet), clearedPhoto: Boolean(clearPhoto && prev.imageExt) };
 }
 
 /** Map wallet → pseudonym for leaderboard enrichment. */
@@ -126,6 +165,27 @@ export function namesFor(wallets) {
   const out = {};
   for (const w of wallets) {
     if (all[w]?.pseudonym) out[w] = all[w].pseudonym;
+  }
+  return out;
+}
+
+/** Map wallet → imageUrl for leaderboard / cards. */
+export function imageUrlsFor(wallets) {
+  const all = db().byWallet;
+  const out = {};
+  for (const w of wallets) {
+    const url = imageUrlFor(w, all[w]);
+    if (url) out[w] = url;
+  }
+  return out;
+}
+
+/** Map wallet → display emoji (custom or default). */
+export function emojisFor(wallets) {
+  const all = db().byWallet;
+  const out = {};
+  for (const w of wallets) {
+    if (all[w]) out[w] = resolveEmoji(all[w]);
   }
   return out;
 }
