@@ -166,6 +166,12 @@ export const en = {
   contestsSave: "Add to profile",
   contestsRemove: "Remove",
   contestsSaved: "Contest added to your public profile.",
+  prizeClaimTitle: "Claim race prize",
+  prizeClaimLead:
+    "If settle sent the pot to treasury because no on-chain full clear was found, host finishers can claim their share here. Sign once; USDC leaves the treasury ATA.",
+  prizeClaimAction: "Claim USDC",
+  prizeClaimed: "Claimed",
+  prizeClaimRescue: "Rescue claim — same split_pot math as settle",
   weekNftTitle: "Week-winner NFTs (soulbound)",
   boardTitle: "This week’s board",
   boardLead: "Full clears only, ranked by finish time. Names come from pseudonyms when set.",

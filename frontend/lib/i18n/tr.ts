@@ -167,6 +167,12 @@ export const tr: Dict = {
   contestsSave: "Profile ekle",
   contestsRemove: "Kaldır",
   contestsSaved: "Contest herkese açık profile eklendi.",
+  prizeClaimTitle: "Yarış ödülünü talep et",
+  prizeClaimLead:
+    "Settle zincirde full clear bulamayınca pot treasury’ye gittiyse, host’ta bitirenler paylarını burada talep eder. Bir imza; USDC treasury ATA’dan çıkar.",
+  prizeClaimAction: "USDC talep et",
+  prizeClaimed: "Talep edildi",
+  prizeClaimRescue: "Kurtarma talebi — settle ile aynı split_pot matematiği",
   weekNftTitle: "Hafta kazananı NFT’leri (soulbound)",
   boardTitle: "Bu haftanın tablosu",
   boardLead: "Yalnızca tam bitirenler, bitiş zamanına göre. İsimler takma addan gelir.",

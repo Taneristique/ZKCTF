@@ -167,6 +167,12 @@ export const es: Dict = {
   contestsSave: "Añadir al perfil",
   contestsRemove: "Quitar",
   contestsSaved: "Contest añadido a tu perfil público.",
+  prizeClaimTitle: "Reclamar premio de la carrera",
+  prizeClaimLead:
+    "Si el settle mandó el pozo al tesoro porque no hubo full clear on-chain, los que cerraron en el host pueden reclamar su parte aquí. Una firma; el USDC sale del ATA del tesoro.",
+  prizeClaimAction: "Reclamar USDC",
+  prizeClaimed: "Reclamado",
+  prizeClaimRescue: "Reclamo de rescate — misma matemática split_pot que el settle",
   weekNftTitle: "NFTs de ganador semanal (soulbound)",
   boardTitle: "Ranking de esta semana",
   boardLead: "Solo clears completos, por tiempo de llegada. Los nombres vienen del seudónimo si lo tenés.",
