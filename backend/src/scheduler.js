@@ -23,7 +23,7 @@ import {
 } from "./chain.js";
 import { generateRound } from "./bot.js";
 import { syncFounders } from "./founders.js";
-import { awardRound, loyaltyMint } from "./loyalty.js";
+import { awardRound, loyaltyMint, reconcileLoyaltyRound, hostFinishersForRound } from "./loyalty.js";
 import { treasuryOwner } from "./membership.js";
 import { N_WINNERS, saturdayWindow } from "./race.js";
 import { readRound, roundCommitments, writeRound } from "./roundStore.js";
@@ -305,11 +305,58 @@ export function startScheduler({ connection, authority, authorityStatus }) {
         }
       }
 
-      if (canWrite && round?.settled && loyaltyMint() && !s.rounds[round.start]?.loyalty) {
-        const finishers = (await finishersOnChain(connection, round)).map((f) => f.wallet);
-        const out = await awardRound(connection, authority, String(round.start), finishers);
-        s.rounds[round.start] = { ...s.rounds[round.start], loyalty: { ...out, finishers: finishers.length } };
-        remember(s, "loyalty", { round: round.start, finishers: finishers.length });
+      // Finisher mints: on-chain full clears ∪ host full clears (retry if earlier pass found 0).
+      if (canWrite && round?.settled && loyaltyMint()) {
+        const prev = s.rounds[round.start]?.loyalty;
+        const needsLoyalty = !prev || ((prev.finishers ?? 0) === 0 && !(prev.minted > 0));
+        if (needsLoyalty) {
+          const onChain = (await finishersOnChain(connection, round)).map((f) => f.wallet);
+          const host = hostFinishersForRound(round.start, round.levelCount);
+          const finishers = [...new Set([...onChain, ...host])];
+          const out = await awardRound(connection, authority, String(round.start), finishers);
+          s.rounds[round.start] = {
+            ...s.rounds[round.start],
+            loyalty: { ...out, finishers: finishers.length, onChain: onChain.length, host: host.length },
+          };
+          save(PATH, s);
+          remember(s, "loyalty", {
+            round: round.start,
+            finishers: finishers.length,
+            minted: out.minted ?? 0,
+          });
+          if (out.minted) await notify(`Finisher mints for round ${round.start}: ${out.minted} wallet(s)`);
+        }
+      }
+
+      // Backfill Finisher mints for past settled rounds that minted nobody (e.g. k=0 on-chain).
+      if (canWrite && loyaltyMint()) {
+        for (const h of s.history ?? []) {
+          if (h.event !== "settled" || !h.round) continue;
+          const rk = String(h.round);
+          s.rounds[rk] ??= {};
+          s.rounds[rk].settled ??= { sig: h.sig, winners: [], potAtoms: h.potAtoms ?? 0 };
+        }
+        for (const [rk, meta] of Object.entries(s.rounds ?? {})) {
+          if (!meta?.settled) continue;
+          const loy = meta.loyalty;
+          if (loy?.reconciled) continue;
+          try {
+            const onChainWallets = Array.isArray(meta.settled.winners) ? meta.settled.winners : [];
+            const out = await reconcileLoyaltyRound(connection, authority, rk, {
+              onChainWallets,
+              levelCount: meta.settled.levelCount,
+            });
+            const done = (out.finishers ?? 0) > 0 || (out.minted ?? 0) > 0;
+            s.rounds[rk] = { ...s.rounds[rk], loyalty: { ...out, reconciled: done } };
+            save(PATH, s);
+            if (out.minted > 0) {
+              remember(s, "loyalty", { round: Number(rk), finishers: out.finishers, minted: out.minted, reconciled: true });
+              await notify(`reconciled Finisher mints for round ${rk}: ${out.minted} wallet(s)`);
+            }
+          } catch (e) {
+            await notify(`loyalty reconcile failed for ${rk}: ${e.message ?? e}`, `loy:${rk}`);
+          }
+        }
       }
 
       if (canWrite && round?.settled && !s.rounds[round.start]?.weekNft) {

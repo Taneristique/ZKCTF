@@ -110,6 +110,11 @@ export const en = {
   loyaltyNext: "Next level at",
   loyaltyNone: "No Finisher tokens yet. Clear a full round to earn your first.",
   loyaltyPerks: "Your perks",
+  loyaltyClaimTitle: "Claim Finisher mint",
+  loyaltyClaimLead:
+    "If settle missed your on-chain mint, claim one Finisher token per full clear here. Sign once; the authority mints to your wallet.",
+  loyaltyClaimAction: "Mint Finisher",
+  loyaltyClaimed: "Finisher token minted.",
   tierFinisher: "Finisher",
   tierVeteran: "Veteran",
   tierElite: "Elite",

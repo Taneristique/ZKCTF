@@ -111,6 +111,11 @@ export const tr: Dict = {
   loyaltyNext: "Sonraki seviye",
   loyaltyNone: "Henüz Finisher token yok. İlkini kazanmak için bir yarışı baştan sona bitir.",
   loyaltyPerks: "Ayrıcalıkların",
+  loyaltyClaimTitle: "Finisher mint talep et",
+  loyaltyClaimLead:
+    "Settle mint’i kaçırdıysa, her tam clear için burada 1 Finisher talep et. Bir imza; authority cüzdanına mint eder.",
+  loyaltyClaimAction: "Finisher mint et",
+  loyaltyClaimed: "Finisher token mint edildi.",
   tierFinisher: "Finisher",
   tierVeteran: "Veteran",
   tierElite: "Elit",

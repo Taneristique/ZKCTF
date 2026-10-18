@@ -111,6 +111,11 @@ export const es: Dict = {
   loyaltyNext: "Próximo nivel en",
   loyaltyNone: "Todavía no tenés tokens Finisher. Completá una carrera entera para ganar el primero.",
   loyaltyPerks: "Tus beneficios",
+  loyaltyClaimTitle: "Reclamar mint Finisher",
+  loyaltyClaimLead:
+    "Si el settle no minteó tu token, reclamá 1 Finisher por cada clear completo aquí. Una firma; la authority mintea a tu wallet.",
+  loyaltyClaimAction: "Mintear Finisher",
+  loyaltyClaimed: "Token Finisher minteado.",
   tierFinisher: "Finisher",
   tierVeteran: "Veterano",
   tierElite: "Élite",
