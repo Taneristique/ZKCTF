@@ -100,5 +100,26 @@ let restored = 0;
   }
 }
 
+// week-winner history (profile activity / #1 medals). Merge missing wallet rows only.
+{
+  let n = 0;
+  const cur = load("week-nfts.json") ?? {};
+  for (const [roundKey, winners] of Object.entries(fixture.weekNfts ?? {})) {
+    cur[roundKey] ??= {};
+    for (const [wallet, row] of Object.entries(winners)) {
+      if (cur[roundKey][wallet]) continue;
+      cur[roundKey][wallet] = row;
+      n++;
+      console.log(
+        `[ensure-state] restored week-nft #${row.rank ?? "?"} ${row.pseudonym ?? wallet.slice(0, 4)}…`,
+      );
+    }
+  }
+  if (n) {
+    save("week-nfts.json", cur);
+    restored += n;
+  }
+}
+
 if (!restored) console.log("[ensure-state] ok (nothing to merge)");
 else console.log(`[ensure-state] merged ${restored} item(s) → ${dataDir}`);
