@@ -9,9 +9,10 @@ const NAV = [
   { href: "#race", en: "The USDC race", tr: "USDC yarış", es: "La carrera USDC" },
   { href: "#math", en: "Payout math", tr: "Ödeme matematiği", es: "Matemática de pago" },
   { href: "#prestige", en: "Points & rewards", tr: "Puan ve ödül", es: "Puntos y premios" },
-  { href: "#membership", en: "Academy membership", tr: "Akademi üyeliği", es: "Membresía Academia" },
+  { href: "#membership", en: "Academy", tr: "Akademi", es: "Academia" },
   { href: "#score", en: "How scoring works", tr: "Puan nasıl yazılır", es: "Cómo se anota" },
-  { href: "#academy", en: "Weekly lessons", tr: "Haftalık dersler", es: "Clases semanales" },
+  { href: "#academy", en: "Lesson archive", tr: "Ders arşivi", es: "Archivo de clases" },
+  { href: "#roadmap", en: "What’s next", tr: "Sırada ne var", es: "Qué sigue" },
 ] as const;
 
 export function DocsView() {
@@ -42,9 +43,9 @@ export function DocsView() {
           </h1>
           <p className="mt-5 text-[15px] leading-7 text-cream/65">
             {t(
-              "ZKCTF builds profitable on-chain capture-the-flag puzzles on Groth16 and tackles a real problem in cybersecurity education: good training is expensive and rarely based on real incidents. Two parts. The Academy publishes AI-assisted, human-reviewed lessons every week — cybersecurity and math for cybersecurity — each built on a reproduced real-life hack, for a few USDC a month. The Saturday race (18:00 Istanbul / 12:00 Buenos Aires) costs 5 USDC: 20% treasury, 80% to the top 10 by fixed formula, and Groth16 proves you solved without the flag landing on-chain.",
-              "ZKCTF, Groth16 ile kazandıran zincir üstü CTF bulmacaları kurar ve siber güvenlik eğitimindeki gerçek bir sorunu hedefler: iyi eğitim pahalı ve nadiren gerçek olaylara dayanır. İki parça var. Akademi her hafta yapay zekâ destekli, insan editörden geçmiş dersler yayınlar — siber güvenlik ve siber güvenlik için matematik — her biri yeniden kurgulanmış gerçek bir hack, ayda birkaç USDC. Cumartesi yarışı (18:00 İstanbul / 12:00 Buenos Aires) 5 USDC: %20 treasury, %80 sabit formülle ilk 10; Groth16 çözdüğünü kanıtlar, flag zincire yazılmaz.",
-              "ZKCTF construye puzzles CTF on-chain que pagan, sobre Groth16, y ataca un problema real de la educación en ciberseguridad: la buena formación es cara y rara vez se basa en incidentes reales. Dos partes. La Academia publica cada semana clases asistidas por IA y revisadas por una persona — ciberseguridad y matemática para ciberseguridad — cada una un hack real reconstruido, por unos pocos USDC al mes. La carrera del sábado (18:00 Estambul / 12:00 Buenos Aires) cuesta 5 USDC: 20% tesoro, 80% al top 10 con fórmula fija, y Groth16 prueba que resolviste sin que el flag vaya on-chain.",
+              "ZKCTF is a weekly on-chain CTF race on Solana with Groth16 proof-of-solve: you type ZKCTF{…} in the UI; the chain only sees a proof — the flag never lands in a transaction. Entry is 5 USDC (devnet USDC while we run on Devnet). 20% of the pot goes to treasury, 80% to the first 10 full clears by a fixed table. Puzzles are generated and independently checked before publish — sharp crypto / Solidity-style levels (overflow, XOR, JWT, vault math, …). Best solver wins; we do not pretend bots cannot play. The Academy is a quality lesson archive on /learn — not the product we over-promise week to week. Mainnet ships when the community and pot are real, not on a calendar slogan.",
+              "ZKCTF, Solana üzerinde haftalık zincir üstü CTF yarışı: Groth16 proof-of-solve — UI’da ZKCTF{…} yazarsın; zincir yalnız proof görür, flag tx’e yazılmaz. Giriş 5 USDC (Devnet’teyken devnet USDC). Potun %20’si treasury, %80’i sabit tabloyla ilk 10 full clear. Bulmacalar yayın öncesi üretilir ve bağımsız doğrulanır — net kripto / Solidity tarzı seviyeler (overflow, XOR, JWT, vault math…). En iyi solver kazanır; “bot yok” tiyatrosu yok. Akademi /learn’de kaliteli ders arşivi — her hafta şişirilen ana vaat değil. Mainnet, kitle ve pot olgunlaşınca gelir; takvim sloganı değil.",
+              "ZKCTF es una carrera CTF semanal on-chain en Solana con Groth16 proof-of-solve: escribís ZKCTF{…} en la UI; la cadena solo ve una prueba — el flag no va en la tx. Entrada 5 USDC (USDC de devnet mientras corremos en Devnet). 20% del pozo al tesoro, 80% a los primeros 10 clears completos con tabla fija. Los puzzles se generan y se verifican de forma independiente antes de publicar — niveles claros de cripto / Solidity (overflow, XOR, JWT, vault math…). Gana el mejor solver; no fingimos que los bots no existen. La Academia es un archivo de clases de calidad en /learn — no la promesa semanal inflada. Mainnet llega cuando la comunidad y el pozo son reales, no por eslogan de calendario.",
             )}
           </p>
           <div className="mt-8 space-y-3">
@@ -68,11 +69,11 @@ export function DocsView() {
             />
             <Layer
               n="3"
-              name={t("Weekly Academy", "Haftalık Akademi", "Academia semanal")}
+              name={t("Academy archive", "Akademi arşivi", "Archivo Academia")}
               body={t(
-                "Real hacks rebuilt as lessons, plus the math behind them. AI drafts, a human editor publishes. Membership in USDC. Never writes the Saturday board or pot.",
-                "Dersler halinde yeniden kurulan gerçek hack’ler ve arkasındaki matematik. Taslak yapay zekâdan, yayın insan editörden. Üyelik USDC ile. Cumartesi sıralamasına / pota yazılmaz.",
-                "Hacks reales reconstruidos como clases, más la matemática detrás. La IA hace el borrador, una persona publica. Membresía en USDC. No escribe el ranking ni el pozo del sábado.",
+                "Quality lessons on /learn (real incidents + math for security). We are not promising a fresh paid curriculum every week right now. Membership rails exist; the race is the live product. Academy never writes the Saturday board or pot.",
+                "/learn’de kaliteli dersler (gerçek olaylar + güvenlik matematiği). Şu an her hafta taze ücretli müfredat vaadi yok. Üyelik altyapısı duruyor; canlı ürün yarış. Akademi Cumartesi sırasına / pota yazmaz.",
+                "Clases de calidad en /learn (incidentes reales + matemática de seguridad). Ahora no prometemos currículo pago nuevo cada semana. La membresía existe; el producto en vivo es la carrera. La Academia no escribe el ranking ni el pozo del sábado.",
               )}
             />
           </div>
@@ -113,9 +114,9 @@ export function DocsView() {
             </li>
             <li>
               {t(
-                "D — One curated official set per week. No player-created challenge marketplace.",
-                "D — Haftada bir curated resmi set. Oyuncu UGC challenge marketplace yok.",
-                "D — Un set oficial curado por semana. Sin marketplace UGC de desafíos.",
+                "D — Today: one curated official set per week (no open creator marketplace yet). A later creator mode is listed under What’s next — only with quality gates.",
+                "D — Bugün: haftada bir curated resmi set (açık üretici marketplace yok). Sonraki üretici modu “Sırada ne var”da — yalnız kalite eşikleriyle.",
+                "D — Hoy: un set oficial curado por semana (aún sin marketplace de creadores). Un modo creador posterior está en Qué sigue — solo con umbrales de calidad.",
               )}
             </li>
             <li>
@@ -184,9 +185,9 @@ export function DocsView() {
           </h2>
           <p className="mt-4 text-[15px] leading-7 text-cream/65">
             {t(
-              "Entry is 5 USDC. Fiat is not accepted on this race. CTFs unlock in order. After the window, only wallets that cleared every CTF are ranked by finish time. N = 10. 20% treasury, 80% to that board with the fixed table. If fewer than 10 full clears, only they are paid (weights renormalized). If nobody cleared the set, the whole pot goes to treasury.",
-              "Giriş 5 USDC. Fiat yok. CTF’ler sırayla açılır. Pencere bitince yalnız her CTF’i bitirenler bitiş zamanına göre sıralanır. N = 10. %20 treasury, %80 bu tablo. 10’dan az full clear varsa yalnız onlar (ağırlıklar yeniden ölçeklenir). Kimse seti bitirmediyse pot treasury’e.",
-              "Entrada 5 USDC. Sin fiat. Los CTFs se abren en orden. Al cerrar, solo quienes completaron todos se ordenan por hora de cierre. N = 10. 20% tesoro, 80% con la tabla. Si hay menos de 10 clears, solo ellos (pesas reescaladas). Si nadie completó el set, todo al tesoro.",
+              "Entry is 5 USDC. Fiat is not accepted on this race. CTFs unlock in order. After the window, only wallets that cleared every CTF are ranked by finish time. N = 10. 20% treasury, 80% to that board with the fixed table. If fewer than 10 full clears, only they are paid (weights renormalized). If nobody cleared the set, the whole pot goes to treasury. Solvers (including automated ones) are allowed — the race is honest about that.",
+              "Giriş 5 USDC. Fiat yok. CTF’ler sırayla açılır. Pencere bitince yalnız her CTF’i bitirenler bitiş zamanına göre sıralanır. N = 10. %20 treasury, %80 bu tablo. 10’dan az full clear varsa yalnız onlar (ağırlıklar yeniden ölçeklenir). Kimse seti bitirmediyse pot treasury’e. Solver’lar (otomatik dahil) serbest — yarış buna dürüst.",
+              "Entrada 5 USDC. Sin fiat. Los CTFs se abren en orden. Al cerrar, solo quienes completaron todos se ordenan por hora de cierre. N = 10. 20% tesoro, 80% con la tabla. Si hay menos de 10 clears, solo ellos (pesas reescaladas). Si nadie completó el set, todo al tesoro. Los solvers (también automáticos) están permitidos — la carrera es honesta al respecto.",
             )}
           </p>
           <div className="mt-6 overflow-x-auto">
@@ -267,10 +268,10 @@ export function DocsView() {
             </li>
             <li>
               {t(
-              "Rank by who finished the full set first (all CTFs cleared). At most 10 wallets are paid.",
-              "Sıra: bütün CTF setini ilk bitirenler. En fazla 10 cüzdan ödenir.",
-              "Orden: quienes terminaron el set completo primero. Como máximo se paga a 10 wallets.",
-            )}
+                "Rank by who finished the full set first (all CTFs cleared). At most 10 wallets are paid.",
+                "Sıra: bütün CTF setini ilk bitirenler. En fazla 10 cüzdan ödenir.",
+                "Orden: quienes terminaron el set completo primero. Como máximo se paga a 10 wallets.",
+              )}
             </li>
             <li>
               {t(
@@ -324,9 +325,9 @@ export function DocsView() {
             </li>
             <li>
               {t(
-                "Later, if the product is proven: optional seasonal USDC airdrops from treasury may appear — separate from the weekly formula above.",
-                "İleride ürün kanıtlanırsa: treasury’den isteğe bağlı sezonluk USDC airdrop olabilir — yukarıdaki haftalık formülden ayrı.",
-                "Más adelante, si el producto se prueba: pueden aparecer airdrops USDC estacionales desde el tesoro — aparte de la fórmula semanal de arriba.",
+                "Optional week Finisher badges may mint after settle. They are prestige, not a second pot formula.",
+                "Settle sonrası isteğe bağlı haftalık Finisher rozetleri mintlenebilir. Prestij; ikinci bir pot formülü değil.",
+                "Tras settle pueden mintearse insignias Finisher de la semana. Prestigio, no una segunda fórmula de pozo.",
               )}
             </li>
           </ul>
@@ -334,13 +335,13 @@ export function DocsView() {
 
         <section id="membership">
           <h2 className="text-2xl font-semibold tracking-tight">
-            {t("Academy membership", "Akademi üyeliği", "Membresía Academia")}
+            {t("Academy", "Akademi", "Academia")}
           </h2>
           <p className="mt-4 text-[15px] leading-7 text-cream/65">
             {t(
-              "One plan, paid in USDC on Solana. There is no card processor and no auto-renew. Checkout is a single transaction your wallet signs: the USDC transfer to the treasury and your on-chain membership seat (co-signed by the ZKCTF authority) succeed or fail together. Renewing extends the seat from its current end date. Membership opens every weekly lesson and the archive; the Saturday race is a separate 5 USDC entry.",
-              "Tek plan, Solana üzerinde USDC ile. Kart işlemcisi ve otomatik yenileme yok. Ödeme, cüzdanının imzaladığı tek bir işlem: treasury’ye USDC transferi ve zincirdeki üyelik koltuğun (ZKCTF authority ortak imzalı) birlikte gerçekleşir ya da hiçbiri olmaz. Yenileme koltuğu mevcut bitiş tarihinden uzatır. Üyelik her haftalık dersi ve arşivi açar; Cumartesi yarışı ayrı bir 5 USDC giriş.",
-              "Un solo plan, pagado en USDC en Solana. Sin procesador de tarjetas ni renovación automática. El checkout es una sola transacción que firma tu wallet: la transferencia USDC al tesoro y tu asiento de membresía on-chain (co-firmado por la autoridad de ZKCTF) se confirman juntos o no se confirma ninguno. Renovar extiende el asiento desde su fecha de fin. La membresía abre cada clase semanal y el archivo; la carrera del sábado es una entrada aparte de 5 USDC.",
+              "Academy is the /learn archive: cybersecurity and math-for-security lessons built from real incidents. Right now we keep quality over cadence — we are not selling a “new paid lesson every week” promise. On-chain membership (USDC, no cards, no auto-renew) still unlocks gated archive content when seats are offered; renewing extends the seat from its current end. The Saturday race stays a separate 5 USDC entry and never mixes with Academy money.",
+              "Akademi = /learn arşivi: gerçek olaylardan siber güvenlik ve güvenlik matematiği dersleri. Şu an tempo değil kalite — “her hafta yeni ücretli ders” vaadi satmıyoruz. Zincir üstü üyelik (USDC, kart yok, otomatik yenileme yok) koltuk açıldığında kapalı arşivi açar; yenileme mevcut bitişten uzatır. Cumartesi yarışı ayrı 5 USDC giriştir; Akademi parası pota karışmaz.",
+              "La Academia es el archivo /learn: clases de ciberseguridad y matemática de seguridad desde incidentes reales. Ahora priorizamos calidad sobre cadencia — no vendemos “clase paga nueva cada semana”. La membresía on-chain (USDC, sin tarjetas ni auto-renovación) abre el archivo cerrado cuando haya asientos; renovar extiende desde el fin actual. La carrera del sábado es 5 USDC aparte; el dinero de Academia no se mezcla con el pozo.",
             )}
           </p>
           <div className="mt-6 overflow-x-auto">
@@ -369,9 +370,9 @@ export function DocsView() {
           </div>
           <p className="mt-4 text-[15px] leading-7 text-cream/65">
             {t(
-              "Founding member perk: the first 100 wallets to buy any plan become Founding members. They pay 50% less for as long as they renew (the discount is stored on-chain in the seat), carry a Founding badge, and see every new lesson 24 hours before everyone else.",
-              "Founding üye ayrıcalığı: herhangi bir planı alan ilk 100 cüzdan Founding üye olur. Yeniledikleri sürece %50 daha az öderler (indirim zincirdeki koltukta saklanır), Founding rozeti taşırlar ve her yeni dersi herkesten 24 saat önce görürler.",
-              "Beneficio Founding: las primeras 100 wallets que compren cualquier plan son miembros Founding. Pagan 50% menos mientras renueven (el descuento queda guardado on-chain en el asiento), llevan insignia Founding y ven cada clase nueva 24 horas antes que el resto.",
+              "Founding (if seats remain): first 100 wallets on a plan get −50% while they renew, a badge, and early lesson access when new lessons ship. Treat Founding as a legacy perk — not the reason to join this week.",
+              "Founding (koltuk kaldıysa): ilk 100 cüzdan yeniledikçe −%50, rozet ve yeni derslerde erken erişim. Founding miras ayrıcalık — bu hafta katılmanın ana sebebi değil.",
+              "Founding (si quedan asientos): las primeras 100 wallets en un plan tienen −50% al renovar, insignia y acceso temprano cuando haya clases nuevas. Es un perk legado — no el motivo para entrar esta semana.",
             )}
           </p>
         </section>
@@ -398,22 +399,44 @@ export function DocsView() {
 
         <section id="academy">
           <h2 className="text-2xl font-semibold tracking-tight">
-            {t("Weekly lessons", "Haftalık dersler", "Clases semanales")}
+            {t("Lesson archive", "Ders arşivi", "Archivo de clases")}
           </h2>
           <p className="mt-4 text-[15px] leading-7 text-cream/65">
             {t(
-              "Every week we publish new lessons in two tracks. Cybersecurity: a real, documented incident rebuilt step by step — the system, the exact flaw, the fix, and the bug class — with a simplified reproduction to analyse. Math for cybersecurity: the number theory, algebra and cryptography that broke or protected a real system, taught from first principles with small-number exercises.",
-              "Her hafta iki alanda yeni dersler yayınlarız. Siber güvenlik: belgelenmiş gerçek bir olay adım adım yeniden kurulur — sistem, tam açık, düzeltme ve hata sınıfı — üstüne incelenecek sadeleştirilmiş bir yeniden üretim. Siber güvenlik için matematik: gerçek bir sistemi kıran ya da koruyan sayılar teorisi, cebir ve kriptografi, temelden ve küçük sayılı alıştırmalarla.",
-              "Cada semana publicamos clases nuevas en dos líneas. Ciberseguridad: un incidente real y documentado reconstruido paso a paso — el sistema, la falla exacta, el fix y la clase de bug — con una reproducción simplificada para analizar. Matemática para ciberseguridad: la teoría de números, el álgebra y la criptografía que rompieron o protegieron un sistema real, desde cero y con ejercicios de números chicos.",
+              "Published lessons live under /learn in two tracks. Cybersecurity: a documented incident rebuilt step by step. Math for cybersecurity: the number theory and crypto that broke or protected a real system, with small-number exercises. When a new lesson ships, drafts are human-reviewed before publish. Lesson practice flags are checked off-chain and never affect the Saturday board or pot.",
+              "Yayımlanmış dersler /learn altında iki hatta. Siber güvenlik: belgelenmiş olay adım adım. Siber güvenlik için matematik: gerçek sistemi kıran/koruyan sayılar teorisi ve kripto, küçük sayılı alıştırmalarla. Yeni ders çıkarsa taslak insan review’dan geçer. Ders pratik flag’leri zincir dışında kontrol edilir; Cumartesi sırasını / potu etkilemez.",
+              "Las clases publicadas viven en /learn en dos líneas. Ciberseguridad: incidente documentado paso a paso. Matemática para ciberseguridad: teoría de números y cripto que rompieron o protegieron un sistema real, con ejercicios chicos. Si sale una clase nueva, el borrador pasa por revisión humana. Los flags de práctica se validan off-chain y nunca afectan el ranking ni el pozo del sábado.",
             )}
           </p>
-          <p className="mt-4 text-[15px] leading-7 text-cream/65">
-            {t(
-              "How a lesson is made: an AI model writes the first draft; a human editor fact-checks the case and its sources, solves the exercise, rewrites what is wrong, and signs the lesson before it is published. Each lesson ends with a practice flag. Lesson flags are checked off-chain and never affect the Saturday board or pot.",
-              "Bir ders nasıl yapılır: ilk taslağı bir yapay zekâ modeli yazar; insan editör olayı ve kaynaklarını doğrular, alıştırmayı çözer, yanlışları yeniden yazar ve yayından önce dersi imzalar. Her ders bir pratik flag ile biter. Ders flag’leri zincir dışında kontrol edilir; Cumartesi sıralamasını ve potu asla etkilemez.",
-              "Cómo se hace una clase: un modelo de IA escribe el primer borrador; una persona verifica el caso y sus fuentes, resuelve el ejercicio, reescribe lo que está mal y firma la clase antes de publicarla. Cada clase termina con un flag de práctica. Los flags de clase se validan off-chain y nunca afectan el ranking ni el pozo del sábado.",
-            )}
-          </p>
+        </section>
+
+        <section id="roadmap">
+          <h2 className="text-2xl font-semibold tracking-tight">
+            {t("What’s next", "Sırada ne var", "Qué sigue")}
+          </h2>
+          <ul className="mt-5 list-disc space-y-3 pl-5 text-[15px] leading-7 text-cream/65">
+            <li>
+              {t(
+                "Now: Devnet weekly official race, advertise the puzzle quality, grow a real player base. Mainnet when the crowd and pot justify real USDC — not “next week” by default.",
+                "Şimdi: Devnet haftalık resmi yarış, puzzle kalitesini reklam et, gerçek oyuncu tabanı. Mainnet kitle ve pot gerçek USDC’yi hak edince — varsayılan “önümüzdeki hafta” değil.",
+                "Ahora: carrera oficial semanal en Devnet, publicidad de la calidad de puzzles, base real de jugadores. Mainnet cuando la comunidad y el pozo justifiquen USDC real — no “la semana que viene” por defecto.",
+              )}
+            </li>
+            <li>
+              {t(
+                "Later (not live): creator mode — players ship CTFs through the week; attempt limits; quality gates (enough distinct attempts + at least one solve); producer share of the pot. A higher-entry (~10 USDC) lane may appear with that design. Until then lock D stays: one official curated set.",
+                "Sonra (canlı değil): üretici modu — oyuncular hafta boyunca CTF koyar; deneme limiti; kalite eşiği (yeterli farklı deneme + en az bir çözülme); üreticiye pot payı. ~10 USDC’lik giriş bu tasarımla gelebilir. O zamana kadar kilit D: tek resmi curated set.",
+                "Después (no en vivo): modo creador — CTFs durante la semana; límite de intentos; umbral de calidad (intentos distintos + al menos un solve); share del pozo al productor. Puede aparecer un carril ~10 USDC con ese diseño. Hasta entonces candado D: un set oficial curado.",
+              )}
+            </li>
+            <li>
+              {t(
+                "Later: optional UGC lessons / video commission on /learn (marketplace-style), only after the race Keep is stable.",
+                "Sonra: isteğe bağlı UGC ders / video komisyon (/learn), yalnız yarış Keep’i oturunca.",
+                "Después: clases UGC / comisión de video en /learn, solo cuando el Keep de la carrera esté estable.",
+              )}
+            </li>
+          </ul>
         </section>
       </article>
     </div>
@@ -433,4 +456,3 @@ function Layer({ n, name, body }: { n: string; name: string; body: string }) {
     </div>
   );
 }
-
