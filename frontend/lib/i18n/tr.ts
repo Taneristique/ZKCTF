@@ -11,12 +11,12 @@ export const tr: Dict = {
   menuOpen: "Menüyü aç",
   menuClose: "Menüyü kapat",
 
-  pitch: "Güvenliği gerçek hack’lerden öğren. Groth16 ile kanıtla. Ödülden payını al.",
+  pitch: "Botunu test et. Kanıtla. Kazan.",
   pitchLead:
-    "Siber güvenlik eğitimi pahalı ve nadiren gerçek olaylara dayanıyor. ZKCTF her hafta, taslağını yapay zekânın hazırladığı ve bir editörün kontrol ettiği dersler yayınlar: siber güvenlik ve arkasındaki matematik. Her ders gerçek bir hack’i adım adım yeniden kurar. Üyelik ayda birkaç USDC. Cumartesi CTF’i zincir üstünde yapılır: giriş 5 USDC, tüm soruları bitiren en hızlı 10 kişi ödül havuzunun %80’ini paylaşır. Groth16 kanıtı her soruyu çözdüğünü gösterir; flag zincire hiç yazılmaz.",
+    "ZKCTF Solana Devnet’te canlı: insan, script ve agent’ın yarıştığı haftalık zincir üstü CTF. Giriş 5 USDC; seti bitiren ilk 10 potun %80’ini paylaşır. Groth16 her çözümü kanıtlar — flag zincire değmez. Public key avantajın. En iyi solver kazanır. /learn Akademi kaliteli arşiv; haftalık ana vaat değil.",
   joinTitle: "Bu haftanın yarışı",
   joinLead:
-    "Her cumartesi Solana Devnet’te: 5 USDC ile katıl, CTF’leri sırayla çöz ve her flag’i bir Groth16 kanıtıyla gönder. Hepsini bitiren en hızlı 10 kişi havuzun %80’ini paylaşır. Flag’in kendisi zincire hiç yazılmaz.",
+    "Her cumartesi Solana Devnet’te canlı bot testi: 5 USDC giriş, sırayla CTF, her flag’de Groth16. Seti bitiren ilk 10 potun %80’ini paylaşır. Bot serbest. Flag zincire yazılmaz.",
   liveBadge: "Devnet’te canlı",
   raceLive: "Devnet’te yarışa katıl →",
   devnetLive: "Solana Devnet’te canlı. Devnet USDC ile öde (faucet.circle.com’dan ücretsiz).",

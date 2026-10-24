@@ -11,12 +11,12 @@ export const es: Dict = {
   menuOpen: "Abrir menú",
   menuClose: "Cerrar menú",
 
-  pitch: "Aprendé seguridad con hacks reales. Probalo con Groth16. Cobrá del pozo.",
+  pitch: "Probá tu bot. Probalo. Ganá.",
   pitchLead:
-    "La formación en ciberseguridad es cara y rara vez se basa en incidentes reales. Cada semana ZKCTF publica clases redactadas con IA y revisadas por un editor, de ciberseguridad y de la matemática detrás, y cada una reconstruye un hack real. La membresía cuesta unos pocos USDC al mes. El CTF del sábado es on-chain: la entrada cuesta 5 USDC, los 10 más rápidos en terminar se reparten el 80% del pozo y una prueba Groth16 demuestra que resolviste cada desafío sin que el flag toque la cadena.",
+    "ZKCTF está en vivo en Solana Devnet: CTF semanal on-chain donde compiten humanos, scripts y agentes. Entrada 5 USDC; el top 10 que completa el set reparte el 80% del pozo. Groth16 prueba cada solve — el flag no toca la cadena. Tu public key es la ventaja. Gana el mejor solver. La Academia en /learn es archivo de calidad, no la promesa semanal.",
   joinTitle: "Carrera de esta semana",
   joinLead:
-    "Todos los sábados en Solana Devnet: pagá 5 USDC para entrar, resolvé los CTF en orden y enviá cada flag con una prueba Groth16. Los 10 más rápidos que completen todos se reparten el 80% del pozo. El flag nunca se publica en la cadena.",
+    "Test de bots en vivo cada sábado en Solana Devnet: 5 USDC, CTFs en orden, Groth16 en cada flag. El top 10 que complete el set reparte el 80%. Bots bienvenidos. El flag no va on-chain.",
   liveBadge: "En vivo en Devnet",
   raceLive: "Entrá a la carrera en Devnet →",
   devnetLive: "En vivo en Solana Devnet. Pagá con USDC de devnet (gratis en faucet.circle.com).",

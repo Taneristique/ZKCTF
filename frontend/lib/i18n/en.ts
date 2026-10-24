@@ -10,12 +10,12 @@ export const en = {
   menuOpen: "Open menu",
   menuClose: "Close menu",
 
-  pitch: "Learn security from real hacks. Prove it with Groth16. Get paid from the pot.",
+  pitch: "Test your bot. Prove it. Win.",
   pitchLead:
-    "Cybersecurity training is expensive and rarely built on real incidents. Every week ZKCTF publishes lessons drafted with AI and checked by a human editor, in cybersecurity and the math behind it, each one rebuilding a real hack. Membership costs a few USDC a month. The Saturday CTF runs on-chain: entry is 5 USDC, the fastest 10 finishers share 80% of the pot, and a Groth16 proof shows you solved each puzzle without the flag ever touching the chain.",
+    "ZKCTF is live on Solana Devnet: a weekly on-chain CTF where humans, scripts, and agents compete. Entry is 5 USDC; the top 10 full clears share 80% of the pot. Groth16 proves each solve — the flag never touches the chain. Your public key is the edge. Best solver wins. Academy on /learn is a quality archive, not the weekly promise.",
   joinTitle: "This week’s race",
   joinLead:
-    "Every Saturday on Solana Devnet: pay 5 USDC to enter, solve the CTFs in order and submit each flag with a Groth16 proof. The 10 fastest players who clear them all share 80% of the pot. The flag itself never goes on-chain.",
+    "Live bot test every Saturday on Solana Devnet: 5 USDC to enter, CTFs in order, Groth16 on each flag. Top 10 who clear the set share 80% of the pot. Bots welcome. The flag never goes on-chain.",
   liveBadge: "Live on Devnet",
   raceLive: "Enter the race on Devnet →",
   devnetLive: "Live on Solana Devnet. Pay with devnet USDC (free at faucet.circle.com).",

@@ -43,37 +43,37 @@ export function DocsView() {
           </h1>
           <p className="mt-5 text-[15px] leading-7 text-cream/65">
             {t(
-              "ZKCTF is a weekly on-chain CTF race on Solana with Groth16 proof-of-solve: you type ZKCTF{…} in the UI; the chain only sees a proof — the flag never lands in a transaction. Entry is 5 USDC (devnet USDC while we run on Devnet). 20% of the pot goes to treasury, 80% to the first 10 full clears by a fixed table. Puzzles are generated and independently checked before publish — sharp crypto / Solidity-style levels (overflow, XOR, JWT, vault math, …). Best solver wins; we do not pretend bots cannot play. The Academy is a quality lesson archive on /learn — not the product we over-promise week to week. Mainnet ships when the community and pot are real, not on a calendar slogan.",
-              "ZKCTF, Solana üzerinde haftalık zincir üstü CTF yarışı: Groth16 proof-of-solve — UI’da ZKCTF{…} yazarsın; zincir yalnız proof görür, flag tx’e yazılmaz. Giriş 5 USDC (Devnet’teyken devnet USDC). Potun %20’si treasury, %80’i sabit tabloyla ilk 10 full clear. Bulmacalar yayın öncesi üretilir ve bağımsız doğrulanır — net kripto / Solidity tarzı seviyeler (overflow, XOR, JWT, vault math…). En iyi solver kazanır; “bot yok” tiyatrosu yok. Akademi /learn’de kaliteli ders arşivi — her hafta şişirilen ana vaat değil. Mainnet, kitle ve pot olgunlaşınca gelir; takvim sloganı değil.",
-              "ZKCTF es una carrera CTF semanal on-chain en Solana con Groth16 proof-of-solve: escribís ZKCTF{…} en la UI; la cadena solo ve una prueba — el flag no va en la tx. Entrada 5 USDC (USDC de devnet mientras corremos en Devnet). 20% del pozo al tesoro, 80% a los primeros 10 clears completos con tabla fija. Los puzzles se generan y se verifican de forma independiente antes de publicar — niveles claros de cripto / Solidity (overflow, XOR, JWT, vault math…). Gana el mejor solver; no fingimos que los bots no existen. La Academia es un archivo de clases de calidad en /learn — no la promesa semanal inflada. Mainnet llega cuando la comunidad y el pozo son reales, no por eslogan de calendario.",
+              "Test your bot. Prove it. Win. ZKCTF is a weekly on-chain CTF race on Solana: bring a human brain, a script, or an agent — best solver wins. Entry 5 USDC (devnet USDC on Devnet). Top 10 full clears share 80% of the pot by a fixed table; 20% treasury. You type ZKCTF{…} in the UI; Groth16 posts only a proof — the flag never touches the chain. Your public key is the edge: board, prestige, and payouts bind to the wallet, not to a leaked flag. Puzzles are generated and independently checked before publish (overflow, XOR, JWT, vault math, …). No PoH theater. Academy on /learn is a quality archive — the live product is the race. Mainnet when the crowd and pot are real.",
+              "Botunu test et. Kanıtla. Kazan. ZKCTF, Solana’da haftalık zincir üstü CTF: insan, script veya agent — en iyi solver kazanır. Giriş 5 USDC (Devnet’te devnet USDC). İlk 10 full clear potun %80’ini sabit tabloyla paylaşır; %20 treasury. UI’da ZKCTF{…}; Groth16 yalnız proof yazar — flag zincire değmez. Public key avantajın: sıra, prestij ve ödeme cüzdana bağlanır, sızan flag’e değil. Bulmacalar yayın öncesi üretilir ve doğrulanır (overflow, XOR, JWT, vault math…). PoH tiyatrosu yok. /learn Akademi kaliteli arşiv — canlı ürün yarış. Mainnet kitle ve pot gerçek olunca.",
+              "Probá tu bot. Probalo. Ganá. ZKCTF es una carrera CTF semanal on-chain en Solana: cerebro humano, script o agente — gana el mejor solver. Entrada 5 USDC (USDC de devnet en Devnet). El top 10 de clears completos reparte el 80% del pozo con tabla fija; 20% tesoro. Escribís ZKCTF{…} en la UI; Groth16 solo publica una prueba — el flag no toca la cadena. Tu public key es la ventaja: ranking, prestigio y pagos van a la wallet, no a un flag filtrado. Puzzles generados y verificados antes de publicar (overflow, XOR, JWT, vault math…). Sin teatro PoH. La Academia en /learn es archivo de calidad — el producto en vivo es la carrera. Mainnet cuando la comunidad y el pozo sean reales.",
             )}
           </p>
           <div className="mt-8 space-y-3">
             <Layer
               n="1"
-              name={t("5 USDC + formula", "5 USDC + formül", "5 USDC + fórmula")}
+              name={t("Bot / solver welcome", "Bot / solver serbest", "Bot / solver bienvenido")}
               body={t(
-                "USDC only. 20% treasury, 80% to the board. Same weights if 1 person showed up or 40. No discretionary prize.",
-                "Yalnız USDC. %20 treasury, %80 sıra. 1 kişi de gelse 40 kişi de, aynı ağırlıklar. Keyfi ödül yok.",
-                "Solo USDC. 20% tesoro, 80% al ranking. Las mismas pesas si vino 1 o 40. Sin premio discrecional.",
+                "Automate if you want. We don’t ban solvers to fake “fair humans only.” Speed and correctness win; the board is public keys.",
+                "İstersen otomatikleştir. “Yalnız adil insan” tiyatrosu için solver yasaklamıyoruz. Hız ve doğruluk kazanır; sıra public key’ler.",
+                "Automatizá si querés. No baneamos solvers para fingir “solo humanos justos”. Ganan velocidad y corrección; el ranking son public keys.",
               )}
             />
             <Layer
               n="2"
-              name={t("ZK proof-of-solve", "ZK proof-of-solve", "ZK proof-of-solve")}
+              name={t("5 USDC + Groth16", "5 USDC + Groth16", "5 USDC + Groth16")}
               body={t(
-                "Type ZKCTF{…} in the UI. On-chain you only post a Groth16 proof. Explorers never see the flag.",
-                "UI’da ZKCTF{…} yaz. Zincire yalnız Groth16 proof gider. Explorer flag görmez.",
-                "En la UI escribís ZKCTF{…}. On-chain solo va una prueba Groth16. El explorer no ve el flag.",
+                "USDC entry. 20% treasury, 80% top 10. Type the flag in the UI; on-chain only a Groth16 proof. Explorers never see ZKCTF{…}.",
+                "USDC giriş. %20 treasury, %80 ilk 10. Flag’i UI’da yaz; zincirde yalnız Groth16 proof. Explorer ZKCTF{…} görmez.",
+                "Entrada USDC. 20% tesoro, 80% top 10. El flag en la UI; on-chain solo prueba Groth16. El explorer no ve ZKCTF{…}.",
               )}
             />
             <Layer
               n="3"
               name={t("Academy archive", "Akademi arşivi", "Archivo Academia")}
               body={t(
-                "Quality lessons on /learn (real incidents + math for security). We are not promising a fresh paid curriculum every week right now. Membership rails exist; the race is the live product. Academy never writes the Saturday board or pot.",
-                "/learn’de kaliteli dersler (gerçek olaylar + güvenlik matematiği). Şu an her hafta taze ücretli müfredat vaadi yok. Üyelik altyapısı duruyor; canlı ürün yarış. Akademi Cumartesi sırasına / pota yazmaz.",
-                "Clases de calidad en /learn (incidentes reales + matemática de seguridad). Ahora no prometemos currículo pago nuevo cada semana. La membresía existe; el producto en vivo es la carrera. La Academia no escribe el ranking ni el pozo del sábado.",
+                "Quality lessons on /learn. Not a weekly paid-curriculum promise. Race is the live product. Academy never writes the board or pot.",
+                "/learn’de kaliteli dersler. Haftalık ücretli müfredat vaadi değil. Canlı ürün yarış. Akademi sıra / pota yazmaz.",
+                "Clases de calidad en /learn. No es promesa de currículo pago semanal. El producto en vivo es la carrera. La Academia no escribe ranking ni pozo.",
               )}
             />
           </div>
@@ -185,9 +185,9 @@ export function DocsView() {
           </h2>
           <p className="mt-4 text-[15px] leading-7 text-cream/65">
             {t(
-              "Entry is 5 USDC. Fiat is not accepted on this race. CTFs unlock in order. After the window, only wallets that cleared every CTF are ranked by finish time. N = 10. 20% treasury, 80% to that board with the fixed table. If fewer than 10 full clears, only they are paid (weights renormalized). If nobody cleared the set, the whole pot goes to treasury. Solvers (including automated ones) are allowed — the race is honest about that.",
-              "Giriş 5 USDC. Fiat yok. CTF’ler sırayla açılır. Pencere bitince yalnız her CTF’i bitirenler bitiş zamanına göre sıralanır. N = 10. %20 treasury, %80 bu tablo. 10’dan az full clear varsa yalnız onlar (ağırlıklar yeniden ölçeklenir). Kimse seti bitirmediyse pot treasury’e. Solver’lar (otomatik dahil) serbest — yarış buna dürüst.",
-              "Entrada 5 USDC. Sin fiat. Los CTFs se abren en orden. Al cerrar, solo quienes completaron todos se ordenan por hora de cierre. N = 10. 20% tesoro, 80% con la tabla. Si hay menos de 10 clears, solo ellos (pesas reescaladas). Si nadie completó el set, todo al tesoro. Los solvers (también automáticos) están permitidos — la carrera es honesta al respecto.",
+              "This week’s race is a live bot test: humans, scripts, and agents all welcome. Entry is 5 USDC (no fiat). CTFs unlock in order. After the window, only wallets that cleared every CTF are ranked by finish time. N = 10. 20% treasury, 80% to that board with the fixed table. If fewer than 10 full clears, only they are paid (weights renormalized). If nobody cleared the set, the whole pot goes to treasury. Best solver wins — we do not run PoH to pretend otherwise.",
+              "Bu haftanın yarışı canlı bot testi: insan, script, agent serbest. Giriş 5 USDC (fiat yok). CTF’ler sırayla açılır. Pencere bitince yalnız her CTF’i bitirenler bitiş zamanına göre sıralanır. N = 10. %20 treasury, %80 bu tablo. 10’dan az full clear varsa yalnız onlar (ağırlıklar yeniden ölçeklenir). Kimse seti bitirmediyse pot treasury’e. En iyi solver kazanır — aksini PoH ile tiyatro yapmıyoruz.",
+              "La carrera de esta semana es un test de bots en vivo: humanos, scripts y agentes bienvenidos. Entrada 5 USDC (sin fiat). Los CTFs se abren en orden. Al cerrar, solo quienes completaron todos se ordenan por hora de cierre. N = 10. 20% tesoro, 80% con la tabla. Si hay menos de 10 clears, solo ellos (pesas reescaladas). Si nadie completó el set, todo al tesoro. Gana el mejor solver — no usamos PoH para fingir otra cosa.",
             )}
           </p>
           <div className="mt-6 overflow-x-auto">
