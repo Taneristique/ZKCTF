@@ -38,6 +38,8 @@ RUN cd frontend && pnpm build
 
 COPY scripts/start.sh scripts/start.sh
 COPY scripts/fixtures scripts/fixtures
+COPY scripts/backup-reputation.mjs scripts/backup-reputation.mjs
+COPY scripts/ensure-lessons.mjs scripts/ensure-lessons.mjs
 COPY scripts/ensure-round.mjs scripts/ensure-round.mjs
 COPY scripts/ensure-state.mjs scripts/ensure-state.mjs
 
