@@ -69,7 +69,10 @@ NEXT_PUBLIC_PROGRAM_ID=34Kut3tQ4HTJMF2gVvnT6shhmenPE6463xnGk5sxDtz7
 
 ## 3. Weekly lessons (AI draft → human review → publish)
 
-**Script:** `scripts/lesson.mjs`. **Content:** `backend/content/lessons/published/*.json` (served), `backend/content/lessons/drafts/` (never served).
+**Script:** `scripts/lesson.mjs`. **Content:**
+- **Full** (body + flag): `$ZKCTF_DATA_DIR/lessons/published/*.json` (local default `backend/data/…`, gitignored; Railway `/data/lessons/published/`)
+- **Public stubs** in git: `backend/content/lessons/published/*.json` (metadata; at most one `teaser: true` may keep body — **never** `flag`)
+- Drafts: `backend/content/lessons/drafts/` (never served)
 
 ```bash
 node scripts/lesson.mjs draft --track security --case "Wormhole 2022"   # AI draft (or --blank)
@@ -77,6 +80,8 @@ node scripts/lesson.mjs draft --track math --topic "ECDSA nonce reuse"
 # edit the draft: fact-check the incident + sources, solve the exercise yourself, fix wording
 node scripts/lesson.mjs check backend/content/lessons/drafts/<file>.json
 node scripts/lesson.mjs publish backend/content/lessons/drafts/<file>.json --editor "Your Name" [--at 2026-10-10T12:00:00Z]
+# publish writes full→data dir + stub→repo. Sync full JSON to Railway volume.
+node scripts/seal-lessons.mjs   # one-shot: strip flags/bodies from public tree if they leaked
 node scripts/lesson.mjs list
 ```
 
@@ -104,7 +109,18 @@ You cannot stop a paying member from copy-pasting. Goal: **stolen text is not th
 
 If `backend/content/lessons/published/` is already on a public remote, treat it as leaked marketing and move new full bodies to a private path / server-only volume.
 
-**Volume curriculum (recommended):** put reviewed member lessons at `$ZKCTF_DATA_DIR/lessons/published/*.json` (Railway `/data/lessons/published/`). The API merges them over repo files with the same `id`. Keep at most one `teaser: true` lesson in the public git tree. Every lesson JSON should include:
+**Volume curriculum (required for members):** full lessons at `$ZKCTF_DATA_DIR/lessons/published/*.json` (Railway `/data/lessons/published/`). The API merges them over repo stubs with the same `id`. Keep at most one `teaser: true` in the public tree (body allowed; flag never).
+
+**Encrypted seed (no Railway SSH):** `scripts/fixtures/academy-lessons.tar.gz.enc` ships in the image. Set Railway variable `ZKCTF_LESSONS_PASSPHRASE` (see local `backend/data/lessons.passphrase` after seal — never commit it). `scripts/ensure-lessons.mjs` runs on boot and extracts into `/data/lessons/published` when empty. Refresh bundle after new lessons:
+
+```bash
+node scripts/seal-lessons.mjs
+tar -C backend/data/lessons -czf - published \
+  | openssl enc -aes-256-cbc -pbkdf2 -salt -pass file:backend/data/lessons.passphrase \
+    -out scripts/fixtures/academy-lessons.tar.gz.enc
+```
+
+Git history may still contain old full JSON until you rewrite/filter — treat past commits as leaked marketing. Every full lesson JSON should include:
 
 ```json
 "rights": {

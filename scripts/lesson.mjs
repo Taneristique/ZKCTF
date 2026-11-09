@@ -8,7 +8,11 @@
  *   node scripts/lesson.mjs publish backend/content/lessons/drafts/<file>.json --editor "Your Name" [--at 2026-10-10T12:00:00Z]
  *   node scripts/lesson.mjs list
  *
- * Drafts are never served. Only `publish` (after your review) moves a lesson to backend/content/lessons/published/.
+ * Drafts are never served. Only `publish` (after your review) writes:
+ *   - full JSON → $ZKCTF_DATA_DIR/lessons/published/ (gitignored / volume)
+ *   - public stub → backend/content/lessons/published/ (no flag; body only if teaser)
+ *
+ * One-shot seal of existing full files: node scripts/seal-lessons.mjs
  */
 import { createRequire } from "node:module";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
@@ -27,6 +31,36 @@ try {
 const LESSONS = join(BACKEND, "content/lessons");
 const DRAFTS = join(LESSONS, "drafts");
 const PUBLISHED = join(LESSONS, "published");
+const DATA_PUBLISHED = join(
+  (process.env.ZKCTF_DATA_DIR || join(BACKEND, "data")).replace(/\/+$/, ""),
+  "lessons/published",
+);
+
+function toPublicStub(lesson) {
+  const stub = {
+    id: lesson.id,
+    week: lesson.week,
+    track: lesson.track,
+    title: lesson.title,
+    summary: lesson.summary,
+    case: lesson.case ?? null,
+    authors: lesson.authors ?? { ai: null, human: null },
+    reviewed: true,
+    status: "published",
+    teaser: Boolean(lesson.teaser),
+    publishedAt: lesson.publishedAt,
+    rights: lesson.rights,
+  };
+  if (stub.teaser) {
+    stub.body = lesson.body;
+    stub.exercise = {
+      statement: lesson.exercise?.statement ?? "",
+      artifacts: Array.isArray(lesson.exercise?.artifacts) ? lesson.exercise.artifacts : [],
+      hints: Array.isArray(lesson.exercise?.hints) ? lesson.exercise.hints : [],
+    };
+  }
+  return stub;
+}
 const TRACKS = ["security", "math"];
 const FLAG_RE = /^ZKCTF\{[A-Za-z0-9_\-]{1,48}\}$/;
 
@@ -193,12 +227,19 @@ function publish(path) {
     publishedAt: at.toISOString(),
   };
   out.id = out.id || `${out.week.toLowerCase()}-${slug(out.title)}`;
+  out.teaser = Boolean(out.teaser);
+  mkdirSync(DATA_PUBLISHED, { recursive: true });
   mkdirSync(PUBLISHED, { recursive: true });
-  const dest = join(PUBLISHED, `${out.id}.json`);
-  if (existsSync(dest)) throw new Error(`${dest} already exists`);
-  writeFileSync(dest, `${JSON.stringify(out, null, 2)}\n`);
+  const fullDest = join(DATA_PUBLISHED, `${out.id}.json`);
+  const stubDest = join(PUBLISHED, `${out.id}.json`);
+  if (existsSync(fullDest) || existsSync(stubDest)) throw new Error(`${out.id}.json already exists (data or repo)`);
+  writeFileSync(fullDest, `${JSON.stringify(out, null, 2)}\n`);
+  writeFileSync(stubDest, `${JSON.stringify(toPublicStub(out), null, 2)}\n`);
   if (resolve(path).startsWith(resolve(DRAFTS))) renameSync(path, `${path}.published`);
-  console.log(`Published ${out.id} (${out.track}) — visible ${out.publishedAt} (Founding members see it earlier).`);
+  console.log(
+    `Published ${out.id} (${out.track}) — full→${fullDest}; stub→${stubDest}; visible ${out.publishedAt}`,
+  );
+  console.log("Sync full file to Railway /data/lessons/published/ if that is not this data dir.");
 }
 
 function list() {

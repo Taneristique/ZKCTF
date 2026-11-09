@@ -11,7 +11,7 @@ ZKCTF is a platform for profitable on-chain capture-the-flag puzzles powered by 
 Not “another Solana CTF app.” Structural locks: [STRUCTURAL_LOCKS.md](STRUCTURAL_LOCKS.md).
 
 - Play: weekly curated official puzzles after this week’s 5 USDC entry · on-chain `submit` + `split_pot`.
-- Learn: `/learn` serves `backend/content/lessons/published/*.json`. Lessons and membership never write the race board or pot.
+- Learn: `/learn` serves lessons from `$ZKCTF_DATA_DIR/lessons/published` (full) merged over public stubs in `backend/content/lessons/published/` (no flags in git). Lessons and membership never write the race board or pot. Seal/migrate with `node scripts/seal-lessons.mjs`.
 - **Ops (AI keys, weekly bot, USDC, deploy):** [docs/OPS.md](docs/OPS.md) — keep keypairs, PDA/ATA addresses, and host secrets out of this README.
 - How it works: [frontend docs](frontend/components/DocsView.tsx) and [protocol/README.md](protocol/README.md).
 - Implementer math: [protocol/zkctf.md](protocol/zkctf.md).

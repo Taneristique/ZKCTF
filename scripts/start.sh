@@ -16,6 +16,7 @@ fi
 node scripts/backup-reputation.mjs || echo "[start] backup-reputation failed (continuing)"
 node scripts/ensure-round.mjs || echo "[start] ensure-round failed (continuing)"
 node scripts/ensure-state.mjs || echo "[start] ensure-state failed (continuing)"
+node scripts/ensure-lessons.mjs || echo "[start] ensure-lessons failed (continuing)"
 node scripts/backup-reputation.mjs || echo "[start] backup-reputation (post-ensure) failed (continuing)"
 
 # Must match the /zk-api rewrite default in frontend/next.config.ts.

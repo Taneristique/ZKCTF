@@ -55,9 +55,16 @@ function readDirJson(dir) {
 export function loadLessons() {
   const byId = new Map();
   for (const l of readDirJson(REPO_PUBLISHED)) {
-    if (l.status === "published" && l.reviewed === true && TRACKS[l.track]) byId.set(l.id, l);
+    if (l.status === "published" && l.reviewed === true && TRACKS[l.track]) {
+      if (l.flag) {
+        console.warn(
+          `[lessons] repo published/${l.id}.json still contains flag — run: node scripts/seal-lessons.mjs`,
+        );
+      }
+      byId.set(l.id, l);
+    }
   }
-  // Volume wins: keep full curriculum off the public git tree when desired.
+  // Volume wins: full curriculum (body + flag) lives under ZKCTF_DATA_DIR, not public git.
   if (existsSync(VOLUME_PUBLISHED)) {
     for (const l of readDirJson(VOLUME_PUBLISHED)) {
       if (l.status === "published" && l.reviewed === true && TRACKS[l.track]) byId.set(l.id, l);
