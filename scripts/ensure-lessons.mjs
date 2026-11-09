@@ -3,13 +3,15 @@
  * Seed $ZKCTF_DATA_DIR/lessons/published from the encrypted curriculum bundle
  * when the volume has no full lessons yet.
  *
+ * Uses Node crypto (OpenSSL-compatible AES-256-CBC + PBKDF2) — no openssl CLI.
+ *
  *   ZKCTF_LESSONS_PASSPHRASE=<secret> node scripts/ensure-lessons.mjs
  *
- * Bundle: scripts/fixtures/academy-lessons.tar.gz.enc (AES-256-CBC, PBKDF2).
- * Create/refresh: see scripts/seal-lessons.mjs then re-encrypt (OPS.md).
+ * Bundle: scripts/fixtures/academy-lessons.tar.gz.enc
  */
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readdirSync, readFileSync, mkdtempSync, rmSync } from "node:fs";
+import { createDecipheriv, pbkdf2Sync } from "node:crypto";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,7 +19,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const dataDir = (process.env.ZKCTF_DATA_DIR || join(ROOT, "backend/data")).replace(/\/+$/, "");
 const dest = join(dataDir, "lessons/published");
-const enc = join(ROOT, "scripts/fixtures/academy-lessons.tar.gz.enc");
+const encPath = join(ROOT, "scripts/fixtures/academy-lessons.tar.gz.enc");
 const pass = (process.env.ZKCTF_LESSONS_PASSPHRASE || "").trim();
 
 function publishedHasFlag() {
@@ -33,7 +35,22 @@ function publishedHasFlag() {
   return false;
 }
 
+/** Decrypt `openssl enc -aes-256-cbc -pbkdf2` (default 10000 iterations). */
+function decryptOpenSslEnc(buf, password) {
+  if (buf.length < 16 || buf.subarray(0, 8).toString("utf8") !== "Salted__") {
+    throw new Error("not an OpenSSL salted enc file");
+  }
+  const salt = buf.subarray(8, 16);
+  const ciphertext = buf.subarray(16);
+  const keyIv = pbkdf2Sync(password, salt, 10_000, 48, "sha256");
+  const key = keyIv.subarray(0, 32);
+  const iv = keyIv.subarray(32, 48);
+  const decipher = createDecipheriv("aes-256-cbc", key, iv);
+  return Buffer.concat([decipher.update(ciphertext), decipher.final()]);
+}
+
 mkdirSync(dest, { recursive: true });
+mkdirSync(join(dataDir, "lessons"), { recursive: true });
 
 if (publishedHasFlag()) {
   console.log("[ensure-lessons] full curriculum already present — skip");
@@ -47,27 +64,30 @@ if (!pass) {
   process.exit(0);
 }
 
-if (!existsSync(enc)) {
-  console.warn("[ensure-lessons] missing", enc);
+if (!existsSync(encPath)) {
+  console.warn("[ensure-lessons] missing", encPath);
   process.exit(0);
 }
 
 const tmp = mkdtempSync(join(tmpdir(), "zkctf-lessons-"));
 const tarPath = join(tmp, "lessons.tar.gz");
 try {
-  execFileSync(
-    "openssl",
-    ["enc", "-d", "-aes-256-cbc", "-pbkdf2", "-pass", `pass:${pass}`, "-in", enc, "-out", tarPath],
-    { stdio: ["ignore", "pipe", "pipe"] },
-  );
-  execFileSync("tar", ["-xzf", tarPath, "-C", join(dataDir, "lessons")], { stdio: "inherit" });
+  const plain = decryptOpenSslEnc(readFileSync(encPath), pass);
+  writeFileSync(tarPath, plain);
+  execFileSync("tar", ["-xzf", tarPath, "-C", join(dataDir, "lessons")], { stdio: ["ignore", "pipe", "pipe"] });
   if (!publishedHasFlag()) {
-    console.error("[ensure-lessons] decrypt/extract ran but no flagged lessons found — check passphrase/bundle");
+    console.error(
+      "[ensure-lessons] decrypt/extract ran but no flagged lessons in",
+      dest,
+      "files=",
+      existsSync(dest) ? readdirSync(dest).join(",") : "(missing)",
+    );
     process.exit(1);
   }
-  console.log("[ensure-lessons] seeded", dest);
+  console.log("[ensure-lessons] seeded", dest, "count=", readdirSync(dest).filter((f) => f.endsWith(".json")).length);
 } catch (e) {
-  console.error("[ensure-lessons] failed:", e.stderr?.toString?.() || e.message || e);
+  const detail = e.stderr?.toString?.() || e.message || e;
+  console.error("[ensure-lessons] failed:", detail);
   process.exit(1);
 } finally {
   rmSync(tmp, { recursive: true, force: true });
