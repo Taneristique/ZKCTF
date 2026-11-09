@@ -23,8 +23,8 @@ type LessonMeta = {
   solved: boolean;
 };
 type Lesson = LessonMeta & {
-  body: string;
-  exercise: { statement: string; artifacts?: string[]; hints?: string[] };
+  body?: string;
+  exercise?: { statement?: string; artifacts?: string[]; hints?: string[] };
   rights?: { holder?: string; notice?: string; license?: string };
 };
 
@@ -178,11 +178,15 @@ export default function LearnPage() {
 
             {open?.id === l.id && (
               <article className="mt-5 border-t border-cream/10 pt-5">
-                {open.body.split(/\n{2,}/).map((p, i) => (
-                  <p key={i} className="mt-3 whitespace-pre-wrap text-sm leading-7 text-cream/75">
-                    {p}
-                  </p>
-                ))}
+                {open.body ? (
+                  open.body.split(/\n{2,}/).map((p, i) => (
+                    <p key={i} className="mt-3 whitespace-pre-wrap text-sm leading-7 text-cream/75">
+                      {p}
+                    </p>
+                  ))
+                ) : (
+                  <p className="mt-3 text-sm text-cream/55">{t.lessonLoadError}</p>
+                )}
                 {open.rights?.notice && (
                   <p className="mt-4 text-[11px] leading-5 text-cream/40">{open.rights.notice}</p>
                 )}
@@ -197,8 +201,10 @@ export default function LearnPage() {
                   </div>
                 )}
                 <div className="mt-6 rounded-2xl border border-cream/10 p-4">
-                  <p className="text-sm leading-6 text-cream/85">{open.exercise.statement}</p>
-                  {open.exercise.artifacts?.map((a) => (
+                  <p className="text-sm leading-6 text-cream/85">
+                    {open.exercise?.statement ?? t.lessonLoadError}
+                  </p>
+                  {open.exercise?.artifacts?.map((a) => (
                     <pre key={a} className="mt-3 overflow-x-auto font-mono text-xs leading-5 text-teal">
                       {a}
                     </pre>
@@ -210,31 +216,33 @@ export default function LearnPage() {
                   >
                     {t.hint}
                   </button>
-                  {open.exercise.hints?.slice(0, hints).map((h) => (
+                  {open.exercise?.hints?.slice(0, hints).map((h) => (
                     <p key={h} className="mt-2 text-xs text-cream/55">
                       {h}
                     </p>
                   ))}
-                  {open.solved ? (
-                    <p className="mt-4 text-sm text-teal">✓ {t.lessonSolved}</p>
-                  ) : (
-                    <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-                      <input
-                        value={flag}
-                        onChange={(e) => setFlag(e.target.value)}
-                        placeholder="ZKCTF{…}"
-                        className="min-h-12 flex-1 rounded-2xl border border-cream/15 bg-ink px-4 text-sm"
-                      />
-                      <button
-                        type="button"
-                        disabled={busy || !flag}
-                        onClick={() => void submit()}
-                        className="min-h-12 rounded-2xl bg-cream px-5 text-sm font-medium text-ink disabled:opacity-40"
-                      >
-                        {t.submit}
-                      </button>
-                    </div>
-                  )}
+                  {open.body && open.exercise?.statement ? (
+                    open.solved ? (
+                      <p className="mt-4 text-sm text-teal">✓ {t.lessonSolved}</p>
+                    ) : (
+                      <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                        <input
+                          value={flag}
+                          onChange={(e) => setFlag(e.target.value)}
+                          placeholder="ZKCTF{…}"
+                          className="min-h-12 flex-1 rounded-2xl border border-cream/15 bg-ink px-4 text-sm"
+                        />
+                        <button
+                          type="button"
+                          disabled={busy || !flag}
+                          onClick={() => void submit()}
+                          className="min-h-12 rounded-2xl bg-cream px-5 text-sm font-medium text-ink disabled:opacity-40"
+                        >
+                          {t.submit}
+                        </button>
+                      </div>
+                    )
+                  ) : null}
                 </div>
                 {open.authors?.human && (
                   <p className="mt-3 text-[11px] text-cream/40">
