@@ -74,6 +74,8 @@ export const tr: Dict = {
   lessonEarly: "Erken erişim",
   lessonEmpty: "Henüz yayınlanmış ders yok.",
   lessonLoadError: "Dersler yüklenemedi. Sunucu yeniden başlatılıyor olabilir.",
+  lessonBodyMissing:
+    "Tam ders metni sunucuda yok (müfredat seed edilmemiş). Teaser’lar çalışır; ZKCTF_LESSONS_PASSPHRASE koyup redeploy edin.",
   retry: "Tekrar dene",
   lessonReviewed: "İnceleyen",
   lessonCorrect: "Doğru. Ders çözüldü olarak işaretlendi.",

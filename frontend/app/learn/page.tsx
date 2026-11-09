@@ -185,7 +185,7 @@ export default function LearnPage() {
                     </p>
                   ))
                 ) : (
-                  <p className="mt-3 text-sm text-cream/55">{t.lessonLoadError}</p>
+                  <p className="mt-3 text-sm text-cream/55">{t.lessonBodyMissing}</p>
                 )}
                 {open.rights?.notice && (
                   <p className="mt-4 text-[11px] leading-5 text-cream/40">{open.rights.notice}</p>
@@ -202,7 +202,7 @@ export default function LearnPage() {
                 )}
                 <div className="mt-6 rounded-2xl border border-cream/10 p-4">
                   <p className="text-sm leading-6 text-cream/85">
-                    {open.exercise?.statement ?? t.lessonLoadError}
+                    {open.exercise?.statement ?? t.lessonBodyMissing}
                   </p>
                   {open.exercise?.artifacts?.map((a) => (
                     <pre key={a} className="mt-3 overflow-x-auto font-mono text-xs leading-5 text-teal">

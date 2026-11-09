@@ -43,7 +43,7 @@ import { AVATAR_EMOJIS } from "./avatarEmojis.js";
 import { giftStatus, buildGiftTx, markGiftClaimed, GIFT_FINISHES, GIFT_MONTHS } from "./academyGift.js";
 import { weekNftsFor, weekMeta } from "./weekNft.js";
 import { claimsFor, claimableFor, executeClaim } from "./prizeClaims.js";
-import { TRACKS, lessonCatalog, lessonFor, lessonFlag } from "./lessons.js";
+import { TRACKS, lessonCatalog, lessonFor, lessonFlag, loadLessons } from "./lessons.js";
 import { walletFromRequest } from "./walletAuth.js";
 import {
   recentTx,
@@ -131,6 +131,8 @@ app.get("/health", async (_req, res) => {
     dataDir: DATA_DIR,
     dataPersistent,
     railwayVolume: process.env.RAILWAY_VOLUME_MOUNT_PATH?.trim() || null,
+    lessonsFull: loadLessons().filter((l) => l.flag && l.body).length,
+    lessonsPassphraseEnv: Boolean(process.env.ZKCTF_LESSONS_PASSPHRASE?.trim()),
     profiles: Object.keys(load(dataPath("profiles.json")).byWallet ?? {}).length,
     entries: Object.keys(load(dataPath("entries.json"))).length,
     reputation: (() => {

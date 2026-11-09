@@ -74,6 +74,8 @@ export const es: Dict = {
   lessonEarly: "Acceso anticipado",
   lessonEmpty: "Todavía no hay clases publicadas.",
   lessonLoadError: "No se pudieron cargar las clases. Puede que el servidor se esté reiniciando.",
+  lessonBodyMissing:
+    "El texto completo aún no está en este servidor (falta la semilla del currículo). Los teasers funcionan; configurá ZKCTF_LESSONS_PASSPHRASE y redeploy.",
   retry: "Reintentar",
   lessonReviewed: "Revisada por",
   lessonCorrect: "Correcto. La clase quedó marcada como resuelta.",

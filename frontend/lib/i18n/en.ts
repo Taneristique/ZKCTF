@@ -73,6 +73,8 @@ export const en = {
   lessonEarly: "Early access",
   lessonEmpty: "No lessons published yet.",
   lessonLoadError: "Lessons could not be loaded. The server may be restarting.",
+  lessonBodyMissing:
+    "Full lesson text is not on this server yet (curriculum seed missing). Teasers still work; set ZKCTF_LESSONS_PASSPHRASE and redeploy.",
   retry: "Retry",
   lessonReviewed: "Reviewed by",
   lessonCorrect: "Correct. Lesson marked as solved.",
