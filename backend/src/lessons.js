@@ -19,11 +19,10 @@ const REPO_PUBLISHED = join(LESSONS_DIR, "published");
 const VOLUME_PUBLISHED = join(DATA_DIR, "lessons/published");
 
 export const TRACKS = {
-  security: { id: "security", en: "Cybersecurity", tr: "Siber güvenlik", es: "Ciberseguridad" },
+  security: { id: "security", en: "Cybersecurity", es: "Ciberseguridad" },
   math: {
     id: "math",
     en: "Math for cybersecurity",
-    tr: "Siber güvenlik için matematik",
     es: "Matemática para ciberseguridad",
   },
 };

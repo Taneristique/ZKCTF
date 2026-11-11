@@ -38,7 +38,7 @@ export const en = {
   ctfNext: "Next CTF in",
   ctfLive: "CTF is live",
   ctfEnds: "Ends in",
-  ctfWhen: "Saturdays, 18:00 Istanbul / 12:00 Buenos Aires, for 24 hours. Entry is 5 USDC. The top 10 share 80% of the pot.",
+  ctfWhen: "Saturdays, 15:00 UTC / 12:00 Buenos Aires, for 24 hours. Entry is 5 USDC. The top 10 share 80% of the pot.",
   officialSet: "This week’s CTFs",
   network: "Devnet · live",
   noLevels: "No CTFs yet this week.",

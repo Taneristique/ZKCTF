@@ -39,7 +39,7 @@ export const es: Dict = {
   ctfNext: "Próximo CTF en",
   ctfLive: "CTF en vivo",
   ctfEnds: "Termina en",
-  ctfWhen: "Sábados, 18:00 Estambul / 12:00 Buenos Aires, durante 24 horas. Entrada de 5 USDC. El top 10 se reparte el 80% del pozo.",
+  ctfWhen: "Sábados, 15:00 UTC / 12:00 Buenos Aires, durante 24 horas. Entrada de 5 USDC. El top 10 se reparte el 80% del pozo.",
   officialSet: "CTF de esta semana",
   network: "Devnet · en vivo",
   noLevels: "Todavía no hay CTF esta semana.",

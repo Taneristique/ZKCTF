@@ -7,7 +7,7 @@ import { useLang } from "@/lib/lang";
 import { Membership, type MemberStatus } from "@/components/Membership";
 import { cachedAuth, walletAuth } from "@/lib/walletAuth";
 
-type Track = { id: string; en: string; tr: string; es: string };
+type Track = { id: string; en: string; es: string };
 type Case = { name: string; date: string; impact?: string; sources?: string[] };
 type LessonMeta = {
   id: string;

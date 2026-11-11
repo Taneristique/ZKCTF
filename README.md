@@ -3,7 +3,7 @@
 ZKCTF is a platform for profitable on-chain capture-the-flag puzzles powered by Groth16. It targets a real problem in cybersecurity education: good training is expensive and rarely built on real incidents. ZKCTF offers affordable, high-quality lessons built from reproduced real-life hack cases.
 
 - **Academy (weekly):** AI-assisted, human-reviewed lessons in **cybersecurity** and **math for cybersecurity**, published every week. Each security lesson rebuilds a real incident; each math lesson teaches the math that broke or protected a real system. Membership is paid in **USDC on-chain** (10 / 27 / 90 USDC for 1 / 3 / 12 months). **Founding members** (first 100 wallets) get 50% off for as long as they renew, a Founding badge, and 24-hour early access to lessons.
-- **Saturday race:** 24 hours, Saturday 18:00 Istanbul = 12:00 Buenos Aires. **5 USDC** to enter. 20% treasury, 80% to the first 10 with a fixed table. The flag you type **never goes on-chain**: a Groth16 proof shows you solved it.
+- **Saturday race:** 24 hours, Saturday 15:00 UTC = 12:00 Buenos Aires. **5 USDC** to enter. 20% treasury, 80% to the first 10 with a fixed table. The flag you type **never goes on-chain**: a Groth16 proof shows you solved it.
 - **Pseudonym:** first-time players pick a public name (independent of Academy); the weekly board shows names, not only wallets.
 - **Week-winner NFT:** after settle, top finishers get a **soulbound** Token-2022 badge for that week (transferable collections deferred).
 - **Academy gift:** clear **3** full races (Finisher balance) → claim **1** free Academy month **once** per wallet (no USDC).

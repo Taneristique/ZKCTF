@@ -5,7 +5,6 @@ import { en, type Dict } from "./i18n/en";
 
 export const LANGS = [
   { code: "en", label: "English" },
-  { code: "tr", label: "Türkçe" },
   { code: "es", label: "Español" },
 ] as const;
 
@@ -16,7 +15,6 @@ const KEY = "zkctf.lang";
 /** English ships in the main bundle; other catalogs load on first use. */
 const catalogs: Record<Lang, () => Promise<Dict>> = {
   en: async () => en,
-  tr: () => import("./i18n/tr").then((m) => m.tr),
   es: () => import("./i18n/es").then((m) => m.es),
 };
 
@@ -26,6 +24,10 @@ const isLang = (v: unknown): v is Lang => LANGS.some((l) => l.code === v);
 function preferredLang(): Lang {
   try {
     const saved = localStorage.getItem(KEY);
+    if (saved === "tr") {
+      localStorage.setItem(KEY, "en");
+      return "en";
+    }
     if (isLang(saved)) return saved;
   } catch {
     /* storage blocked */

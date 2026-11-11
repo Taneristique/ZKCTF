@@ -427,7 +427,7 @@ The race is **USDC only**. No fiat. SOL is not the pot (gas only).
     WEIGHTS        =  [2500, 1800, 1300, 1000, 800, 700, 600, 500, 400, 400]
                                        // 25%, 18%, … of the prize pool.  Sum 10_000
     WINDOW         =  Sat 15:00 UTC → +24h
-                   =  18:00 Istanbul = 12:00 Buenos Aires
+                   =  15:00 UTC = 12:00 Buenos Aires
 
 `enter_round`: player signature + 5 USDC transfer (player ATA → pot ATA).
 Entry PDA (`entry` ∥ P). Does not charge twice in the same round.

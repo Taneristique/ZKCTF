@@ -1,4 +1,4 @@
-/** Weekly race: Saturday 18:00 Istanbul = 15:00 UTC, 24 hours. */
+/** Weekly race: Saturday 15:00 UTC = 12:00 Buenos Aires, 24 hours. */
 export const CTF_UTC_HOUR = 15;
 export const CTF_HOURS = 24;
 

@@ -159,7 +159,7 @@ CHAIN_DEPLOY=1 node ../scripts/weekly-challenge-bot.mjs
 
 - Without OpenRouter → rotates built-in beginner seeds.
 - With OpenRouter → asks for 4 new puzzles, validates them, seals flags with keccak commitments.
-- Cron idea (UTC): Saturday 14:50 ≈ 17:50 Istanbul, before 18:00 open:
+- Cron idea (UTC): Saturday 14:50, before 15:00 UTC open:
   `50 14 * * 6 cd /path/ZKCTF && node scripts/weekly-challenge-bot.mjs`
 
 ---

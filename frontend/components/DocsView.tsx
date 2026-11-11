@@ -3,21 +3,21 @@
 import { useLang } from "@/lib/lang";
 
 const NAV = [
-  { href: "#overview", en: "Overview", tr: "Özet", es: "Resumen" },
-  { href: "#locks", en: "Structural locks", tr: "Yapısal kilitler", es: "Candados estructurales" },
-  { href: "#play", en: "How to play", tr: "Nasıl oynanır", es: "Cómo se juega" },
-  { href: "#race", en: "The USDC race", tr: "USDC yarış", es: "La carrera USDC" },
-  { href: "#math", en: "Payout math", tr: "Ödeme matematiği", es: "Matemática de pago" },
-  { href: "#prestige", en: "Points & rewards", tr: "Puan ve ödül", es: "Puntos y premios" },
-  { href: "#membership", en: "Academy", tr: "Akademi", es: "Academia" },
-  { href: "#score", en: "How scoring works", tr: "Puan nasıl yazılır", es: "Cómo se anota" },
-  { href: "#academy", en: "Lesson archive", tr: "Ders arşivi", es: "Archivo de clases" },
-  { href: "#roadmap", en: "What’s next", tr: "Sırada ne var", es: "Qué sigue" },
+  { href: "#overview", en: "Overview", es: "Resumen" },
+  { href: "#locks", en: "Structural locks", es: "Candados estructurales" },
+  { href: "#play", en: "How to play", es: "Cómo se juega" },
+  { href: "#race", en: "The USDC race", es: "La carrera USDC" },
+  { href: "#math", en: "Payout math", es: "Matemática de pago" },
+  { href: "#prestige", en: "Points & rewards", es: "Puntos y premios" },
+  { href: "#membership", en: "Academy", es: "Academia" },
+  { href: "#score", en: "How scoring works", es: "Cómo se anota" },
+  { href: "#academy", en: "Lesson archive", es: "Archivo de clases" },
+  { href: "#roadmap", en: "What’s next", es: "Qué sigue" },
 ] as const;
 
 export function DocsView() {
   const { lang } = useLang();
-  const t = (en: string, tr: string, es: string) => ({ en, tr, es }[lang]);
+  const t = (en: string, es: string) => (lang === "es" ? es : en);
 
   return (
     <div className="docs-view lg:grid lg:grid-cols-[12.5rem_minmax(0,1fr)] lg:gap-12">
@@ -39,162 +39,128 @@ export function DocsView() {
         <section id="overview">
           <p className="text-xs uppercase tracking-[0.2em] text-teal">Docs</p>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-            {t("How ZKCTF works", "ZKCTF nasıl çalışır", "Cómo funciona ZKCTF")}
+            {t("How ZKCTF works", "Cómo funciona ZKCTF")}
           </h1>
           <p className="mt-5 text-[15px] leading-7 text-cream/65">
             {t(
               "Test your bot. Prove it. Win. ZKCTF is a weekly on-chain CTF race on Solana: bring a human brain, a script, or an agent — best solver wins. Entry 5 USDC (devnet USDC on Devnet). Top 10 full clears share 80% of the pot by a fixed table; 20% treasury. You type ZKCTF{…} in the UI; Groth16 posts only a proof — the flag never touches the chain. Your public key is the edge: board, prestige, and payouts bind to the wallet, not to a leaked flag. Puzzles are generated and independently checked before publish (overflow, XOR, JWT, vault math, …). No PoH theater. Academy on /learn is a quality archive — the live product is the race. Mainnet when the crowd and pot are real.",
-              "Botunu test et. Kanıtla. Kazan. ZKCTF, Solana’da haftalık zincir üstü CTF: insan, script veya agent — en iyi solver kazanır. Giriş 5 USDC (Devnet’te devnet USDC). İlk 10 full clear potun %80’ini sabit tabloyla paylaşır; %20 treasury. UI’da ZKCTF{…}; Groth16 yalnız proof yazar — flag zincire değmez. Public key avantajın: sıra, prestij ve ödeme cüzdana bağlanır, sızan flag’e değil. Bulmacalar yayın öncesi üretilir ve doğrulanır (overflow, XOR, JWT, vault math…). PoH tiyatrosu yok. /learn Akademi kaliteli arşiv — canlı ürün yarış. Mainnet kitle ve pot gerçek olunca.",
-              "Probá tu bot. Probalo. Ganá. ZKCTF es una carrera CTF semanal on-chain en Solana: cerebro humano, script o agente — gana el mejor solver. Entrada 5 USDC (USDC de devnet en Devnet). El top 10 de clears completos reparte el 80% del pozo con tabla fija; 20% tesoro. Escribís ZKCTF{…} en la UI; Groth16 solo publica una prueba — el flag no toca la cadena. Tu public key es la ventaja: ranking, prestigio y pagos van a la wallet, no a un flag filtrado. Puzzles generados y verificados antes de publicar (overflow, XOR, JWT, vault math…). Sin teatro PoH. La Academia en /learn es archivo de calidad — el producto en vivo es la carrera. Mainnet cuando la comunidad y el pozo sean reales.",
-            )}
+              "Probá tu bot. Probalo. Ganá. ZKCTF es una carrera CTF semanal on-chain en Solana: cerebro humano, script o agente — gana el mejor solver. Entrada 5 USDC (USDC de devnet en Devnet). El top 10 de clears completos reparte el 80% del pozo con tabla fija; 20% tesoro. Escribís ZKCTF{…} en la UI; Groth16 solo publica una prueba — el flag no toca la cadena. Tu public key es la ventaja: ranking, prestigio y pagos van a la wallet, no a un flag filtrado. Puzzles generados y verificados antes de publicar (overflow, XOR, JWT, vault math…). Sin teatro PoH. La Academia en /learn es archivo de calidad — el producto en vivo es la carrera. Mainnet cuando la comunidad y el pozo sean reales.")}
           </p>
           <div className="mt-8 space-y-3">
             <Layer
               n="1"
-              name={t("Bot / solver welcome", "Bot / solver serbest", "Bot / solver bienvenido")}
+              name={t("Bot / solver welcome", "Bot / solver bienvenido")}
               body={t(
                 "Automate if you want. We don’t ban solvers to fake “fair humans only.” Speed and correctness win; the board is public keys.",
-                "İstersen otomatikleştir. “Yalnız adil insan” tiyatrosu için solver yasaklamıyoruz. Hız ve doğruluk kazanır; sıra public key’ler.",
-                "Automatizá si querés. No baneamos solvers para fingir “solo humanos justos”. Ganan velocidad y corrección; el ranking son public keys.",
-              )}
+                "Automatizá si querés. No baneamos solvers para fingir “solo humanos justos”. Ganan velocidad y corrección; el ranking son public keys.")}
             />
             <Layer
               n="2"
-              name={t("5 USDC + Groth16", "5 USDC + Groth16", "5 USDC + Groth16")}
+              name={t("5 USDC + Groth16", "5 USDC + Groth16")}
               body={t(
                 "USDC entry. 20% treasury, 80% top 10. Type the flag in the UI; on-chain only a Groth16 proof. Explorers never see ZKCTF{…}.",
-                "USDC giriş. %20 treasury, %80 ilk 10. Flag’i UI’da yaz; zincirde yalnız Groth16 proof. Explorer ZKCTF{…} görmez.",
-                "Entrada USDC. 20% tesoro, 80% top 10. El flag en la UI; on-chain solo prueba Groth16. El explorer no ve ZKCTF{…}.",
-              )}
+                "Entrada USDC. 20% tesoro, 80% top 10. El flag en la UI; on-chain solo prueba Groth16. El explorer no ve ZKCTF{…}.")}
             />
             <Layer
               n="3"
-              name={t("Academy archive", "Akademi arşivi", "Archivo Academia")}
+              name={t("Academy archive", "Archivo Academia")}
               body={t(
                 "Quality lessons on /learn. Not a weekly paid-curriculum promise. Race is the live product. Academy never writes the board or pot.",
-                "/learn’de kaliteli dersler. Haftalık ücretli müfredat vaadi değil. Canlı ürün yarış. Akademi sıra / pota yazmaz.",
-                "Clases de calidad en /learn. No es promesa de currículo pago semanal. El producto en vivo es la carrera. La Academia no escribe ranking ni pozo.",
-              )}
+                "Clases de calidad en /learn. No es promesa de currículo pago semanal. El producto en vivo es la carrera. La Academia no escribe ranking ni pozo.")}
             />
           </div>
         </section>
 
         <section id="locks">
           <h2 className="text-2xl font-semibold tracking-tight">
-            {t("Structural locks", "Yapısal kilitler", "Candados estructurales")}
+            {t("Structural locks", "Candados estructurales")}
           </h2>
           <p className="mt-4 text-[15px] leading-7 text-cream/65">
             {t(
               "These are product rules, not slogans. Breaking them turns ZKCTF into a generic Solana CTF.",
-              "Bunlar slogan değil, ürün kuralı. Bozulursa ZKCTF sıradan bir Solana CTF’e iner.",
-              "Son reglas de producto, no eslóganes. Si se rompen, ZKCTF vira un CTF genérico en Solana.",
-            )}
+              "Son reglas de producto, no eslóganes. Si se rompen, ZKCTF vira un CTF genérico en Solana.")}
           </p>
           <ul className="mt-5 list-disc space-y-3 pl-5 text-[15px] leading-7 text-cream/65">
             <li>
               {t(
                 "A — Board + prize only after on-chain Groth16 submit (then settle / split_pot).",
-                "A — Sıra + ödül yalnız on-chain Groth16 submit sonrası (sonra settle / split_pot).",
-                "A — Ranking + premio solo tras submit Groth16 on-chain (luego settle / split_pot).",
-              )}
+                "A — Ranking + premio solo tras submit Groth16 on-chain (luego settle / split_pot).")}
             </li>
             <li>
               {t(
                 "B — Flag never in transactions, events, or logs.",
-                "B — Flag asla tx / event / log’da yok.",
-                "B — El flag nunca va en txs, eventos ni logs.",
-              )}
+                "B — El flag nunca va en txs, eventos ni logs.")}
             </li>
             <li>
               {t(
                 "C — Payout is the fixed formula only — no organizer-picked winners.",
-                "C — Ödeme yalnız sabit formül — organizatör kazanan seçmez.",
-                "C — El pago es solo la fórmula fija — sin ganadores elegidos a mano.",
-              )}
+                "C — El pago es solo la fórmula fija — sin ganadores elegidos a mano.")}
             </li>
             <li>
               {t(
                 "D — Today: one curated official set per week (no open creator marketplace yet). A later creator mode is listed under What’s next — only with quality gates.",
-                "D — Bugün: haftada bir curated resmi set (açık üretici marketplace yok). Sonraki üretici modu “Sırada ne var”da — yalnız kalite eşikleriyle.",
-                "D — Hoy: un set oficial curado por semana (aún sin marketplace de creadores). Un modo creador posterior está en Qué sigue — solo con umbrales de calidad.",
-              )}
+                "D — Hoy: un set oficial curado por semana (aún sin marketplace de creadores). Un modo creador posterior está en Qué sigue — solo con umbrales de calidad.")}
             </li>
             <li>
               {t(
                 "E — Academy lessons and membership never credit the race board or pot.",
-                "E — Akademi dersleri ve üyelik yarış sırasına / pota puan yazmaz.",
-                "E — Las clases y la membresía de la Academia nunca acreditan el ranking ni el pozo.",
-              )}
+                "E — Las clases y la membresía de la Academia nunca acreditan el ranking ni el pozo.")}
             </li>
             <li>
               {t(
                 "F — We pitch ZK proof-of-solve + pot math — not “another Solana CTF app”.",
-                "F — Pitch: ZK proof-of-solve + pot math — “başka bir Solana CTF app” değil.",
-                "F — Pitch: ZK proof-of-solve + pot math — no “otra app CTF en Solana”.",
-              )}
+                "F — Pitch: ZK proof-of-solve + pot math — no “otra app CTF en Solana”.")}
             </li>
             <li>
               {t(
                 "G — No reward token and no staking cut of the weekly pot.",
-                "G — Ödül tokenı yok; haftalık pottan stake kesintisi yok.",
-                "G — Sin token de premio ni corte de stake del pozo semanal.",
-              )}
+                "G — Sin token de premio ni corte de stake del pozo semanal.")}
             </li>
           </ul>
         </section>
 
         <section id="play">
           <h2 className="text-2xl font-semibold tracking-tight">
-            {t("How to play", "Nasıl oynanır", "Cómo se juega")}
+            {t("How to play", "Cómo se juega")}
           </h2>
           <ol className="mt-5 list-decimal space-y-3 pl-5 text-[15px] leading-7 text-cream/65">
             <li>
               {t(
                 "Connect a wallet and enter this week with 5 USDC. CTFs unlock in order: finish #1 before #2. Clear every CTF to be eligible for the pot.",
-                "Cüzdan bağla, bu haftaya 5 USDC ile gir. CTF’ler sırayla açılır: #1 bitmeden #2 yok. Pota hak için hepsini bitir.",
-                "Conectá la wallet y entrá con 5 USDC. Los CTFs se abren en orden: terminá #1 antes de #2. Completá todos para el pozo.",
-              )}
+                "Conectá la wallet y entrá con 5 USDC. Los CTFs se abren en orden: terminá #1 antes de #2. Completá todos para el pozo.")}
             </li>
             <li>
               {t(
                 "Open CTF. Only the current unlocked challenge shows its statement. Solved ones stay marked.",
-                "CTF’i aç. Yalnız açık olanın metni görünür. Bitirdiklerin işaretli kalır.",
-                "Abrí CTF. Solo el desafío desbloqueado muestra el enunciado. Los resueltos quedan marcados.",
-              )}
+                "Abrí CTF. Solo el desafío desbloqueado muestra el enunciado. Los resueltos quedan marcados.")}
             </li>
             <li>
               {t(
                 "Type ZKCTF{…} and submit. Wrong answers are rejected. Right ones unlock the next CTF.",
-                "ZKCTF{…} yazıp gönder. Yanlış reddedilir. Doğru sıradakini açar.",
-                "Escribí ZKCTF{…} y enviá. Si está mal, se rechaza. Si está bien, abre el siguiente CTF.",
-              )}
+                "Escribí ZKCTF{…} y enviá. Si está mal, se rechaza. Si está bien, abre el siguiente CTF.")}
             </li>
             <li>
               {t(
                 "Only full clears enter the winner list, ranked by finish time. Top 10 of those share 80% of the pot.",
-                "Kazanan listesine yalnız her CTF’i bitirenler girer; bitiş zamanına göre. Onların ilk 10’u potun %80’ini paylaşır.",
-                "Solo quienes completan todos entran al ranking, por hora de cierre. El top 10 de esos se lleva el 80%.",
-              )}
+                "Solo quienes completan todos entran al ranking, por hora de cierre. El top 10 de esos se lleva el 80%.")}
             </li>
           </ol>
         </section>
 
         <section id="race">
           <h2 className="text-2xl font-semibold tracking-tight">
-            {t("The USDC race", "USDC yarış", "La carrera USDC")}
+            {t("The USDC race", "La carrera USDC")}
           </h2>
           <p className="mt-4 text-[15px] leading-7 text-cream/65">
             {t(
               "This week’s race is a live bot test: humans, scripts, and agents all welcome. Entry is 5 USDC (no fiat). CTFs unlock in order. After the window, only wallets that cleared every CTF are ranked by finish time. N = 10. 20% treasury, 80% to that board with the fixed table. If fewer than 10 full clears, only they are paid (weights renormalized). If nobody cleared the set, the whole pot goes to treasury. Best solver wins — we do not run PoH to pretend otherwise.",
-              "Bu haftanın yarışı canlı bot testi: insan, script, agent serbest. Giriş 5 USDC (fiat yok). CTF’ler sırayla açılır. Pencere bitince yalnız her CTF’i bitirenler bitiş zamanına göre sıralanır. N = 10. %20 treasury, %80 bu tablo. 10’dan az full clear varsa yalnız onlar (ağırlıklar yeniden ölçeklenir). Kimse seti bitirmediyse pot treasury’e. En iyi solver kazanır — aksini PoH ile tiyatro yapmıyoruz.",
-              "La carrera de esta semana es un test de bots en vivo: humanos, scripts y agentes bienvenidos. Entrada 5 USDC (sin fiat). Los CTFs se abren en orden. Al cerrar, solo quienes completaron todos se ordenan por hora de cierre. N = 10. 20% tesoro, 80% con la tabla. Si hay menos de 10 clears, solo ellos (pesas reescaladas). Si nadie completó el set, todo al tesoro. Gana el mejor solver — no usamos PoH para fingir otra cosa.",
-            )}
+              "La carrera de esta semana es un test de bots en vivo: humanos, scripts y agentes bienvenidos. Entrada 5 USDC (sin fiat). Los CTFs se abren en orden. Al cerrar, solo quienes completaron todos se ordenan por hora de cierre. N = 10. 20% tesoro, 80% con la tabla. Si hay menos de 10 clears, solo ellos (pesas reescaladas). Si nadie completó el set, todo al tesoro. Gana el mejor solver — no usamos PoH para fingir otra cosa.")}
           </p>
           <div className="mt-6 overflow-x-auto">
             <table className="docs-table">
               <thead>
                 <tr>
-                  <th>{t("Rank", "Sıra", "Puesto")}</th>
+                  <th>{t("Rank", "Puesto")}</th>
                   <th>1</th>
                   <th>2</th>
                   <th>3</th>
@@ -209,7 +175,7 @@ export function DocsView() {
               </thead>
               <tbody>
                 <tr>
-                  <td>{t("% of the 80%", "%80 içinden", "% del 80%")}</td>
+                  <td>{t("% of the 80%", "% del 80%")}</td>
                   <td>25</td>
                   <td>18</td>
                   <td>13</td>
@@ -227,137 +193,109 @@ export function DocsView() {
           <p className="mt-4 text-sm text-cream/50">
             {t(
               "Example: one player, 5 USDC pot → 1 USDC treasury, 4 USDC to that player. Three players, two solvers, 15 USDC pot → 3 USDC treasury, 12 USDC split 25:18 between the two.",
-              "Örnek: tek oyuncu, 5 USDC pot → 1 treasury, 4 o oyuncuya. Üç giriş, iki çözen, 15 USDC → 3 treasury, 12’si 25:18 ile iki kişiye.",
-              "Ejemplo: un jugador, pozo 5 USDC → 1 al tesoro, 4 a esa wallet. Tres entradas, dos solvers, 15 USDC → 3 al tesoro, 12 en 25:18 entre los dos.",
-            )}
+              "Ejemplo: un jugador, pozo 5 USDC → 1 al tesoro, 4 a esa wallet. Tres entradas, dos solvers, 15 USDC → 3 al tesoro, 12 en 25:18 entre los dos.")}
           </p>
           <p className="mt-4 text-[15px] leading-7 text-cream/65">
             {t(
               "Pitch: (1) bug-bounty pay-to-submit is often 50–100 USDC with no refund — here 5 stays in the pot. (2) Groth16 proof-of-solve — the flag never hits the chain.",
-              "Pitch: (1) bug bounty pay-to-submit sıkça 50–100 USDC, iade yok — burada 5 potta kalır. (2) Groth16 proof-of-solve — flag zincire yazılmaz.",
-              "Pitch: (1) el pay-to-submit de bug bounty suele ser 50–100 USDC sin reembolso — acá 5 quedan en el pozo. (2) Groth16 proof-of-solve — el flag no va on-chain.",
-            )}
+              "Pitch: (1) el pay-to-submit de bug bounty suele ser 50–100 USDC sin reembolso — acá 5 quedan en el pozo. (2) Groth16 proof-of-solve — el flag no va on-chain.")}
           </p>
         </section>
 
         <section id="math">
           <h2 className="text-2xl font-semibold tracking-tight">
-            {t("Payout math", "Ödeme matematiği", "Matemática de pago")}
+            {t("Payout math", "Matemática de pago")}
           </h2>
           <p className="mt-4 text-[15px] leading-7 text-cream/65">
             {t(
               "This is the published USDC split — the same rules the settle step uses. It is money accounting, not a how-to for breaking the race.",
-              "Bu, yayınlanan USDC bölünmesi — settle’ın kullandığı kurallar. Para muhasebesi; yarışı kırma rehberi değil.",
-              "Esta es la repartición USDC publicada — las mismas reglas que usa settle. Es contabilidad de dinero, no un manual para romper la carrera.",
-            )}
+              "Esta es la repartición USDC publicada — las mismas reglas que usa settle. Es contabilidad de dinero, no un manual para romper la carrera.")}
           </p>
           <ol className="mt-5 list-decimal space-y-3 pl-5 text-[15px] leading-7 text-cream/65">
             <li>
               {t(
                 "n = number of entries. pot = 5 × n USDC.",
-                "n = giriş sayısı. pot = 5 × n USDC.",
-                "n = entradas. pot = 5 × n USDC.",
-              )}
+                "n = entradas. pot = 5 × n USDC.")}
             </li>
             <li>
               {t(
                 "20% of the pot → treasury. 80% → prize pool for the board.",
-                "Potun %20’si → treasury. %80’i → sıralama ödül havuzu.",
-                "20% del pozo → tesoro. 80% → pozo de premios del ranking.",
-              )}
+                "20% del pozo → tesoro. 80% → pozo de premios del ranking.")}
             </li>
             <li>
               {t(
                 "Rank by who finished the full set first (all CTFs cleared). At most 10 wallets are paid.",
-                "Sıra: bütün CTF setini ilk bitirenler. En fazla 10 cüzdan ödenir.",
-                "Orden: quienes terminaron el set completo primero. Como máximo se paga a 10 wallets.",
-              )}
+                "Orden: quienes terminaron el set completo primero. Como máximo se paga a 10 wallets.")}
             </li>
             <li>
               {t(
                 "Prize shares for ranks 1…10 (of the 80%): 25%, 18%, 13%, 10%, 8%, 7%, 6%, 5%, 4%, 4%. If fewer than 10 solvers, those same shares are scaled so they still add to 100% of the prize pool.",
-                "1…10. sıra payları (%80 içinden): %25, %18, %13, %10, %8, %7, %6, %5, %4, %4. 10’dan az çözen varsa aynı paylar ödül havuzunun %100’üne yeniden ölçeklenir.",
-                "Cuotas puestos 1…10 (del 80%): 25%, 18%, 13%, 10%, 8%, 7%, 6%, 5%, 4%, 4%. Si hay menos de 10, esas cuotas se reescalan para sumar el 100% del pozo de premios.",
-              )}
+                "Cuotas puestos 1…10 (del 80%): 25%, 18%, 13%, 10%, 8%, 7%, 6%, 5%, 4%, 4%. Si hay menos de 10, esas cuotas se reescalan para sumar el 100% del pozo de premios.")}
             </li>
             <li>
               {t(
                 "If nobody solved: the whole pot goes to treasury. Integer rounding leftovers also go to treasury.",
-                "Kimse çözmediyse: potun tamamı treasury’e. Yuvarlama artıkları da treasury’e.",
-                "Si nadie resolvió: todo el pozo al tesoro. Los restos de redondeo también van al tesoro.",
-              )}
+                "Si nadie resolvió: todo el pozo al tesoro. Los restos de redondeo también van al tesoro.")}
             </li>
           </ol>
           <p className="mt-5 text-[15px] leading-7 text-cream/65">
             {t(
               "Example: 3 entries, 2 solvers → pot 15 USDC → 3 treasury, 12 prize. With two people the 25:18 pair is scaled across that 12.",
-              "Örnek: 3 giriş, 2 çözen → pot 15 USDC → 3 treasury, 12 ödül. İki kişi için 25:18 çifti o 12 üzerinde ölçeklenir.",
-              "Ejemplo: 3 entradas, 2 solvers → pozo 15 USDC → 3 tesoro, 12 premio. Con dos personas el par 25:18 se escala sobre esos 12.",
-            )}
+              "Ejemplo: 3 entradas, 2 solvers → pozo 15 USDC → 3 tesoro, 12 premio. Con dos personas el par 25:18 se escala sobre esos 12.")}
           </p>
           <p className="mt-4 text-sm text-cream/50">
             {t(
               "Flags stay private to you. The public board only shows that your wallet solved a CTF — not the answer.",
-              "Flag yalnız sende kalır. Sıralamada cüzdanının bir CTF’i çözdüğü görünür — cevap değil.",
-              "El flag queda privado. En el ranking se ve que tu wallet resolvió un CTF — no la respuesta.",
-            )}
+              "El flag queda privado. En el ranking se ve que tu wallet resolvió un CTF — no la respuesta.")}
           </p>
         </section>
 
         <section id="prestige">
           <h2 className="text-2xl font-semibold tracking-tight">
-            {t("Points & rewards", "Puan ve ödül", "Puntos y premios")}
+            {t("Points & rewards", "Puntos y premios")}
           </h2>
           <ul className="mt-5 list-disc space-y-3 pl-5 text-[15px] leading-7 text-cream/65">
             <li>
               {t(
                 "Each unique official solve this week adds season points on your wallet. Badges (bronze / silver / gold) mark progress.",
-                "Bu hafta her benzersiz resmi solve, cüzdanına sezon puanı yazar. Rozetler (bronze / silver / gold) ilerlemeyi gösterir.",
-                "Cada solve oficial único esta semana suma puntos de temporada en tu wallet. Las insignias (bronze / silver / gold) marcan el progreso.",
-              )}
+                "Cada solve oficial único esta semana suma puntos de temporada en tu wallet. Las insignias (bronze / silver / gold) marcan el progreso.")}
             </li>
             <li>
               {t(
                 "Season points stay on that wallet. They are not transferable and they do not change how the weekly USDC pot is split.",
-                "Sezon puanı o cüzdanda kalır. Transfer edilmez; haftalık USDC potunun bölünmesini değiştirmez.",
-                "Los puntos de temporada quedan en esa wallet. No se transfieren y no cambian cómo se reparte el pozo USDC semanal.",
-              )}
+                "Los puntos de temporada quedan en esa wallet. No se transfieren y no cambian cómo se reparte el pozo USDC semanal.")}
             </li>
             <li>
               {t(
                 "Optional week Finisher badges may mint after settle. They are prestige, not a second pot formula.",
-                "Settle sonrası isteğe bağlı haftalık Finisher rozetleri mintlenebilir. Prestij; ikinci bir pot formülü değil.",
-                "Tras settle pueden mintearse insignias Finisher de la semana. Prestigio, no una segunda fórmula de pozo.",
-              )}
+                "Tras settle pueden mintearse insignias Finisher de la semana. Prestigio, no una segunda fórmula de pozo.")}
             </li>
           </ul>
         </section>
 
         <section id="membership">
           <h2 className="text-2xl font-semibold tracking-tight">
-            {t("Academy", "Akademi", "Academia")}
+            {t("Academy", "Academia")}
           </h2>
           <p className="mt-4 text-[15px] leading-7 text-cream/65">
             {t(
               "Academy is the /learn archive: cybersecurity and math-for-security lessons built from real incidents. Right now we keep quality over cadence — we are not selling a “new paid lesson every week” promise. On-chain membership (USDC, no cards, no auto-renew) still unlocks gated archive content when seats are offered; renewing extends the seat from its current end. The Saturday race stays a separate 5 USDC entry and never mixes with Academy money.",
-              "Akademi = /learn arşivi: gerçek olaylardan siber güvenlik ve güvenlik matematiği dersleri. Şu an tempo değil kalite — “her hafta yeni ücretli ders” vaadi satmıyoruz. Zincir üstü üyelik (USDC, kart yok, otomatik yenileme yok) koltuk açıldığında kapalı arşivi açar; yenileme mevcut bitişten uzatır. Cumartesi yarışı ayrı 5 USDC giriştir; Akademi parası pota karışmaz.",
-              "La Academia es el archivo /learn: clases de ciberseguridad y matemática de seguridad desde incidentes reales. Ahora priorizamos calidad sobre cadencia — no vendemos “clase paga nueva cada semana”. La membresía on-chain (USDC, sin tarjetas ni auto-renovación) abre el archivo cerrado cuando haya asientos; renovar extiende desde el fin actual. La carrera del sábado es 5 USDC aparte; el dinero de Academia no se mezcla con el pozo.",
-            )}
+              "La Academia es el archivo /learn: clases de ciberseguridad y matemática de seguridad desde incidentes reales. Ahora priorizamos calidad sobre cadencia — no vendemos “clase paga nueva cada semana”. La membresía on-chain (USDC, sin tarjetas ni auto-renovación) abre el archivo cerrado cuando haya asientos; renovar extiende desde el fin actual. La carrera del sábado es 5 USDC aparte; el dinero de Academia no se mezcla con el pozo.")}
           </p>
           <div className="mt-6 overflow-x-auto">
             <table className="docs-table">
               <thead>
                 <tr>
-                  <th>{t("Length", "Süre", "Duración")}</th>
+                  <th>{t("Length", "Duración")}</th>
                   <th>USDC</th>
-                  <th>{t("Founding (−50%)", "Founding (−%50)", "Founding (−50%)")}</th>
+                  <th>{t("Founding (−50%)", "Founding (−50%)")}</th>
                 </tr>
               </thead>
               <tbody>
                 {[
-                  [t("1 month", "1 ay", "1 mes"), "10", "5"],
-                  [t("3 months", "3 ay", "3 meses"), "27", "13.5"],
-                  [t("12 months", "12 ay", "12 meses"), "90", "45"],
+                  [t("1 month", "1 mes"), "10", "5"],
+                  [t("3 months", "3 meses"), "27", "13.5"],
+                  [t("12 months", "12 meses"), "90", "45"],
                 ].map((row) => (
                   <tr key={row[0]}>
                     {row.map((c, i) => (
@@ -371,70 +309,56 @@ export function DocsView() {
           <p className="mt-4 text-[15px] leading-7 text-cream/65">
             {t(
               "Founding (if seats remain): first 100 wallets on a plan get −50% while they renew, a badge, and early lesson access when new lessons ship. Treat Founding as a legacy perk — not the reason to join this week.",
-              "Founding (koltuk kaldıysa): ilk 100 cüzdan yeniledikçe −%50, rozet ve yeni derslerde erken erişim. Founding miras ayrıcalık — bu hafta katılmanın ana sebebi değil.",
-              "Founding (si quedan asientos): las primeras 100 wallets en un plan tienen −50% al renovar, insignia y acceso temprano cuando haya clases nuevas. Es un perk legado — no el motivo para entrar esta semana.",
-            )}
+              "Founding (si quedan asientos): las primeras 100 wallets en un plan tienen −50% al renovar, insignia y acceso temprano cuando haya clases nuevas. Es un perk legado — no el motivo para entrar esta semana.")}
           </p>
         </section>
 
         <section id="score">
           <h2 className="text-2xl font-semibold tracking-tight">
-            {t("How scoring works", "Puan nasıl yazılır", "Cómo se anota")}
+            {t("How scoring works", "Cómo se anota")}
           </h2>
           <p className="mt-4 text-[15px] leading-7 text-cream/65">
             {t(
               "Production scoring: the board only moves after an on-chain Groth16 submit verifies, then the host confirms your on-chain entry progress. The flag string stays in your browser / prover — never in the transaction. USDC split is under Payout math (split_pot only).",
-              "Üretim skor: sıra yalnız on-chain Groth16 submit doğrulanıp zincirdeki giriş ilerlemen onaylanınca ilerler. Flag tarayıcı / prover’da kalır — tx’de yok. USDC bölünmesi Ödeme matematiği (yalnız split_pot).",
-              "Scoring en producción: el ranking solo avanza tras submit Groth16 on-chain y confirmación del PDA. El flag queda en el navegador / prover — nunca en la tx. El USDC está en Matemática de pago (solo split_pot).",
-            )}
+              "Scoring en producción: el ranking solo avanza tras submit Groth16 on-chain y confirmación del PDA. El flag queda en el navegador / prover — nunca en la tx. El USDC está en Matemática de pago (solo split_pot).")}
           </p>
           <p className="mt-4 text-[15px] leading-7 text-cream/65">
             {t(
               "Wrong flag: rejected before prove. Right flag: proof built, then on-chain submit. If circuit setup is unfinished, we still tell you the flag was correct even if the board is not updated yet.",
-              "Yanlış flag: prove öncesi reddedilir. Doğru flag: proof üretilir, sonra on-chain submit. Circuit kurulumu bitmediyse flag’in doğru olduğunu yine söyleriz; sıra henüz güncellenmeyebilir.",
-              "Flag mal: se rechaza antes del prove. Flag bien: se arma la prueba y luego submit on-chain. Si el setup del circuit no terminó, te decimos que acertaste aunque el ranking aún no se actualice.",
-            )}
+              "Flag mal: se rechaza antes del prove. Flag bien: se arma la prueba y luego submit on-chain. Si el setup del circuit no terminó, te decimos que acertaste aunque el ranking aún no se actualice.")}
           </p>
         </section>
 
         <section id="academy">
           <h2 className="text-2xl font-semibold tracking-tight">
-            {t("Lesson archive", "Ders arşivi", "Archivo de clases")}
+            {t("Lesson archive", "Archivo de clases")}
           </h2>
           <p className="mt-4 text-[15px] leading-7 text-cream/65">
             {t(
               "Published lessons live under /learn in two tracks. Cybersecurity: a documented incident rebuilt step by step. Math for cybersecurity: the number theory and crypto that broke or protected a real system, with small-number exercises. When a new lesson ships, drafts are human-reviewed before publish. Lesson practice flags are checked off-chain and never affect the Saturday board or pot.",
-              "Yayımlanmış dersler /learn altında iki hatta. Siber güvenlik: belgelenmiş olay adım adım. Siber güvenlik için matematik: gerçek sistemi kıran/koruyan sayılar teorisi ve kripto, küçük sayılı alıştırmalarla. Yeni ders çıkarsa taslak insan review’dan geçer. Ders pratik flag’leri zincir dışında kontrol edilir; Cumartesi sırasını / potu etkilemez.",
-              "Las clases publicadas viven en /learn en dos líneas. Ciberseguridad: incidente documentado paso a paso. Matemática para ciberseguridad: teoría de números y cripto que rompieron o protegieron un sistema real, con ejercicios chicos. Si sale una clase nueva, el borrador pasa por revisión humana. Los flags de práctica se validan off-chain y nunca afectan el ranking ni el pozo del sábado.",
-            )}
+              "Las clases publicadas viven en /learn en dos líneas. Ciberseguridad: incidente documentado paso a paso. Matemática para ciberseguridad: teoría de números y cripto que rompieron o protegieron un sistema real, con ejercicios chicos. Si sale una clase nueva, el borrador pasa por revisión humana. Los flags de práctica se validan off-chain y nunca afectan el ranking ni el pozo del sábado.")}
           </p>
         </section>
 
         <section id="roadmap">
           <h2 className="text-2xl font-semibold tracking-tight">
-            {t("What’s next", "Sırada ne var", "Qué sigue")}
+            {t("What’s next", "Qué sigue")}
           </h2>
           <ul className="mt-5 list-disc space-y-3 pl-5 text-[15px] leading-7 text-cream/65">
             <li>
               {t(
                 "Now: Devnet weekly official race, advertise the puzzle quality, grow a real player base. Mainnet when the crowd and pot justify real USDC — not “next week” by default.",
-                "Şimdi: Devnet haftalık resmi yarış, puzzle kalitesini reklam et, gerçek oyuncu tabanı. Mainnet kitle ve pot gerçek USDC’yi hak edince — varsayılan “önümüzdeki hafta” değil.",
-                "Ahora: carrera oficial semanal en Devnet, publicidad de la calidad de puzzles, base real de jugadores. Mainnet cuando la comunidad y el pozo justifiquen USDC real — no “la semana que viene” por defecto.",
-              )}
+                "Ahora: carrera oficial semanal en Devnet, publicidad de la calidad de puzzles, base real de jugadores. Mainnet cuando la comunidad y el pozo justifiquen USDC real — no “la semana que viene” por defecto.")}
             </li>
             <li>
               {t(
                 "Later (not live): creator mode — players ship CTFs through the week; attempt limits; quality gates (enough distinct attempts + at least one solve); producer share of the pot. A higher-entry (~10 USDC) lane may appear with that design. Until then lock D stays: one official curated set.",
-                "Sonra (canlı değil): üretici modu — oyuncular hafta boyunca CTF koyar; deneme limiti; kalite eşiği (yeterli farklı deneme + en az bir çözülme); üreticiye pot payı. ~10 USDC’lik giriş bu tasarımla gelebilir. O zamana kadar kilit D: tek resmi curated set.",
-                "Después (no en vivo): modo creador — CTFs durante la semana; límite de intentos; umbral de calidad (intentos distintos + al menos un solve); share del pozo al productor. Puede aparecer un carril ~10 USDC con ese diseño. Hasta entonces candado D: un set oficial curado.",
-              )}
+                "Después (no en vivo): modo creador — CTFs durante la semana; límite de intentos; umbral de calidad (intentos distintos + al menos un solve); share del pozo al productor. Puede aparecer un carril ~10 USDC con ese diseño. Hasta entonces candado D: un set oficial curado.")}
             </li>
             <li>
               {t(
                 "Later: optional UGC lessons / video commission on /learn (marketplace-style), only after the race Keep is stable.",
-                "Sonra: isteğe bağlı UGC ders / video komisyon (/learn), yalnız yarış Keep’i oturunca.",
-                "Después: clases UGC / comisión de video en /learn, solo cuando el Keep de la carrera esté estable.",
-              )}
+                "Después: clases UGC / comisión de video en /learn, solo cuando el Keep de la carrera esté estable.")}
             </li>
           </ul>
         </section>

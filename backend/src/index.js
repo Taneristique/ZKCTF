@@ -1222,7 +1222,7 @@ function windowMeta() {
     live,
     start: start.toISOString(),
     end: end.toISOString(),
-    label: "Saturday 18:00 Istanbul / 12:00 Buenos Aires · 24 hours",
+    label: "Saturday 15:00 UTC / 12:00 Buenos Aires · 24 hours",
     entryUsdc: ENTRY_USDC,
     asset: ASSET,
     nWinners: N_WINNERS,
