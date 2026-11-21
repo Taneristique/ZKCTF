@@ -63,6 +63,7 @@ import {
 import { flagsEqual, hex32, fromHex } from "./relation.mjs";
 import { artifactsReady, groth16Proof, buildC } from "./prove.js";
 import { awardSolve, getPrestige } from "./prestige.js";
+import { publicDemoLevels, demoProgress, checkDemoFlag } from "./demo.js";
 
 const PORT = Number(process.env.PORT ?? 8787);
 const RPC = process.env.SOLANA_RPC ?? "https://api.devnet.solana.com";
@@ -115,6 +116,7 @@ app.get("/health", async (_req, res) => {
     product: "ZKCTF",
     membership: "usdc",
     race: "sol",
+    demo: "/demo",
     rpc: RPC,
     program: PROGRAM_ID.toBase58(),
     authority: auth.server,
@@ -667,6 +669,38 @@ app.get("/progress/:wallet", (req, res) => {
     entered: Boolean(getEntry(req.params.wallet, meta.start)),
     start: meta.start,
   });
+});
+
+/** Free demo CTF — no SOL, no pot. Always open as a funnel into the Saturday race. */
+app.get("/demo", (_req, res) => {
+  res.json({
+    free: true,
+    entrySol: 0,
+    title: "Free demo CTF",
+    lead: "Two easy puzzles. No wallet payment. Clear them, then enter the Saturday race for the real pot.",
+    levels: publicDemoLevels(),
+    cta: { href: "/play", label: "Saturday race · 0.05 SOL" },
+  });
+});
+
+app.get("/demo/progress/:wallet", (req, res) => {
+  res.json(demoProgress(req.params.wallet));
+});
+
+app.post("/demo/check", express.json(), (req, res) => {
+  const wallet = String(req.body?.wallet ?? "").trim() || null;
+  const levelId = Number(req.body?.level);
+  const flag = String(req.body?.flag ?? req.body?.c ?? "");
+  if (Number.isNaN(levelId)) {
+    res.status(400).json({ error: "level required." });
+    return;
+  }
+  const out = checkDemoFlag(wallet, levelId, flag);
+  if (!out.ok) {
+    res.status(400).json(out);
+    return;
+  }
+  res.json(out);
 });
 
 app.get("/payout", (req, res) => {

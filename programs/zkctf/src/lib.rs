@@ -256,7 +256,12 @@ fn create_round(program_id: &Pubkey, accounts: &[AccountInfo], rest: &[u8]) -> P
     // Exception: same start/end while live → refresh commitments only (keeps entries/pot).
     // Used when host round.json was lost and puzzles must be republished to match the API.
     if !round.data_is_empty() {
-        if let Ok(prev) = Round::try_from_slice(&round.data.borrow()) {
+        // Deserialize in a nested scope so the RefCell borrow drops before borrow_mut.
+        let prev = {
+            let data = round.data.borrow();
+            Round::try_from_slice(&data).ok()
+        };
+        if let Some(prev) = prev {
             let now = solana_program::clock::Clock::get()?.unix_timestamp;
             if prev.settled == 0 && now <= prev.end {
                 if start == prev.start && end == prev.end {

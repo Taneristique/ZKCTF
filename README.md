@@ -76,7 +76,7 @@ cd backend && node ../scripts/init-devnet.mjs && cd ..
 
 **Play on Devnet:** Phantom → Devnet. Fund SOL from [faucet.solana.com](https://faucet.solana.com) for race entry. Academy membership still needs Circle Devnet USDC from [faucet.circle.com](https://faucet.circle.com/). Program id is in `backend/.env.example` / the live `/zk-api/health` response — do not paste authority keypairs into public docs.
 
-Join → Enter (0.05 SOL) → Play. (`enter_round` moves native SOL into the pot vault.)
+Try the free demo first: `/demo` (no SOL). Then Join → Enter (0.05 SOL) → Play. (`enter_round` moves native SOL into the pot vault.)
 
 ```bash
 node scripts/judge-loop.mjs

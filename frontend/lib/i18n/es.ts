@@ -2,10 +2,19 @@ import type { Dict } from "./en";
 
 export const es: Dict = {
   play: "CTF",
+  demo: "Demo",
   learn: "Academia",
   docs: "Docs",
   join: "Sumarse",
   account: "Cuenta",
+  demoBadge: "Gratis · sin SOL",
+  demoTitle: "CTF demo gratis",
+  demoLead:
+    "Dos puzzles fáciles para probar el formato. Sin pago y sin pozo. Cuando quieras, la carrera del sábado usa Groth16 y un pozo real en SOL.",
+  demoFreeNote: "La wallet es opcional. Si te conectás, se guarda el progreso; como invitado también podés resolver.",
+  demoCleared: "Demo completo. Siguiente paso: entrá a la carrera de esta semana por 0.05 SOL.",
+  demoCta: "Entrar a la carrera del sábado →",
+  demoRaceHint: "¿Querés premios y pruebas on-chain? Abrí la carrera paga en",
   language: "Idioma",
   connectBtn: "Conectar",
   menuOpen: "Abrir menú",

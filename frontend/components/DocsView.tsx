@@ -126,8 +126,8 @@ export function DocsView() {
           <ol className="mt-5 list-decimal space-y-3 pl-5 text-[15px] leading-7 text-cream/65">
             <li>
               {t(
-                "Connect a wallet and enter this week with 0.05 SOL. CTFs unlock in order: finish #1 before #2. Clear every CTF to be eligible for the pot.",
-                "Conectá la wallet y entrá con 0.05 SOL. Los CTFs se abren en orden: terminá #1 antes de #2. Completá todos para el pozo.")}
+                "Try /demo free (no SOL). Then connect a wallet and enter this week with 0.05 SOL. CTFs unlock in order: finish #1 before #2. Clear every CTF to be eligible for the pot.",
+                "Probá /demo gratis (sin SOL). Después conectá la wallet y entrá con 0.05 SOL. Los CTFs se abren en orden: terminá #1 antes de #2. Completá todos para el pozo.")}
             </li>
             <li>
               {t(

@@ -14,7 +14,19 @@ export function Join() {
       <h2 className="mt-2 text-2xl font-semibold sm:text-3xl">{t.joinTitle}</h2>
       <p className="mt-2 max-w-xl text-sm text-cream/65">{t.joinLead}</p>
 
-      <article className="mt-8 max-w-xl rounded-3xl border border-teal/40 bg-teal/[0.07] p-5 sm:p-7">
+      <article className="mt-8 max-w-xl rounded-3xl border border-cream/20 bg-cream/[0.03] p-5 sm:p-7">
+        <p className="text-xs uppercase tracking-[0.2em] text-teal">{t.demoBadge}</p>
+        <p className="mt-2 text-2xl font-semibold">{t.demoTitle}</p>
+        <p className="mt-3 text-sm leading-6 text-cream/65">{t.demoLead}</p>
+        <Link
+          href="/demo"
+          className="mt-6 inline-flex min-h-12 items-center rounded-2xl bg-cream px-6 text-sm font-medium text-ink"
+        >
+          {t.demo} →
+        </Link>
+      </article>
+
+      <article className="mt-6 max-w-xl rounded-3xl border border-teal/40 bg-teal/[0.07] p-5 sm:p-7">
         <p className="text-4xl font-semibold">
           0.05 SOL<span className="text-base font-normal text-cream/45">{t.perWeek}</span>
         </p>

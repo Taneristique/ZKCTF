@@ -19,6 +19,7 @@ export function Header() {
   const [open, setOpen] = useState(false);
 
   const links = [
+    { href: "/demo", label: t.demo },
     { href: "/play", label: t.play },
     { href: "/learn", label: t.learn },
     { href: "/account", label: t.account },

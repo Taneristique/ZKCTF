@@ -1,10 +1,19 @@
 /** Source language and fallback. Other catalogs must provide every key (typed as Dict). */
 export const en = {
   play: "CTF",
+  demo: "Demo",
   learn: "Academy",
   docs: "Docs",
   join: "Join",
   account: "Account",
+  demoBadge: "Free · no SOL",
+  demoTitle: "Free demo CTF",
+  demoLead:
+    "Two easy puzzles to try the format. No payment, no pot. When you’re ready, the Saturday race uses Groth16 and a real SOL pot.",
+  demoFreeNote: "Wallet optional. Progress is saved if you connect; guests can still solve.",
+  demoCleared: "Demo cleared. Next step: enter this week’s race for 0.05 SOL.",
+  demoCta: "Enter the Saturday race →",
+  demoRaceHint: "Want prizes and on-chain proofs? Open the paid race at",
   language: "Language",
   connectBtn: "Connect",
   menuOpen: "Open menu",
