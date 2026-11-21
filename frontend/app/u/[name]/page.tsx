@@ -261,9 +261,9 @@ export default function PublicProfilePage() {
               </div>
             )}
           </dl>
-          {(m.earnedSol ?? m.earnedUsdc) > 0 && (
+          {Number(m.earnedSol ?? m.earnedUsdc ?? 0) > 0 && (
             <p className="mt-3 font-mono text-sm text-teal">
-              {t.medalEarned}: {(m.earnedSol ?? m.earnedUsdc).toFixed(4)} SOL
+              {t.medalEarned}: {Number(m.earnedSol ?? m.earnedUsdc ?? 0).toFixed(4)} SOL
             </p>
           )}
         </>
@@ -297,7 +297,9 @@ export default function PublicProfilePage() {
                     </p>
                     <p className="mt-2 font-mono text-xs text-teal">
                       #{a.rank}
-                      {(a.prizeSol ?? a.prizeUsdc) > 0 ? ` · ${(a.prizeSol ?? a.prizeUsdc).toFixed(4)} SOL` : ""}
+                      {Number(a.prizeSol ?? a.prizeUsdc ?? 0) > 0
+                        ? ` · ${Number(a.prizeSol ?? a.prizeUsdc ?? 0).toFixed(4)} SOL`
+                        : ""}
                       {a.live ? ` · ${t.liveWeekBadge}` : ""}
                       {a.claimable ? ` · ${t.prizeClaimPending}` : ""}
                       {a.claimStatus === "claimed" ? ` · ${t.prizeClaimed}` : ""}
