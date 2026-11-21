@@ -337,12 +337,12 @@ app.get("/u/:name", async (req, res) => {
     const earnedSol = wins.reduce((s, n) => {
       const st = n.claimStatus || claimByRound.get(Number(n.round))?.status;
       if (st === "claimable" || st === "claiming") return s;
-      return s + Number(n.prizeSol ?? n.prizeUsdc || 0);
+      return s + Number(n.prizeSol ?? n.prizeUsdc ?? 0);
     }, 0);
     const activity = wins.slice(0, 40).map((n) => {
       const claim = claimByRound.get(Number(n.round));
       const status = n.claimStatus || claim?.status || null;
-      const prizeSol = Number(n.prizeSol ?? n.prizeUsdc || claim?.prizeSol || claim?.prizeUsdc || 0);
+      const prizeSol = Number(n.prizeSol ?? n.prizeUsdc ?? claim?.prizeSol ?? claim?.prizeUsdc ?? 0);
       return {
         at: n.at ?? n.round * 1000,
         date: new Date(n.at ?? n.round * 1000).toISOString().slice(0, 7),
