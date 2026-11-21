@@ -1,7 +1,9 @@
-export { ENTRY_ATOMS, N_WINNERS, TREASURY_BPS, WEIGHTS, splitPot, example } from "./payout.js";
-export const ENTRY_USDC = 5;
+export { ENTRY_ATOMS, ENTRY_LAMPORTS, N_WINNERS, TREASURY_BPS, WEIGHTS, splitPot, example } from "./payout.js";
+export const ENTRY_SOL = 0.05;
+/** @deprecated use ENTRY_SOL — race entry is native SOL */
+export const ENTRY_USDC = ENTRY_SOL;
 export const CLUSTER = process.env.SOLANA_CLUSTER ?? "devnet";
-export const ASSET = "USDC";
+export const ASSET = "SOL";
 
 /** Current race window if it is live, otherwise the next one: Saturday 15:00 UTC for 24 hours. */
 export function saturdayWindow(now = new Date()) {

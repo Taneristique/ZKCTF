@@ -6,7 +6,6 @@ use solana_program::{
     },
     entrypoint,
     entrypoint::ProgramResult,
-    instruction::{AccountMeta, Instruction},
     program::{invoke, invoke_signed},
     program_error::ProgramError,
     pubkey::Pubkey,
@@ -20,11 +19,10 @@ pub mod verifying_key;
 use payout::*;
 use verifying_key::*;
 
-const TOKEN_PROGRAM: Pubkey = solana_program::pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
-/// Devnet USDC (Circle). Mainnet mint is EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v — rebuild for mainnet.
-pub const USDC_MINT: Pubkey = solana_program::pubkey!("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU");
-
 pub const ID: Pubkey = solana_program::pubkey!("34Kut3tQ4HTJMF2gVvnT6shhmenPE6463xnGk5sxDtz7");
+
+/// Pot vault PDA (`["pot"]`) holds native SOL for the Saturday race.
+pub const POT_VAULT_SPACE: usize = 8;
 
 #[cfg(not(feature = "no-entrypoint"))]
 entrypoint!(process_instruction);
@@ -63,6 +61,7 @@ pub struct Round {
     pub level_count: u8,
     pub n_winners: u8,
     pub entries: u32,
+    /// Native SOL pot in lamports (field name kept for account layout).
     pub pot_atoms: u64,
     pub settled: u8,
     pub commitments: [[u8; 32]; 8],
@@ -334,17 +333,14 @@ fn enter_round(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResult {
         )?;
     }
     if fresh {
-        let player_ata = next_account_info(acc)?;
-        let pot_ata = next_account_info(acc)?;
-        let token_prog = next_account_info(acc)?;
-        if *token_prog.key != TOKEN_PROGRAM {
-            return Err(ProgramError::IncorrectProgramId);
-        }
-        assert_usdc_ata(player_ata)?;
-        assert_pot_ata(program_id, pot_ata)?;
-        transfer_usdc(player_ata, pot_ata, player, ENTRY_ATOMS, token_prog, &[])?;
+        let pot = next_account_info(acc)?;
+        ensure_pot_vault(program_id, player, pot)?;
+        invoke(
+            &system_instruction::transfer(player.key, pot.key, ENTRY_LAMPORTS),
+            &[player.clone(), pot.clone()],
+        )?;
         round_row.entries = round_row.entries.saturating_add(1);
-        round_row.pot_atoms = round_row.pot_atoms.saturating_add(ENTRY_ATOMS);
+        round_row.pot_atoms = round_row.pot_atoms.saturating_add(ENTRY_LAMPORTS);
         round_row.serialize(&mut &mut round.data.borrow_mut()[..])?;
     }
     let (solved_mask, last_ts) = match (&prev, fresh) {
@@ -371,34 +367,31 @@ fn settle(program_id: &Pubkey, accounts: &[AccountInfo], k: u8) -> ProgramResult
     let authority = next_account_info(acc)?;
     let config = next_account_info(acc)?;
     let round = next_account_info(acc)?;
-    let pot_ata = next_account_info(acc)?;
-    let vault = next_account_info(acc)?;
-    let treasury_ata = next_account_info(acc)?;
-    let token_prog = next_account_info(acc)?;
+    let pot = next_account_info(acc)?;
+    let treasury = next_account_info(acc)?;
     let cfg = load_config(program_id, config)?;
     if !authority.is_signer || cfg.authority != *authority.key {
         return Err(ProgramError::Custom(3));
     }
-    let (vault_pda, vault_bump) = Pubkey::find_program_address(&[b"pot"], program_id);
-    if vault_pda != *vault.key || *token_prog.key != TOKEN_PROGRAM {
+    let (vault_pda, _vault_bump) = Pubkey::find_program_address(&[b"pot"], program_id);
+    if vault_pda != *pot.key {
         return Err(ProgramError::InvalidSeeds);
     }
     assert_round(program_id, round)?;
-    assert_pot_ata(program_id, pot_ata)?;
+    assert_pot_vault(program_id, pot)?;
     let mut row = Round::try_from_slice(&round.data.borrow())?;
     let now = solana_program::clock::Clock::get()?.unix_timestamp;
     if now <= row.end || row.settled != 0 {
         return Err(ProgramError::Custom(2));
     }
-    let (treasury, pays) = split_pot(row.pot_atoms, k);
-    let seeds: &[&[u8]] = &[b"pot", &[vault_bump]];
-    if treasury > 0 {
-        transfer_usdc(pot_ata, treasury_ata, vault, treasury, token_prog, &[seeds])?;
+    let (treasury_pay, pays) = split_pot(row.pot_atoms, k);
+    if treasury_pay > 0 {
+        transfer_lamports(pot, treasury, treasury_pay)?;
     }
     for pay in pays.iter().take(k as usize) {
         let dest = next_account_info(acc)?;
         if *pay > 0 {
-            transfer_usdc(pot_ata, dest, vault, *pay, token_prog, &[seeds])?;
+            transfer_lamports(pot, dest, *pay)?;
         }
     }
     row.settled = 1;
@@ -406,35 +399,56 @@ fn settle(program_id: &Pubkey, accounts: &[AccountInfo], k: u8) -> ProgramResult
     Ok(())
 }
 
-fn transfer_usdc<'a>(
-    from: &AccountInfo<'a>,
-    to: &AccountInfo<'a>,
-    authority: &AccountInfo<'a>,
-    amount: u64,
-    token_prog: &AccountInfo<'a>,
-    signer: &[&[&[u8]]],
-) -> ProgramResult {
-    let mut data = Vec::with_capacity(9);
-    data.push(3);
-    data.extend_from_slice(&amount.to_le_bytes());
-    let ix = Instruction {
-        program_id: TOKEN_PROGRAM,
-        accounts: vec![
-            AccountMeta::new(*from.key, false),
-            AccountMeta::new(*to.key, false),
-            AccountMeta::new_readonly(*authority.key, true),
-        ],
-        data,
-    };
-    if signer.is_empty() {
-        invoke(&ix, &[from.clone(), to.clone(), authority.clone(), token_prog.clone()])
-    } else {
-        invoke_signed(
-            &ix,
-            &[from.clone(), to.clone(), authority.clone(), token_prog.clone()],
-            signer,
-        )
+/// Move lamports out of the program-owned pot vault (system transfer cannot debit a PDA).
+fn transfer_lamports(from: &AccountInfo, to: &AccountInfo, amount: u64) -> ProgramResult {
+    if amount == 0 {
+        return Ok(());
     }
+    let rent = Rent::get()?.minimum_balance(from.data_len());
+    let available = from.lamports().saturating_sub(rent);
+    if available < amount {
+        return Err(ProgramError::InsufficientFunds);
+    }
+    **from.try_borrow_mut_lamports()? = from
+        .lamports()
+        .checked_sub(amount)
+        .ok_or(ProgramError::InsufficientFunds)?;
+    **to.try_borrow_mut_lamports()? = to
+        .lamports()
+        .checked_add(amount)
+        .ok_or(ProgramError::InvalidArgument)?;
+    Ok(())
+}
+
+fn ensure_pot_vault<'a>(
+    program_id: &Pubkey,
+    payer: &AccountInfo<'a>,
+    pot: &AccountInfo<'a>,
+) -> ProgramResult {
+    let (pda, bump) = Pubkey::find_program_address(&[b"pot"], program_id);
+    if pda != *pot.key {
+        return Err(ProgramError::InvalidSeeds);
+    }
+    if pot.data_is_empty() {
+        create_pda(program_id, payer, pot, POT_VAULT_SPACE, &[b"pot"], bump)?;
+    } else {
+        assert_pot_vault(program_id, pot)?;
+    }
+    Ok(())
+}
+
+fn assert_pot_vault(program_id: &Pubkey, pot: &AccountInfo) -> ProgramResult {
+    let (pda, _) = Pubkey::find_program_address(&[b"pot"], program_id);
+    if pda != *pot.key {
+        return Err(ProgramError::InvalidSeeds);
+    }
+    if pot.owner != program_id {
+        return Err(ProgramError::IncorrectProgramId);
+    }
+    if pot.data_len() < POT_VAULT_SPACE {
+        return Err(ProgramError::InvalidAccountData);
+    }
+    Ok(())
 }
 
 fn load_config(program_id: &Pubkey, config: &AccountInfo) -> Result<Config, ProgramError> {
@@ -459,34 +473,6 @@ fn assert_round(program_id: &Pubkey, round: &AccountInfo) -> ProgramResult {
     }
     if round.owner != program_id {
         return Err(ProgramError::IncorrectProgramId);
-    }
-    Ok(())
-}
-
-/// SPL token account layout: mint [0..32], owner [32..64].
-fn assert_usdc_ata(ata: &AccountInfo) -> ProgramResult {
-    if *ata.owner != TOKEN_PROGRAM {
-        return Err(ProgramError::IncorrectProgramId);
-    }
-    let data = ata.try_borrow_data()?;
-    if data.len() < 64 {
-        return Err(ProgramError::InvalidAccountData);
-    }
-    let mint = Pubkey::new_from_array(data[0..32].try_into().unwrap());
-    if mint != USDC_MINT {
-        return Err(ProgramError::Custom(5));
-    }
-    Ok(())
-}
-
-/// USDC token account whose token-owner is the `["pot"]` vault PDA.
-fn assert_pot_ata(program_id: &Pubkey, pot_ata: &AccountInfo) -> ProgramResult {
-    assert_usdc_ata(pot_ata)?;
-    let (vault, _) = Pubkey::find_program_address(&[b"pot"], program_id);
-    let data = pot_ata.try_borrow_data()?;
-    let owner = Pubkey::new_from_array(data[32..64].try_into().unwrap());
-    if owner != vault {
-        return Err(ProgramError::Custom(8));
     }
     Ok(())
 }

@@ -13,8 +13,6 @@
  */
 import { Transaction } from "@solana/web3.js";
 import {
-  ata,
-  createAtaIdempotentIx,
   createRoundIx,
   finishersOnChain,
   onChainRound,
@@ -84,21 +82,13 @@ export async function settleOnChain({ connection, authority, round }) {
   const { splitPot } = await import("./payout.js");
   const potAtoms = Number(round.potAtoms ?? 0);
   const { pays } = splitPot(potAtoms, winners.length);
-  const paysUsdc = pays.map((a) => a / 1e6);
-  const treasuryAta = ata(treasuryOwner(authority));
-  const needed = [{ owner: treasuryOwner(authority), key: treasuryAta }, ...winners.map((w) => ({ owner: w.wallet, key: ata(w.wallet) }))];
-  const infos = await connection.getMultipleAccountsInfo(needed.map((n) => n.key));
-  const missing = needed.filter((_, i) => !infos[i]);
-  for (let i = 0; i < missing.length; i += 5) {
-    const tx = new Transaction();
-    for (const m of missing.slice(i, i + 5)) tx.add(createAtaIdempotentIx({ payer: authority.publicKey, owner: m.owner }));
-    await sendAndConfirm(connection, tx, [authority]);
-  }
+  const paysSol = pays.map((a) => a / 1e9);
+  const treasury = treasuryOwner(authority).toBase58();
   const tx = new Transaction().add(
     settleIx({
       authority: authority.publicKey.toBase58(),
-      treasuryAta: treasuryAta.toBase58(),
-      winnerAtas: winners.map((w) => ata(w.wallet).toBase58()),
+      treasury,
+      winners: winners.map((w) => w.wallet),
       k: winners.length,
     }),
   );
@@ -106,7 +96,9 @@ export async function settleOnChain({ connection, authority, round }) {
   return {
     sig,
     winners: winners.map((w) => w.wallet),
-    paysUsdc: paysUsdc.slice(0, winners.length),
+    paysSol: paysSol.slice(0, winners.length),
+    /** @deprecated alias — race pot is SOL */
+    paysUsdc: paysSol.slice(0, winners.length),
     potAtoms,
   };
 }

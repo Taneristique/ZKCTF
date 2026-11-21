@@ -702,7 +702,7 @@
         "kind": "instructionNode",
         "name": "enterRound",
         "docs": [
-          "Pay 5 USDC into the pot and create/reset the player Entry PDA."
+          "Pay 0.05 SOL into the pot vault and create/reset the player Entry PDA."
         ],
         "optionalAccountStrategy": "programId",
         "accounts": [
@@ -741,29 +741,10 @@
           },
           {
             "kind": "instructionAccountNode",
-            "name": "playerAta",
+            "name": "pot",
             "isWritable": true,
             "isSigner": false,
             "isOptional": false
-          },
-          {
-            "kind": "instructionAccountNode",
-            "name": "potAta",
-            "isWritable": true,
-            "isSigner": false,
-            "isOptional": false
-          },
-          {
-            "kind": "instructionAccountNode",
-            "name": "tokenProgram",
-            "isWritable": false,
-            "isSigner": false,
-            "isOptional": false,
-            "defaultValue": {
-              "kind": "publicKeyValueNode",
-              "publicKey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
-              "identifier": "tokenProgram"
-            }
           }
         ],
         "arguments": [
@@ -907,7 +888,7 @@
         "kind": "instructionNode",
         "name": "settle",
         "docs": [
-          "After window end: split pot to treasury + k winners. Remaining accounts = winner USDC ATAs (length k)."
+          "After window end: split pot to treasury + k winners. Remaining accounts = winner wallets (length k)."
         ],
         "optionalAccountStrategy": "programId",
         "accounts": [
@@ -937,36 +918,17 @@
           },
           {
             "kind": "instructionAccountNode",
-            "name": "potAta",
+            "name": "pot",
             "isWritable": true,
             "isSigner": false,
             "isOptional": false
           },
           {
             "kind": "instructionAccountNode",
-            "name": "vault",
-            "isWritable": false,
-            "isSigner": false,
-            "isOptional": false
-          },
-          {
-            "kind": "instructionAccountNode",
-            "name": "treasuryAta",
+            "name": "treasury",
             "isWritable": true,
             "isSigner": false,
             "isOptional": false
-          },
-          {
-            "kind": "instructionAccountNode",
-            "name": "tokenProgram",
-            "isWritable": false,
-            "isSigner": false,
-            "isOptional": false,
-            "defaultValue": {
-              "kind": "publicKeyValueNode",
-              "publicKey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
-              "identifier": "tokenProgram"
-            }
           }
         ],
         "arguments": [

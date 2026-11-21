@@ -2,11 +2,11 @@
 
 ZKCTF builds profitable on-chain CTF puzzles powered by Groth16 and offers affordable cybersecurity education built on reproduced real-life hack cases.
 
-Saturday race: **5 USDC**, no cards. 24 hours, 15:00 UTC = 12:00 Buenos Aires.
+Saturday race: **0.05 SOL**, no cards. 24 hours, 15:00 UTC = 12:00 Buenos Aires.
 
 20% of the pot is treasury. The other 80% is paid to the first 10 on the board with a fixed declining table (25%, 18%, 13% …). If only two people solved, those two still use 25:18, scaled so they get the whole 80%. If nobody solved, treasury takes all. If forty entered, still only the first 10 are paid.
 
-**Pitch:** (1) pay-to-submit fees elsewhere are often **50–100 USDC** with no refund; here **5 stays in the pot**. (2) Flag never hits the chain — Groth16 proof-of-solve. Season points stay on the wallet and do not change `split_pot`.
+**Pitch:** (1) pay-to-submit fees elsewhere are often **50–100 USDC** with no refund; here **0.05 SOL stays in the pot**. (2) Flag never hits the chain — Groth16 proof-of-solve. Season points stay on the wallet and do not change `split_pot`.
 
 That formula lives in the Solana program (`payout.rs`) and in `settle`. Board credit in production requires on-chain `submit` verify.
 

@@ -110,7 +110,7 @@ function AccountBody() {
         <dd className="text-right font-mono text-xs text-cream/60">{sol == null ? "—" : `${sol.toFixed(4)} SOL`}</dd>
         <dt className="text-cream/45">{t.accWeek}</dt>
         <dd className="text-right">
-          {entered ? "5 USDC" : "—"}
+          {entered ? "0.05 SOL" : "—"}
           {boardPlace != null ? ` · #${boardPlace}` : ""}
         </dd>
         <dt className="text-cream/45">{t.membership}</dt>

@@ -22,7 +22,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "ZKCTF",
   description:
-    "Affordable cybersecurity education built on reproduced real hacks, plus a weekly on-chain CTF on Solana: 5 USDC entry, Groth16 proof-of-solve, the 10 fastest finishers share 80% of the pot.",
+    "Affordable cybersecurity education built on reproduced real hacks, plus a weekly on-chain CTF on Solana: 0.05 SOL entry, Groth16 proof-of-solve, the 10 fastest finishers share 80% of the pot.",
   icons: {
     icon: [
       { url: "/icon.svg", type: "image/svg+xml" },

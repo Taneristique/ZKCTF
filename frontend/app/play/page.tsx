@@ -154,8 +154,8 @@ export default function PlayPage() {
           setEntered(false);
           setNote(
             e instanceof Error
-              ? `5 USDC entry failed — Play stays locked until the pot payment confirms. (${e.message})`
-              : "5 USDC entry failed — Play stays locked until the pot payment confirms.",
+              ? `0.05 SOL entry failed — Play stays locked until the pot payment confirms. (${e.message})`
+              : "0.05 SOL entry failed — Play stays locked until the pot payment confirms.",
           );
           return;
         }
@@ -164,7 +164,7 @@ export default function PlayPage() {
         setNote(out.note ?? t.entered);
       } else {
         setEntered(false);
-        setNote(out.note ?? "On-chain 5 USDC entry is required before Play unlocks.");
+        setNote(out.note ?? "On-chain 0.05 SOL entry is required before Play unlocks.");
         return;
       }
       await refreshProgress(publicKey.toBase58());

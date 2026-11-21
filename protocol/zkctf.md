@@ -419,9 +419,10 @@ The prover builds A, B, D as sums of scalar multiplications with pk; it never kn
 ## 12. Official round economics (locked)
 
 This section is separate from ℛ. The proof is the same. The gate and the prize live here.
-The race is **USDC only**. No fiat. SOL is not the pot (gas only).
+The race is **SOL only** (native lamports). No fiat. Academy membership stays USDC.
 
-    ENTRY_ATOMS    =  5_000_000        // 5 USDC, 6 decimals
+    ENTRY_LAMPORTS =  50_000_000       // 0.05 SOL
+    ENTRY_ATOMS    =  ENTRY_LAMPORTS   // legacy alias
     N_WINNERS      =  10
     TREASURY_BPS   =  2_000            // 20% of the pot
     WEIGHTS        =  [2500, 1800, 1300, 1000, 800, 700, 600, 500, 400, 400]
@@ -429,7 +430,7 @@ The race is **USDC only**. No fiat. SOL is not the pot (gas only).
     WINDOW         =  Sat 15:00 UTC → +24h
                    =  15:00 UTC = 12:00 Buenos Aires
 
-`enter_round`: player signature + 5 USDC transfer (player ATA → pot ATA).
+`enter_round`: player signature + 0.05 SOL transfer (player → pot vault PDA).
 Entry PDA (`entry` ∥ P). Does not charge twice in the same round.
 
 `submit` does not require a Seat. `entry.round_start = round.start`.
@@ -446,7 +447,7 @@ Ranking (linear CTF): only wallets that cleared **every** level are candidates.
 Order: finish time ↑ (last solve timestamp).
 k = min(N_WINNERS, |full clears|).
 
-    pot        =  5e6 · entries
+    pot        =  5e7 · entries          // lamports
     treasury0  =  pot · 2000 / 10_000
     prize      =  pot − treasury0
     denom      =  Σ WEIGHTS[0..k)
@@ -458,7 +459,7 @@ k = 1 → that wallet gets 100% of prize (WEIGHTS renormalized);
 treasury still takes 20%.
 Even with k = 10 or 40 entries, only the first 10 receive pay[i].
 
-`settle` (authority, round over): same `split_pot` function, pays USDC.
+`settle` (authority, round over): same `split_pot` function, pays SOL.
 Code: `programs/zkctf/src/payout.rs`.
 
 The Seat PDA (`["seat", wallet]`) is the **Academy membership**. It does not open the official round.
@@ -467,12 +468,12 @@ Academy lessons: weekly, two tracks (cybersecurity: reproduced real incidents; m
 
 ### 12.1 Prestige and scope (locked)
 
-- Prestige: wallet-bound **season points** (off-chain host; PDA later). Non-transferable; does not change the weekly USDC `split_pot` formula.
+- Prestige: wallet-bound **season points** (off-chain host; PDA later). Non-transferable; does not change the weekly SOL `split_pot` formula.
 - Transferable reward tokens / cutting a fixed % from the pot via staking are out of scope for this version.
-- Pitch (dual): pay-to-submit 50–100 vs 5 in the pot **+** the flag is never on-chain (Groth16). The category pitch is not "Solana CTF app".
+- Pitch (dual): pay-to-submit 50–100 vs 0.05 SOL in the pot **+** the flag is never on-chain (Groth16). The category pitch is not "Solana CTF app".
 - Source of prizes / ranking: only on-chain `submit` verify + `settle`/`split_pot`. Off-chain score is not payout.
 - Host `solves.json` / `/progress` = unlock index; settle winners = Entry PDAs with a full `solved_mask` (`rankClearsOnChain`). Board credit: `/confirm-solve` after the Groth16 tx.
 - No UGC challenge marketplace (v1). Academy lessons and membership never write to the official board / pot.
 - Structural lock table: repo root `STRUCTURAL_LOCKS.md` (business plan §1.3 A–G).
-- USDC mint (devnet): `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`. `enter_round` checks the mint. Pot ATA owner = `["pot"]` vault PDA.
+- Race pot: native SOL held by the `["pot"]` vault PDA. Academy USDC mint (devnet): `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU` (membership only).
 - Weekly set: host `backend/data/round.json` + bot `scripts/weekly-challenge-bot.mjs`; on-chain `create_round` commitments.

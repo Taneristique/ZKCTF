@@ -13,6 +13,7 @@ type Row = {
   pseudonym?: string | null;
   imageUrl?: string | null;
   emoji?: string | null;
+  prizeSol?: number;
   prizeUsdc?: number;
   paid?: boolean;
   finishTs?: number;
@@ -21,7 +22,9 @@ type Row = {
 type Board = {
   ranked: Row[];
   nWinners: number;
+  potSol?: number;
   potUsdc?: number;
+  prizePoolSol?: number;
   prizePoolUsdc?: number;
   source: string;
   asset?: string;
@@ -66,10 +69,12 @@ export function Leaderboard() {
           <p className="text-xs uppercase tracking-[0.2em] text-teal">{t.boardTitle}</p>
           <p className="mt-2 text-sm text-cream/55">{t.boardLead}</p>
         </div>
-        {board.potUsdc != null && board.potUsdc > 0 && (
+        {(board.potSol ?? board.potUsdc) != null && (board.potSol ?? board.potUsdc)! > 0 && (
           <p className="font-mono text-xs text-cream/45">
-            {t.boardPot}: {board.potUsdc.toFixed(2)} USDC
-            {board.prizePoolUsdc != null ? ` · ${t.boardPrizePool}: ${board.prizePoolUsdc.toFixed(2)}` : ""}
+            {t.boardPot}: {(board.potSol ?? board.potUsdc)!.toFixed(4)} SOL
+            {(board.prizePoolSol ?? board.prizePoolUsdc) != null
+              ? ` · ${t.boardPrizePool}: ${(board.prizePoolSol ?? board.prizePoolUsdc)!.toFixed(4)}`
+              : ""}
           </p>
         )}
       </div>
@@ -77,7 +82,7 @@ export function Leaderboard() {
         {board.ranked.map((r, i) => {
           const place = r.place ?? i + 1;
           const name = r.displayName ?? r.pseudonym ?? `${r.wallet.slice(0, 4)}…${r.wallet.slice(-4)}`;
-          const prize = r.prizeUsdc ?? 0;
+          const prize = r.prizeSol ?? r.prizeUsdc ?? 0;
           const paid = Boolean(r.paid && prize > 0);
           return (
             <li key={r.wallet} className="flex items-start gap-3 px-4 py-3.5">
@@ -104,7 +109,7 @@ export function Leaderboard() {
                   {paid ? (
                     <span className="text-teal">
                       {" · "}
-                      {prize.toFixed(2)} USDC
+                      {prize.toFixed(4)} SOL
                     </span>
                   ) : place <= board.nWinners ? (
                     <span className="text-cream/35"> · —</span>

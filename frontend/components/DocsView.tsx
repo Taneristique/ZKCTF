@@ -6,7 +6,7 @@ const NAV = [
   { href: "#overview", en: "Overview", es: "Resumen" },
   { href: "#locks", en: "Structural locks", es: "Candados estructurales" },
   { href: "#play", en: "How to play", es: "Cómo se juega" },
-  { href: "#race", en: "The USDC race", es: "La carrera USDC" },
+  { href: "#race", en: "The SOL race", es: "La carrera SOL" },
   { href: "#math", en: "Payout math", es: "Matemática de pago" },
   { href: "#prestige", en: "Points & rewards", es: "Puntos y premios" },
   { href: "#membership", en: "Academy", es: "Academia" },
@@ -43,8 +43,8 @@ export function DocsView() {
           </h1>
           <p className="mt-5 text-[15px] leading-7 text-cream/65">
             {t(
-              "Test your bot. Prove it. Win. ZKCTF is a weekly on-chain CTF race on Solana: bring a human brain, a script, or an agent — best solver wins. Entry 5 USDC (devnet USDC on Devnet). Top 10 full clears share 80% of the pot by a fixed table; 20% treasury. You type ZKCTF{…} in the UI; Groth16 posts only a proof — the flag never touches the chain. Your public key is the edge: board, prestige, and payouts bind to the wallet, not to a leaked flag. Puzzles are generated and independently checked before publish (overflow, XOR, JWT, vault math, …). No PoH theater. Academy on /learn is a quality archive — the live product is the race. Mainnet when the crowd and pot are real.",
-              "Probá tu bot. Probalo. Ganá. ZKCTF es una carrera CTF semanal on-chain en Solana: cerebro humano, script o agente — gana el mejor solver. Entrada 5 USDC (USDC de devnet en Devnet). El top 10 de clears completos reparte el 80% del pozo con tabla fija; 20% tesoro. Escribís ZKCTF{…} en la UI; Groth16 solo publica una prueba — el flag no toca la cadena. Tu public key es la ventaja: ranking, prestigio y pagos van a la wallet, no a un flag filtrado. Puzzles generados y verificados antes de publicar (overflow, XOR, JWT, vault math…). Sin teatro PoH. La Academia en /learn es archivo de calidad — el producto en vivo es la carrera. Mainnet cuando la comunidad y el pozo sean reales.")}
+              "Test your bot. Prove it. Win. ZKCTF is a weekly on-chain CTF race on Solana: bring a human brain, a script, or an agent — best solver wins. Entry 0.05 SOL (Devnet SOL on Devnet). Top 10 full clears share 80% of the pot by a fixed table; 20% treasury. You type ZKCTF{…} in the UI; Groth16 posts only a proof — the flag never touches the chain. Your public key is the edge: board, prestige, and payouts bind to the wallet, not to a leaked flag. Puzzles are generated and independently checked before publish (overflow, XOR, JWT, vault math, …). No PoH theater. Academy on /learn is a quality archive — the live product is the race. Mainnet when the crowd and pot are real.",
+              "Probá tu bot. Probalo. Ganá. ZKCTF es una carrera CTF semanal on-chain en Solana: cerebro humano, script o agente — gana el mejor solver. Entrada 0.05 SOL (SOL de Devnet en Devnet). El top 10 de clears completos reparte el 80% del pozo con tabla fija; 20% tesoro. Escribís ZKCTF{…} en la UI; Groth16 solo publica una prueba — el flag no toca la cadena. Tu public key es la ventaja: ranking, prestigio y pagos van a la wallet, no a un flag filtrado. Puzzles generados y verificados antes de publicar (overflow, XOR, JWT, vault math…). Sin teatro PoH. La Academia en /learn es archivo de calidad — el producto en vivo es la carrera. Mainnet cuando la comunidad y el pozo sean reales.")}
           </p>
           <div className="mt-8 space-y-3">
             <Layer
@@ -56,10 +56,10 @@ export function DocsView() {
             />
             <Layer
               n="2"
-              name={t("5 USDC + Groth16", "5 USDC + Groth16")}
+              name={t("0.05 SOL + Groth16", "0.05 SOL + Groth16")}
               body={t(
-                "USDC entry. 20% treasury, 80% top 10. Type the flag in the UI; on-chain only a Groth16 proof. Explorers never see ZKCTF{…}.",
-                "Entrada USDC. 20% tesoro, 80% top 10. El flag en la UI; on-chain solo prueba Groth16. El explorer no ve ZKCTF{…}.")}
+                "SOL entry. 20% treasury, 80% top 10. Type the flag in the UI; on-chain only a Groth16 proof. Explorers never see ZKCTF{…}.",
+                "Entrada SOL. 20% tesoro, 80% top 10. El flag en la UI; on-chain solo prueba Groth16. El explorer no ve ZKCTF{…}.")}
             />
             <Layer
               n="3"
@@ -126,8 +126,8 @@ export function DocsView() {
           <ol className="mt-5 list-decimal space-y-3 pl-5 text-[15px] leading-7 text-cream/65">
             <li>
               {t(
-                "Connect a wallet and enter this week with 5 USDC. CTFs unlock in order: finish #1 before #2. Clear every CTF to be eligible for the pot.",
-                "Conectá la wallet y entrá con 5 USDC. Los CTFs se abren en orden: terminá #1 antes de #2. Completá todos para el pozo.")}
+                "Connect a wallet and enter this week with 0.05 SOL. CTFs unlock in order: finish #1 before #2. Clear every CTF to be eligible for the pot.",
+                "Conectá la wallet y entrá con 0.05 SOL. Los CTFs se abren en orden: terminá #1 antes de #2. Completá todos para el pozo.")}
             </li>
             <li>
               {t(
@@ -149,12 +149,12 @@ export function DocsView() {
 
         <section id="race">
           <h2 className="text-2xl font-semibold tracking-tight">
-            {t("The USDC race", "La carrera USDC")}
+            {t("The SOL race", "La carrera SOL")}
           </h2>
           <p className="mt-4 text-[15px] leading-7 text-cream/65">
             {t(
-              "This week’s race is a live bot test: humans, scripts, and agents all welcome. Entry is 5 USDC (no fiat). CTFs unlock in order. After the window, only wallets that cleared every CTF are ranked by finish time. N = 10. 20% treasury, 80% to that board with the fixed table. If fewer than 10 full clears, only they are paid (weights renormalized). If nobody cleared the set, the whole pot goes to treasury. Best solver wins — we do not run PoH to pretend otherwise.",
-              "La carrera de esta semana es un test de bots en vivo: humanos, scripts y agentes bienvenidos. Entrada 5 USDC (sin fiat). Los CTFs se abren en orden. Al cerrar, solo quienes completaron todos se ordenan por hora de cierre. N = 10. 20% tesoro, 80% con la tabla. Si hay menos de 10 clears, solo ellos (pesas reescaladas). Si nadie completó el set, todo al tesoro. Gana el mejor solver — no usamos PoH para fingir otra cosa.")}
+              "This week’s race is a live bot test: humans, scripts, and agents all welcome. Entry is 0.05 SOL (no fiat). CTFs unlock in order. After the window, only wallets that cleared every CTF are ranked by finish time. N = 10. 20% treasury, 80% to that board with the fixed table. If fewer than 10 full clears, only they are paid (weights renormalized). If nobody cleared the set, the whole pot goes to treasury. Best solver wins — we do not run PoH to pretend otherwise.",
+              "La carrera de esta semana es un test de bots en vivo: humanos, scripts y agentes bienvenidos. Entrada 0.05 SOL (sin fiat). Los CTFs se abren en orden. Al cerrar, solo quienes completaron todos se ordenan por hora de cierre. N = 10. 20% tesoro, 80% con la tabla. Si hay menos de 10 clears, solo ellos (pesas reescaladas). Si nadie completó el set, todo al tesoro. Gana el mejor solver — no usamos PoH para fingir otra cosa.")}
           </p>
           <div className="mt-6 overflow-x-auto">
             <table className="docs-table">
@@ -192,13 +192,13 @@ export function DocsView() {
           </div>
           <p className="mt-4 text-sm text-cream/50">
             {t(
-              "Example: one player, 5 USDC pot → 1 USDC treasury, 4 USDC to that player. Three players, two solvers, 15 USDC pot → 3 USDC treasury, 12 USDC split 25:18 between the two.",
-              "Ejemplo: un jugador, pozo 5 USDC → 1 al tesoro, 4 a esa wallet. Tres entradas, dos solvers, 15 USDC → 3 al tesoro, 12 en 25:18 entre los dos.")}
+              "Example: one player, 0.05 SOL pot → 0.01 SOL treasury, 0.04 SOL to that player. Three players, two solvers, 0.15 SOL pot → 0.03 SOL treasury, 0.12 SOL split 25:18 between the two.",
+              "Ejemplo: un jugador, pozo 0.05 SOL → 0.01 al tesoro, 0.04 a esa wallet. Tres entradas, dos solvers, 0.15 SOL → 0.03 al tesoro, 0.12 en 25:18 entre los dos.")}
           </p>
           <p className="mt-4 text-[15px] leading-7 text-cream/65">
             {t(
-              "Pitch: (1) bug-bounty pay-to-submit is often 50–100 USDC with no refund — here 5 stays in the pot. (2) Groth16 proof-of-solve — the flag never hits the chain.",
-              "Pitch: (1) el pay-to-submit de bug bounty suele ser 50–100 USDC sin reembolso — acá 5 quedan en el pozo. (2) Groth16 proof-of-solve — el flag no va on-chain.")}
+              "Pitch: (1) bug-bounty pay-to-submit is often 50–100 USDC with no refund — here 0.05 SOL stays in the pot. (2) Groth16 proof-of-solve — the flag never hits the chain.",
+              "Pitch: (1) el pay-to-submit de bug bounty suele ser 50–100 USDC sin reembolso — acá 0.05 SOL quedan en el pozo. (2) Groth16 proof-of-solve — el flag no va on-chain.")}
           </p>
         </section>
 
@@ -208,14 +208,14 @@ export function DocsView() {
           </h2>
           <p className="mt-4 text-[15px] leading-7 text-cream/65">
             {t(
-              "This is the published USDC split — the same rules the settle step uses. It is money accounting, not a how-to for breaking the race.",
-              "Esta es la repartición USDC publicada — las mismas reglas que usa settle. Es contabilidad de dinero, no un manual para romper la carrera.")}
+              "This is the published SOL split — the same rules the settle step uses. It is money accounting, not a how-to for breaking the race.",
+              "Esta es la repartición SOL publicada — las mismas reglas que usa settle. Es contabilidad de dinero, no un manual para romper la carrera.")}
           </p>
           <ol className="mt-5 list-decimal space-y-3 pl-5 text-[15px] leading-7 text-cream/65">
             <li>
               {t(
-                "n = number of entries. pot = 5 × n USDC.",
-                "n = entradas. pot = 5 × n USDC.")}
+                "n = number of entries. pot = 0.05 × n SOL.",
+                "n = entradas. pot = 0.05 × n SOL.")}
             </li>
             <li>
               {t(
@@ -240,8 +240,8 @@ export function DocsView() {
           </ol>
           <p className="mt-5 text-[15px] leading-7 text-cream/65">
             {t(
-              "Example: 3 entries, 2 solvers → pot 15 USDC → 3 treasury, 12 prize. With two people the 25:18 pair is scaled across that 12.",
-              "Ejemplo: 3 entradas, 2 solvers → pozo 15 USDC → 3 tesoro, 12 premio. Con dos personas el par 25:18 se escala sobre esos 12.")}
+              "Example: 3 entries, 2 solvers → pot 0.15 SOL → 0.03 treasury, 0.12 prize. With two people the 25:18 pair is scaled across that 12.",
+              "Ejemplo: 3 entradas, 2 solvers → pozo 0.15 SOL → 0.03 tesoro, 0.12 premio. Con dos personas el par 25:18 se escala sobre esos 12.")}
           </p>
           <p className="mt-4 text-sm text-cream/50">
             {t(
@@ -262,8 +262,8 @@ export function DocsView() {
             </li>
             <li>
               {t(
-                "Season points stay on that wallet. They are not transferable and they do not change how the weekly USDC pot is split.",
-                "Los puntos de temporada quedan en esa wallet. No se transfieren y no cambian cómo se reparte el pozo USDC semanal.")}
+                "Season points stay on that wallet. They are not transferable and they do not change how the weekly SOL pot is split.",
+                "Los puntos de temporada quedan en esa wallet. No se transfieren y no cambian cómo se reparte el pozo SOL semanal.")}
             </li>
             <li>
               {t(
@@ -279,8 +279,8 @@ export function DocsView() {
           </h2>
           <p className="mt-4 text-[15px] leading-7 text-cream/65">
             {t(
-              "Academy is the /learn archive: cybersecurity and math-for-security lessons built from real incidents. Right now we keep quality over cadence — we are not selling a “new paid lesson every week” promise. On-chain membership (USDC, no cards, no auto-renew) still unlocks gated archive content when seats are offered; renewing extends the seat from its current end. The Saturday race stays a separate 5 USDC entry and never mixes with Academy money.",
-              "La Academia es el archivo /learn: clases de ciberseguridad y matemática de seguridad desde incidentes reales. Ahora priorizamos calidad sobre cadencia — no vendemos “clase paga nueva cada semana”. La membresía on-chain (USDC, sin tarjetas ni auto-renovación) abre el archivo cerrado cuando haya asientos; renovar extiende desde el fin actual. La carrera del sábado es 5 USDC aparte; el dinero de Academia no se mezcla con el pozo.")}
+              "Academy is the /learn archive: cybersecurity and math-for-security lessons built from real incidents. Right now we keep quality over cadence — we are not selling a “new paid lesson every week” promise. On-chain membership (USDC, no cards, no auto-renew) still unlocks gated archive content when seats are offered; renewing extends the seat from its current end. The Saturday race stays a separate 0.05 SOL entry and never mixes with Academy money.",
+              "La Academia es el archivo /learn: clases de ciberseguridad y matemática de seguridad desde incidentes reales. Ahora priorizamos calidad sobre cadencia — no vendemos “clase paga nueva cada semana”. La membresía on-chain (USDC, sin tarjetas ni auto-renovación) abre el archivo cerrado cuando haya asientos; renovar extiende desde el fin actual. La carrera del sábado es 0.05 SOL aparte; el dinero de Academia no se mezcla con el pozo.")}
           </p>
           <div className="mt-6 overflow-x-auto">
             <table className="docs-table">
@@ -319,8 +319,8 @@ export function DocsView() {
           </h2>
           <p className="mt-4 text-[15px] leading-7 text-cream/65">
             {t(
-              "Production scoring: the board only moves after an on-chain Groth16 submit verifies, then the host confirms your on-chain entry progress. The flag string stays in your browser / prover — never in the transaction. USDC split is under Payout math (split_pot only).",
-              "Scoring en producción: el ranking solo avanza tras submit Groth16 on-chain y confirmación del PDA. El flag queda en el navegador / prover — nunca en la tx. El USDC está en Matemática de pago (solo split_pot).")}
+              "Production scoring: the board only moves after an on-chain Groth16 submit verifies, then the host confirms your on-chain entry progress. The flag string stays in your browser / prover — never in the transaction. SOL split is under Payout math (split_pot only).",
+              "Scoring en producción: el ranking solo avanza tras submit Groth16 on-chain y confirmación del PDA. El flag queda en el navegador / prover — nunca en la tx. El SOL está en Matemática de pago (solo split_pot).")}
           </p>
           <p className="mt-4 text-[15px] leading-7 text-cream/65">
             {t(
@@ -347,13 +347,13 @@ export function DocsView() {
           <ul className="mt-5 list-disc space-y-3 pl-5 text-[15px] leading-7 text-cream/65">
             <li>
               {t(
-                "Now: Devnet weekly official race, advertise the puzzle quality, grow a real player base. Mainnet when the crowd and pot justify real USDC — not “next week” by default.",
-                "Ahora: carrera oficial semanal en Devnet, publicidad de la calidad de puzzles, base real de jugadores. Mainnet cuando la comunidad y el pozo justifiquen USDC real — no “la semana que viene” por defecto.")}
+                "Now: Devnet weekly official race, advertise the puzzle quality, grow a real player base. Mainnet when the crowd and pot justify real SOL — not “next week” by default.",
+                "Ahora: carrera oficial semanal en Devnet, publicidad de la calidad de puzzles, base real de jugadores. Mainnet cuando la comunidad y el pozo justifiquen SOL real — no “la semana que viene” por defecto.")}
             </li>
             <li>
               {t(
-                "Later (not live): creator mode — players ship CTFs through the week; attempt limits; quality gates (enough distinct attempts + at least one solve); producer share of the pot. A higher-entry (~10 USDC) lane may appear with that design. Until then lock D stays: one official curated set.",
-                "Después (no en vivo): modo creador — CTFs durante la semana; límite de intentos; umbral de calidad (intentos distintos + al menos un solve); share del pozo al productor. Puede aparecer un carril ~10 USDC con ese diseño. Hasta entonces candado D: un set oficial curado.")}
+                "Later (not live): creator mode — players ship CTFs through the week; attempt limits; quality gates (enough distinct attempts + at least one solve); producer share of the pot. A higher-entry (~0.1 SOL) lane may appear with that design. Until then lock D stays: one official curated set.",
+                "Después (no en vivo): modo creador — CTFs durante la semana; límite de intentos; umbral de calidad (intentos distintos + al menos un solve); share del pozo al productor. Puede aparecer un carril ~0.1 SOL con ese diseño. Hasta entonces candado D: un set oficial curado.")}
             </li>
             <li>
               {t(

@@ -8,7 +8,7 @@ Plain-language runbook. Read this before wiring production keys.
 
 | Piece | Money | AI? |
 | --- | --- | --- |
-| **Saturday race** | **5 USDC** into an on-chain pot. After 24h, `settle` pays **20% treasury + 80% top 10**. | Optional: the weekly bot can ask OpenRouter for new puzzles. A human still checks them. |
+| **Saturday race** | **0.05 SOL** into an on-chain pot. After 24h, `settle` pays **20% treasury + 80% top 10**. | Optional: the weekly bot can ask OpenRouter for new puzzles. A human still checks them. |
 | **Academy** | Membership in **USDC on-chain**: 10 / 27 / 90 USDC for 1 / 3 / 12 months. First 100 wallets are **Founding members** (50% off for as long as they renew, badge, 24h early access). | AI drafts lessons; a human editor reviews and publishes every lesson. |
 
 Season points are wallet-bound progress markers. The weekly race pays only via the published USDC pot formula. Academy money never touches the race pot.
@@ -191,7 +191,7 @@ Until the verifying key is real, the host accepts flags (`/prove-assist`) but on
 
 | Instruction | What it does |
 | --- | --- |
-| `enter_round` | Player signs; transfers 5 USDC from player ATA → pot ATA. Checks mint, round PDA and pot ATA owner. Creates/updates the Entry PDA. |
+| `enter_round` | Player signs; transfers 0.05 SOL to the pot vault PDA. Creates the vault lazily if needed. Creates/updates the Entry PDA. |
 | `submit` | Verifies the Groth16 proof and sets the level bit in `Entry.solved_mask` (linear order). |
 | `settle` | After `end`, authority pays `split_pot`: 20% treasury ATA, 80% to up to 10 winner ATAs by fixed weights. |
 
@@ -230,6 +230,6 @@ The repo pins rustc 1.79 for `cargo build-sbf`. `.vscode/settings.json` runs rus
 | `scripts/weekly-challenge-bot.mjs` | New weekly race set |
 | `scripts/settle-round.mjs` | Pay USDC winners |
 | `programs/zkctf/src/lib.rs` | enter / submit / settle / mint_seat |
-| `programs/zkctf/src/payout.rs` | 5 USDC, 20/80, weights |
+| `programs/zkctf/src/payout.rs` | 0.05 SOL, 20/80, weights |
 | `frontend/app/learn/page.tsx` | Academy UI |
 | `frontend/app/play/page.tsx` | Race UI |

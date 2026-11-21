@@ -12,18 +12,18 @@ export const en = {
 
   pitch: "Test your bot. Prove it. Win.",
   pitchLead:
-    "ZKCTF is live on Solana Devnet: a weekly on-chain CTF where humans, scripts, and agents compete. Entry is 5 USDC; the top 10 full clears share 80% of the pot. Groth16 proves each solve — the flag never touches the chain. Your public key is the edge. Best solver wins. Academy on /learn is a quality archive, not the weekly promise.",
+    "ZKCTF is live on Solana Devnet: a weekly on-chain CTF where humans, scripts, and agents compete. Entry is 0.05 SOL; the top 10 full clears share 80% of the pot. Groth16 proves each solve — the flag never touches the chain. Your public key is the edge. Best solver wins. Academy on /learn is a quality archive, not the weekly promise.",
   joinTitle: "This week’s race",
   joinLead:
-    "Live bot test every Saturday on Solana Devnet: 5 USDC to enter, CTFs in order, Groth16 on each flag. Top 10 who clear the set share 80% of the pot. Bots welcome. The flag never goes on-chain.",
+    "Live bot test every Saturday on Solana Devnet: 0.05 SOL to enter, CTFs in order, Groth16 on each flag. Top 10 who clear the set share 80% of the pot. Bots welcome. The flag never goes on-chain.",
   liveBadge: "Live on Devnet",
   raceLive: "Enter the race on Devnet →",
-  devnetLive: "Live on Solana Devnet. Pay with devnet USDC (free at faucet.circle.com).",
+  devnetLive: "Live on Solana Devnet. Pay the race entry with Devnet SOL (faucet.solana.com). Academy membership still uses Devnet USDC.",
   perWeek: " / week",
 
   connectFirst: "Connect a wallet first.",
-  locked: "Enter this week’s race for 5 USDC to open the puzzles.",
-  enterBtn: "Enter · 5 USDC",
+  locked: "Enter this week’s race for 0.05 SOL to open the puzzles.",
+  enterBtn: "Enter · 0.05 SOL",
   entered: "You’re in this week.",
   flagOkPending: "That’s the right flag, but the proof service isn’t ready yet, so it can’t go on the board. Please try again shortly.",
   hint: "Need a hint?",
@@ -38,7 +38,7 @@ export const en = {
   ctfNext: "Next CTF in",
   ctfLive: "CTF is live",
   ctfEnds: "Ends in",
-  ctfWhen: "Saturdays, 15:00 UTC / 12:00 Buenos Aires, for 24 hours. Entry is 5 USDC. The top 10 share 80% of the pot.",
+  ctfWhen: "Saturdays, 15:00 UTC / 12:00 Buenos Aires, for 24 hours. Entry is 0.05 SOL. The top 10 share 80% of the pot.",
   officialSet: "This week’s CTFs",
   network: "Devnet · live",
   noLevels: "No CTFs yet this week.",
@@ -48,7 +48,7 @@ export const en = {
   ctfDone: "Solved. The next CTF is open.",
   ctfCleared: "All CTFs cleared. You’re on this week’s winner board.",
 
-  accountLead: "Your wallet is your login. Membership and race entry are paid on-chain in USDC: no cards, no stored payment details.",
+  accountLead: "Your wallet is your login. Race entry is paid in SOL; Academy membership is paid in USDC — both on-chain, no cards.",
   accWallet: "Wallet",
   accUsdc: "USDC balance",
   accGas: "SOL for fees",
@@ -81,7 +81,7 @@ export const en = {
 
   membershipTitle: "Academy membership",
   membershipLead:
-    "One plan, paid on-chain in USDC. No cards and no auto-renewal: pay for 1, 3 or 12 months and extend whenever you like. The Saturday race is a separate 5 USDC entry.",
+    "One plan, paid on-chain in USDC. No cards and no auto-renewal: pay for 1, 3 or 12 months and extend whenever you like. The Saturday race is a separate 0.05 SOL entry.",
   month1: "1 month",
   month3: "3 months",
   month12: "12 months",
@@ -128,7 +128,7 @@ export const en = {
 
   profileTitle: "Pseudonym",
   profileLead:
-    "Pick a public name, then choose an emoji or upload a photo. Separate from Academy and the 5 USDC entry. You may rename once; after that the name is locked.",
+    "Pick a public name, then choose an emoji or upload a photo. Separate from Academy and the 0.05 SOL race entry. You may rename once; after that the name is locked.",
   profileCreate: "Create profile",
   profileRename: "Rename once",
   profileSaved: "Profile saved.",
@@ -166,7 +166,7 @@ export const en = {
   medalFirst: "1st",
   medalSecond: "2nd",
   medalThird: "3rd",
-  medalEarned: "USDC from races",
+  medalEarned: "SOL from races",
   activityTitle: "Saturday results",
   activityLead: "Place and prize when you finish in the money — ZKCTF week or a sponsored week.",
   activityEmpty: "",
@@ -174,8 +174,8 @@ export const en = {
   profileShared: "Link copied.",
   prizeClaimTitle: "Claim race prize",
   prizeClaimLead:
-    "When Saturday settle sends the pot to treasury (no on-chain full clear), every host finisher in the money can claim their split here. Sign once; USDC leaves the treasury ATA.",
-  prizeClaimAction: "Claim USDC",
+    "When Saturday settle sends the pot to treasury (no on-chain full clear), every host finisher in the money can claim their split here. Sign once; SOL leaves the treasury wallet.",
+  prizeClaimAction: "Claim SOL",
   prizeClaimed: "Claimed",
   prizeClaimPending: "claim on Account",
   prizePaidSettle: "Paid on settle",
@@ -188,7 +188,7 @@ export const en = {
   boardSource: "Source",
   boardPot: "Pot",
   boardPrizePool: "Prize pool",
-  boardPrizeNote: "Prize USDC is projected from the live pot (final pay is on-chain settle).",
+  boardPrizeNote: "Prize SOL is projected from the live pot (final pay is on-chain settle).",
   place1: "1st",
   place2: "2nd",
   place3: "3rd",
@@ -208,10 +208,10 @@ export const en = {
   legalLead: "Short notes. Not a substitute for legal advice in your jurisdiction.",
   privacyTitle: "Privacy",
   privacyBody:
-    "We use your wallet address for race entry, scoring, membership, lesson progress, the Founding list, Finisher tokens, optional pseudonyms and soulbound week-winner NFTs. We do not sell personal data. All payments are USDC transfers on Solana; we never handle card data. Your theme is kept in a cookie and your language in your browser’s localStorage.",
+    "We use your wallet address for race entry, scoring, membership, lesson progress, the Founding list, Finisher tokens, optional pseudonyms and soulbound week-winner NFTs. We do not sell personal data. Race payments are SOL transfers; Academy membership is USDC. We never handle card data. Your theme is kept in a cookie and your language in your browser’s localStorage.",
   escrowTitle: "Race pot",
   escrowBody:
-    "Each 5 USDC race entry goes into a pot account controlled by the program, not by us. Only proofs verified on-chain (Groth16) count, and after the round ends the program pays out with a fixed split: 20% to the treasury, 80% to the top 10 finishers. Membership payments go to the treasury and never touch the race pot or the board.",
+    "Each 0.05 SOL race entry goes into a pot account controlled by the program, not by us. Only proofs verified on-chain (Groth16) count, and after the round ends the program pays out with a fixed split: 20% to the treasury, 80% to the top 10 finishers. Membership payments go to the treasury and never touch the race pot or the board.",
   foundersTitle: "Founding members",
   foundersBody:
     "Founding status belongs to the wallet that made the purchase and is public on-chain. On mainnet, the same wallet gets 50% off its first purchase and keeps the Founding badge; later renewals are at the regular price. It cannot be transferred to another wallet.",
@@ -222,7 +222,7 @@ export const en = {
   contactBody: "Project links and source code are on GitHub (icon in the footer).",
   footerRights: "Open source under Apache-2.0.",
   footerLegalBlurb:
-    "Race USDC stays in the on-chain pot until settlement. Membership is paid on-chain in USDC. See Legal for privacy and program notes.",
+    "Race SOL stays in the on-chain pot until settlement. Membership is paid on-chain in USDC. See Legal for privacy and program notes.",
 };
 
 export type Dict = { [K in keyof typeof en]: string };

@@ -1,5 +1,7 @@
-/// Official pot. Amounts in USDC atoms (6 decimals). 5 USDC = 5_000_000.
-pub const ENTRY_ATOMS: u64 = 5_000_000;
+/// Official pot. Amounts in lamports. 0.05 SOL = 50_000_000.
+pub const ENTRY_LAMPORTS: u64 = 50_000_000;
+/// Legacy alias — same value as `ENTRY_LAMPORTS` (race pot is native SOL).
+pub const ENTRY_ATOMS: u64 = ENTRY_LAMPORTS;
 pub const N_WINNERS: u8 = 10;
 /// 20% of the pot goes to treasury. The rest is the prize pool.
 pub const TREASURY_BPS: u16 = 2_000;
@@ -7,7 +9,7 @@ pub const TREASURY_BPS: u16 = 2_000;
 /// Same table for 1 player or 100: only the first k ranks are used, then renormalized.
 pub const WEIGHTS: [u16; 10] = [2_500, 1_800, 1_300, 1_000, 800, 700, 600, 500, 400, 400];
 
-/// Returns (treasury_atoms, pay[10]). Dust from integer division is added to treasury.
+/// Returns (treasury_lamports, pay[10]). Dust from integer division is added to treasury.
 /// k = how many ranked solvers this week (0..=10). k=0 → whole pot to treasury.
 pub fn split_pot(pot: u64, k: u8) -> (u64, [u64; 10]) {
     let k = core::cmp::min(k, N_WINNERS) as usize;

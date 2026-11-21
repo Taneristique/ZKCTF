@@ -14,7 +14,8 @@ type Activity = {
   date: string;
   round: number;
   rank: number;
-  prizeUsdc: number;
+  prizeSol?: number;
+  prizeUsdc?: number;
   title: string;
   host: Host;
   medal: string;
@@ -60,7 +61,8 @@ type PublicCard = {
     first: number;
     second: number;
     third: number;
-    earnedUsdc: number;
+    earnedSol?: number;
+    earnedUsdc?: number;
   };
   activity?: (Activity & { live?: boolean })[];
   weekNfts: { round: number; rank: number; mint: string }[];
@@ -259,9 +261,9 @@ export default function PublicProfilePage() {
               </div>
             )}
           </dl>
-          {m.earnedUsdc > 0 && (
+          {(m.earnedSol ?? m.earnedUsdc) > 0 && (
             <p className="mt-3 font-mono text-sm text-teal">
-              {t.medalEarned}: {m.earnedUsdc.toFixed(2)} USDC
+              {t.medalEarned}: {(m.earnedSol ?? m.earnedUsdc).toFixed(4)} SOL
             </p>
           )}
         </>
@@ -295,7 +297,7 @@ export default function PublicProfilePage() {
                     </p>
                     <p className="mt-2 font-mono text-xs text-teal">
                       #{a.rank}
-                      {a.prizeUsdc > 0 ? ` · ${a.prizeUsdc.toFixed(2)} USDC` : ""}
+                      {(a.prizeSol ?? a.prizeUsdc) > 0 ? ` · ${(a.prizeSol ?? a.prizeUsdc).toFixed(4)} SOL` : ""}
                       {a.live ? ` · ${t.liveWeekBadge}` : ""}
                       {a.claimable ? ` · ${t.prizeClaimPending}` : ""}
                       {a.claimStatus === "claimed" ? ` · ${t.prizeClaimed}` : ""}

@@ -10,7 +10,8 @@ type Claim = {
   round: number | string;
   day?: string | null;
   rank: number;
-  prizeUsdc: number;
+  prizeSol?: number;
+  prizeUsdc?: number;
   atoms: number;
   status: string;
   settleSig?: string | null;
@@ -55,13 +56,13 @@ export function PrizeClaimCard() {
     setNote(null);
     try {
       const headers = await walletAuth(publicKey.toBase58(), signMessage);
-      const out = await postJson<{ ok: boolean; prizeUsdc?: number; sig?: string; error?: string; note?: string }>(
+      const out = await postJson<{ ok: boolean; prizeSol?: number; prizeUsdc?: number; sig?: string; error?: string; note?: string }>(
         "/prize/claim",
         { round },
         headers,
       );
       if (!out.ok) throw new Error(out.error ?? "Claim failed");
-      setNote(out.note ?? `${t.prizeClaimed} ${out.prizeUsdc} USDC`);
+      setNote(out.note ?? `${t.prizeClaimed} ${out.prizeSol ?? out.prizeUsdc} SOL`);
       load();
     } catch (e) {
       setNote(e instanceof Error ? e.message : t.rejected);
@@ -83,7 +84,7 @@ export function PrizeClaimCard() {
             >
               <div>
                 <p className="font-mono text-sm text-cream">
-                  #{c.rank} · {c.day ?? c.round} · {Number(c.prizeUsdc).toFixed(2)} USDC
+                  #{c.rank} · {c.day ?? c.round} · {Number(c.prizeSol ?? c.prizeUsdc).toFixed(4)} SOL
                 </p>
                 <p className="mt-1 text-[11px] text-cream/45">{t.prizeClaimRescue}</p>
               </div>
@@ -103,7 +104,7 @@ export function PrizeClaimCard() {
         <ul className="mt-4 space-y-2 border-t border-cream/10 pt-4">
           {history.map((c) => (
             <li key={`hist-${String(c.round)}`} className="font-mono text-xs text-cream/50">
-              #{c.rank} · {c.day ?? c.round} · {Number(c.prizeUsdc).toFixed(2)} USDC ·{" "}
+              #{c.rank} · {c.day ?? c.round} · {Number(c.prizeSol ?? c.prizeUsdc).toFixed(4)} SOL ·{" "}
               {c.status === "paid-settle" ? t.prizePaidSettle : t.prizeClaimed}
             </li>
           ))}

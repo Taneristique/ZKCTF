@@ -1,5 +1,7 @@
-/** Mirrors programs/zkctf/src/payout.rs */
-export const ENTRY_ATOMS = 5_000_000;
+/** Mirrors programs/zkctf/src/payout.rs — race pot is native SOL (lamports). */
+export const ENTRY_LAMPORTS = 50_000_000; // 0.05 SOL
+/** @deprecated alias — same as ENTRY_LAMPORTS */
+export const ENTRY_ATOMS = ENTRY_LAMPORTS;
 export const N_WINNERS = 10;
 export const TREASURY_BPS = 2_000;
 export const WEIGHTS = [2500, 1800, 1300, 1000, 800, 700, 600, 500, 400, 400];
@@ -21,15 +23,15 @@ export function splitPot(potAtoms, k) {
 }
 
 export function example(entries, solvers) {
-  const pot = entries * ENTRY_ATOMS;
+  const pot = entries * ENTRY_LAMPORTS;
   const { treasury, pays } = splitPot(pot, Math.min(solvers, N_WINNERS));
-  const usdc = (n) => n / 1e6;
+  const sol = (n) => n / 1e9;
   return {
     entries,
     solvers,
-    potUsdc: usdc(pot),
-    treasuryUsdc: usdc(treasury),
-    prizeUsdc: usdc(pot - treasury),
-    paysUsdc: pays.filter((p) => p > 0).map(usdc),
+    potSol: sol(pot),
+    treasurySol: sol(treasury),
+    prizeSol: sol(pot - treasury),
+    paysSol: pays.filter((p) => p > 0).map(sol),
   };
 }

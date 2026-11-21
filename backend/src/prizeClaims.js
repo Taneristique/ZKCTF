@@ -3,14 +3,14 @@
  *
  * Happy path (Lock A): settle already paid on-chain finishers → status "paid-settle".
  * Treasury path: settle ran with k=0 (entire pot → treasury) but host had full clears
- * → status "claimable"; player claims USDC from treasury ATA (authority signs).
+ * → status "claimable"; player claims SOL from the treasury wallet (authority signs).
  *
- * Never invents winners: host board (solves.json full clears) + pot atoms from settle only.
+ * Never invents winners: host board (solves.json full clears) + pot lamports from settle only.
  */
-import { Transaction } from "@solana/web3.js";
+import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { dataPath, load, save } from "./store.js";
 import { splitPot, ENTRY_ATOMS, N_WINNERS } from "./payout.js";
-import { ata, createAtaIdempotentIx, tokenTransferIx, sendAndConfirm } from "./chain.js";
+import { sendAndConfirm } from "./chain.js";
 import { treasuryOwner } from "./membership.js";
 import { rankSolversUnix, inferLevelCount } from "./solves.js";
 import { recordHostPlacements, applyPlacementPrizes } from "./weekNft.js";
@@ -31,17 +31,18 @@ function roundBucket(all, roundKey) {
   return all[key];
 }
 
-/** After a successful on-chain settle that paid winners. */
-export function recordSettlePaid(roundKey, winners, paysUsdc, settleSig) {
+/** After a successful on-chain settle that paid winners. `paysSol` is SOL amounts. */
+export function recordSettlePaid(roundKey, winners, paysSol, settleSig) {
   const all = db();
   const bucket = roundBucket(all, roundKey);
   for (let i = 0; i < winners.length; i++) {
     const wallet = winners[i];
-    const prizeUsdc = Number(paysUsdc[i] ?? 0);
+    const prizeSol = Number(paysSol[i] ?? 0);
     bucket[wallet] = {
       rank: i + 1,
-      prizeUsdc,
-      atoms: Math.round(prizeUsdc * 1e6),
+      prizeSol,
+      prizeUsdc: prizeSol, // legacy field name for older UI rows
+      atoms: Math.round(prizeSol * 1e9),
       status: "paid-settle",
       settleSig: settleSig ?? null,
       claimSig: null,
@@ -50,7 +51,7 @@ export function recordSettlePaid(roundKey, winners, paysUsdc, settleSig) {
     };
   }
   persist(all);
-  applyPlacementPrizes(roundKey, winners, paysUsdc);
+  applyPlacementPrizes(roundKey, winners, paysSol);
   return { recorded: winners.length };
 }
 
@@ -79,9 +80,11 @@ export function openRescueClaims(roundKey, { potAtoms, hostWinners, settleSig, r
     if (prev?.status === "claimable" && prev.atoms > 0 && !rebalance) continue;
     if (prev?.status === "claimable" && prev.atoms === atoms && prev.rank === i + 1) continue;
     const wasOpen = prev?.status === "claimable" && prev.atoms > 0;
+    const prizeSol = atoms / 1e9;
     bucket[wallet] = {
       rank: i + 1,
-      prizeUsdc: atoms / 1e6,
+      prizeSol,
+      prizeUsdc: prizeSol,
       atoms,
       status: "claimable",
       settleSig: settleSig ?? prev?.settleSig ?? null,
@@ -94,8 +97,8 @@ export function openRescueClaims(roundKey, { potAtoms, hostWinners, settleSig, r
     else opened++;
   }
   if (opened || updated) persist(all);
-  const paysUsdc = pays.slice(0, wallets.length).map((a) => a / 1e6);
-  applyPlacementPrizes(roundKey, wallets, paysUsdc);
+  const paysSol = pays.slice(0, wallets.length).map((a) => a / 1e9);
+  applyPlacementPrizes(roundKey, wallets, paysSol);
   return { opened, updated, potAtoms: pot, finishers: wallets.length };
 }
 
@@ -126,8 +129,8 @@ export function reconcileTreasuryRound(roundKey, opts = {}) {
   }
 
   const { pays } = splitPot(potAtoms, wallets.length);
-  const paysUsdc = pays.slice(0, wallets.length).map((a) => a / 1e6);
-  const snap = recordHostPlacements(key, wallets, { source: "host-reconcile", paysUsdc });
+  const paysSol = pays.slice(0, wallets.length).map((a) => a / 1e9);
+  const snap = recordHostPlacements(key, wallets, { source: "host-reconcile", paysUsdc: paysSol });
   const rescue = openRescueClaims(key, {
     potAtoms,
     hostWinners: wallets,
@@ -153,7 +156,13 @@ export function mergeClaims(fixtureClaims) {
     for (const [wallet, row] of Object.entries(rows)) {
       if (bucket[wallet]?.status === "claimed" || bucket[wallet]?.status === "paid-settle") continue;
       if (bucket[wallet]?.status === "claimable" && bucket[wallet].atoms > 0) continue;
-      bucket[wallet] = { ...row, atoms: row.atoms ?? Math.round((row.prizeUsdc ?? 0) * 1e6) };
+      const prizeSol = Number(row.prizeSol ?? row.prizeUsdc ?? 0);
+      bucket[wallet] = {
+        ...row,
+        prizeSol,
+        prizeUsdc: prizeSol,
+        atoms: row.atoms ?? Math.round(prizeSol * 1e9),
+      };
       n++;
     }
   }
@@ -181,7 +190,7 @@ export function claimableFor(wallet) {
 }
 
 /**
- * Pay one claimable prize from treasury ATA → player ATA.
+ * Pay one claimable prize from treasury wallet → player (native SOL).
  * Marks claiming before broadcast to avoid double-pay on crash/retry.
  */
 export async function executeClaim({ connection, authority, wallet, roundKey }) {
@@ -191,6 +200,7 @@ export async function executeClaim({ connection, authority, wallet, roundKey }) 
   if (!row || row.status !== "claimable" || !(row.atoms > 0)) {
     return { ok: false, error: "No claimable prize for this round." };
   }
+  // Cap ~100 SOL per claim — guards against corrupt claim rows.
   if (!Number.isInteger(row.atoms) || row.atoms > 100_000_000_000) {
     return { ok: false, error: "Invalid claim amount." };
   }
@@ -206,15 +216,11 @@ export async function executeClaim({ connection, authority, wallet, roundKey }) 
       persist(all);
       return { ok: false, error: "Treasury owner mismatch — claims paused." };
     }
-    const source = ata(owner);
-    const dest = ata(wallet);
     const tx = new Transaction().add(
-      createAtaIdempotentIx({ payer: authority.publicKey, owner: wallet }),
-      tokenTransferIx({
-        source: source.toBase58(),
-        dest: dest.toBase58(),
-        owner: owner.toBase58(),
-        atoms: row.atoms,
+      SystemProgram.transfer({
+        fromPubkey: owner,
+        toPubkey: new PublicKey(wallet),
+        lamports: row.atoms,
       }),
     );
     const sig = await sendAndConfirm(connection, tx, [authority]);
@@ -223,11 +229,13 @@ export async function executeClaim({ connection, authority, wallet, roundKey }) 
     row.claimedAt = Date.now();
     persist(all);
 
+    const prizeSol = row.prizeSol ?? row.prizeUsdc ?? row.atoms / 1e9;
     try {
       const nftPath = dataPath("week-nfts.json");
       const nfts = load(nftPath);
       if (nfts[String(roundKey)]?.[wallet]) {
-        nfts[String(roundKey)][wallet].prizeUsdc = row.prizeUsdc;
+        nfts[String(roundKey)][wallet].prizeSol = prizeSol;
+        nfts[String(roundKey)][wallet].prizeUsdc = prizeSol;
         nfts[String(roundKey)][wallet].claimSig = sig;
         nfts[String(roundKey)][wallet].status =
           nfts[String(roundKey)][wallet].status === "ok"
@@ -239,7 +247,7 @@ export async function executeClaim({ connection, authority, wallet, roundKey }) 
       /* optional */
     }
 
-    return { ok: true, sig, prizeUsdc: row.prizeUsdc, rank: row.rank };
+    return { ok: true, sig, prizeSol, prizeUsdc: prizeSol, rank: row.rank };
   } catch (e) {
     row.status = "claimable";
     row.claimError = String(e.message ?? e);

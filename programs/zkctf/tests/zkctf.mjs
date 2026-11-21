@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { splitPot, ENTRY_ATOMS, TREASURY_BPS } from "../../../backend/src/payout.js";
+import { splitPot, ENTRY_ATOMS, ENTRY_LAMPORTS, TREASURY_BPS } from "../../../backend/src/payout.js";
 
 function disc(name) {
   return [...createHash("sha256").update(`global:${name}`).digest().subarray(0, 8)];
@@ -13,10 +13,13 @@ assert.deepEqual(disc("submit"), [88, 166, 102, 181, 162, 127, 170, 48]);
 assert.deepEqual(disc("enter_round"), [166, 162, 71, 230, 92, 51, 37, 43]);
 assert.deepEqual(disc("settle"), [175, 42, 185, 87, 144, 131, 102, 212]);
 
-const one = splitPot(ENTRY_ATOMS, 1);
-assert.equal(one.treasury, 1_000_000);
-assert.equal(one.pays[0], 4_000_000);
-const none = splitPot(3 * ENTRY_ATOMS, 0);
-assert.equal(none.treasury, 15_000_000);
+assert.equal(ENTRY_LAMPORTS, 50_000_000);
+assert.equal(ENTRY_ATOMS, ENTRY_LAMPORTS);
+
+const one = splitPot(ENTRY_LAMPORTS, 1);
+assert.equal(one.treasury, 10_000_000);
+assert.equal(one.pays[0], 40_000_000);
+const none = splitPot(3 * ENTRY_LAMPORTS, 0);
+assert.equal(none.treasury, 150_000_000);
 assert.equal(TREASURY_BPS, 2000);
 console.log("program unit ok");

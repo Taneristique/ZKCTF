@@ -3,7 +3,7 @@
  * One-time devnet bootstrap after `solana program deploy`:
  *   1) initialize (config PDA, authority = AUTHORITY_KEYPAIR)
  *   2) create_round from backend/data/round.json (start = now unless ROUND_START_FROM_FILE=1)
- * Pot vault USDC ATA is created separately with spl-token (see README).
+ * Race pot vault PDA is created lazily on first enter_round (native SOL).
  *
  * Run: cd backend && node ../scripts/init-devnet.mjs
  */
@@ -77,10 +77,8 @@ await send(
 );
 
 const [vault] = potVaultPda();
-const pot = potAta();
-const potInfo = await connection.getAccountInfo(pot);
+const vaultInfo = await connection.getAccountInfo(vault);
 console.log(`round=${roundPda()[0].toBase58()}`);
-console.log(`pot vault=${vault.toBase58()} pot ATA=${pot.toBase58()} ${potInfo ? "exists" : "MISSING"}`);
-if (!potInfo) {
-  console.log(`Create it: spl-token create-account ${process.env.USDC_MINT ?? "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"} --owner ${vault.toBase58()} --fee-payer <keypair> -u devnet`);
-}
+console.log(
+  `pot vault=${vault.toBase58()} ${vaultInfo ? `exists · ${(vaultInfo.lamports / 1e9).toFixed(4)} SOL` : "empty (created lazily on first enter_round)"}`,
+);

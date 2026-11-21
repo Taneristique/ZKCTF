@@ -2,7 +2,7 @@
 /**
  * Manually settle the on-chain round after it ends (the API scheduler does this automatically).
  * Winners are read from chain only: Entry PDAs of this round whose solved_mask covers every level,
- * fastest first. Missing winner/treasury USDC accounts are created first, paid by the authority.
+ * fastest first. Pays native SOL from the pot vault to treasury + winners.
  *
  *   cd backend && node ../scripts/settle-round.mjs
  */

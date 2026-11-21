@@ -13,18 +13,18 @@ export const es: Dict = {
 
   pitch: "Probá tu bot. Probalo. Ganá.",
   pitchLead:
-    "ZKCTF está en vivo en Solana Devnet: CTF semanal on-chain donde compiten humanos, scripts y agentes. Entrada 5 USDC; el top 10 que completa el set reparte el 80% del pozo. Groth16 prueba cada solve — el flag no toca la cadena. Tu public key es la ventaja. Gana el mejor solver. La Academia en /learn es archivo de calidad, no la promesa semanal.",
+    "ZKCTF está en vivo en Solana Devnet: CTF semanal on-chain donde compiten humanos, scripts y agentes. Entrada 0.05 SOL; el top 10 que completa el set reparte el 80% del pozo. Groth16 prueba cada solve — el flag no toca la cadena. Tu public key es la ventaja. Gana el mejor solver. La Academia en /learn es archivo de calidad, no la promesa semanal.",
   joinTitle: "Carrera de esta semana",
   joinLead:
-    "Test de bots en vivo cada sábado en Solana Devnet: 5 USDC, CTFs en orden, Groth16 en cada flag. El top 10 que complete el set reparte el 80%. Bots bienvenidos. El flag no va on-chain.",
+    "Test de bots en vivo cada sábado en Solana Devnet: 0.05 SOL, CTFs en orden, Groth16 en cada flag. El top 10 que complete el set reparte el 80%. Bots bienvenidos. El flag no va on-chain.",
   liveBadge: "En vivo en Devnet",
   raceLive: "Entrá a la carrera en Devnet →",
-  devnetLive: "En vivo en Solana Devnet. Pagá con USDC de devnet (gratis en faucet.circle.com).",
+  devnetLive: "En vivo en Solana Devnet. Pagá la entrada de la carrera con SOL de Devnet (faucet.solana.com). La Academia sigue con USDC de Devnet.",
   perWeek: " / semana",
 
   connectFirst: "Primero conectá tu wallet.",
-  locked: "Entrá a la carrera de esta semana con 5 USDC para abrir los desafíos.",
-  enterBtn: "Entrar · 5 USDC",
+  locked: "Entrá a la carrera de esta semana con 0.05 SOL para abrir los desafíos.",
+  enterBtn: "Entrar · 0.05 SOL",
   entered: "Ya estás en la carrera de esta semana.",
   flagOkPending: "El flag es correcto, pero el servicio de pruebas todavía no está listo, así que no puede entrar al ranking. Probá de nuevo en un rato.",
   hint: "¿Querés una pista?",
@@ -39,7 +39,7 @@ export const es: Dict = {
   ctfNext: "Próximo CTF en",
   ctfLive: "CTF en vivo",
   ctfEnds: "Termina en",
-  ctfWhen: "Sábados, 15:00 UTC / 12:00 Buenos Aires, durante 24 horas. Entrada de 5 USDC. El top 10 se reparte el 80% del pozo.",
+  ctfWhen: "Sábados, 15:00 UTC / 12:00 Buenos Aires, durante 24 horas. Entrada de 0.05 SOL. El top 10 se reparte el 80% del pozo.",
   officialSet: "CTF de esta semana",
   network: "Devnet · en vivo",
   noLevels: "Todavía no hay CTF esta semana.",
@@ -49,7 +49,7 @@ export const es: Dict = {
   ctfDone: "Resuelto. El siguiente CTF ya está abierto.",
   ctfCleared: "Completaste todos los CTF. Estás en el ranking de ganadores de esta semana.",
 
-  accountLead: "Tu wallet es tu login. La membresía y la entrada a la carrera se pagan on-chain en USDC: sin tarjetas ni datos de pago guardados.",
+  accountLead: "Tu wallet es tu login. La entrada a la carrera se paga en SOL; la membresía de Academy en USDC — ambas on-chain, sin tarjetas.",
   accWallet: "Wallet",
   accUsdc: "Saldo en USDC",
   accGas: "SOL para comisiones",
@@ -82,7 +82,7 @@ export const es: Dict = {
 
   membershipTitle: "Membresía de la Academia",
   membershipLead:
-    "Un solo plan, pagado on-chain en USDC. Sin tarjetas ni renovación automática: pagá 1, 3 o 12 meses y extendé cuando quieras. La carrera del sábado es una entrada aparte de 5 USDC.",
+    "Un solo plan, pagado on-chain en USDC. Sin tarjetas ni renovación automática: pagá 1, 3 o 12 meses y extendé cuando quieras. La carrera del sábado es una entrada aparte de 0.05 SOL.",
   month1: "1 mes",
   month3: "3 meses",
   month12: "12 meses",
@@ -129,7 +129,7 @@ export const es: Dict = {
 
   profileTitle: "Seudónimo",
   profileLead:
-    "Elegí un nombre público y después un emoji o una foto. Independiente de Academy y de la entrada de 5 USDC. Podés renombrar una sola vez; después queda fijo.",
+    "Elegí un nombre público y después un emoji o una foto. Independiente de Academy y de la entrada de 0.05 SOL. Podés renombrar una sola vez; después queda fijo.",
   profileCreate: "Crear perfil",
   profileRename: "Renombrar una vez",
   profileSaved: "Perfil guardado.",
@@ -167,7 +167,7 @@ export const es: Dict = {
   medalFirst: "1.º",
   medalSecond: "2.º",
   medalThird: "3.º",
-  medalEarned: "USDC de carreras",
+  medalEarned: "SOL de carreras",
   activityTitle: "Resultados del sábado",
   activityLead: "Puesto y premio cuando entras en el pozo — semana ZKCTF o con sponsor.",
   activityEmpty: "",
@@ -175,8 +175,8 @@ export const es: Dict = {
   profileShared: "Enlace copiado.",
   prizeClaimTitle: "Reclamar premio de la carrera",
   prizeClaimLead:
-    "Si el settle del sábado mandó el pozo al tesoro (sin full clear on-chain), cada finalista del host en el dinero puede reclamar su parte aquí. Una firma; el USDC sale del ATA del tesoro.",
-  prizeClaimAction: "Reclamar USDC",
+    "Si el settle del sábado mandó el pozo al tesoro (sin full clear on-chain), cada finalista del host en el dinero puede reclamar su parte aquí. Una firma; el SOL sale de la wallet del tesoro.",
+  prizeClaimAction: "Reclamar SOL",
   prizeClaimed: "Reclamado",
   prizeClaimPending: "reclamar en Account",
   prizePaidSettle: "Pagado en settle",
@@ -189,7 +189,7 @@ export const es: Dict = {
   boardSource: "Fuente",
   boardPot: "Pozo",
   boardPrizePool: "Bolsa",
-  boardPrizeNote: "USDC proyectado del pozo en vivo (el pago final es el settle on-chain).",
+  boardPrizeNote: "SOL proyectado del pozo en vivo (el pago final es el settle on-chain).",
   place1: "1.º",
   place2: "2.º",
   place3: "3.º",
@@ -209,10 +209,10 @@ export const es: Dict = {
   legalLead: "Notas breves. No reemplazan el asesoramiento legal en tu jurisdicción.",
   privacyTitle: "Privacidad",
   privacyBody:
-    "Usamos tu dirección de wallet para la entrada a la carrera, el puntaje, la membresía, el progreso en las clases, la lista de fundadores, los tokens Finisher, seudónimos opcionales y NFTs soulbound de ganador semanal. No vendemos datos personales. Todos los pagos son transferencias de USDC en Solana; nunca manejamos datos de tarjetas. El tema se guarda en una cookie y el idioma en el localStorage de tu navegador.",
+    "Usamos tu dirección de wallet para la entrada a la carrera, el puntaje, la membresía, el progreso en las clases, la lista de fundadores, los tokens Finisher, seudónimos opcionales y NFTs soulbound de ganador semanal. No vendemos datos personales. Los pagos de la carrera son transferencias de SOL; la membresía de Academy es USDC. Nunca manejamos datos de tarjetas. El tema se guarda en una cookie y el idioma en el localStorage de tu navegador.",
   escrowTitle: "Pozo de la carrera",
   escrowBody:
-    "Cada entrada de 5 USDC va a una cuenta de pozo controlada por el programa, no por nosotros. Solo cuentan las pruebas Groth16 verificadas on-chain, y cuando termina la carrera el programa paga con un reparto fijo: 20% al tesoro y 80% al top 10. Los pagos de membresía van al tesoro y nunca tocan el pozo ni el ranking.",
+    "Cada entrada de 0.05 SOL va a una cuenta de pozo controlada por el programa, no por nosotros. Solo cuentan las pruebas Groth16 verificadas on-chain, y cuando termina la carrera el programa paga con un reparto fijo: 20% al tesoro y 80% al top 10. Los pagos de membresía van al tesoro y nunca tocan el pozo ni el ranking.",
   foundersTitle: "Miembros fundadores",
   foundersBody:
     "La condición de fundador pertenece a la wallet que hizo la compra y es pública on-chain. En mainnet, la misma wallet tiene 50% de descuento en su primera compra y conserva la insignia de fundador; las renovaciones siguientes van a precio normal. No se puede transferir a otra wallet.",
@@ -223,5 +223,5 @@ export const es: Dict = {
   contactBody: "Los enlaces del proyecto y el código están en GitHub (ícono en el pie de página).",
   footerRights: "Código abierto bajo Apache-2.0.",
   footerLegalBlurb:
-    "El USDC de la carrera queda en el pozo on-chain hasta la liquidación. La membresía se paga on-chain en USDC. Mirá Legal para privacidad y notas del programa.",
+    "El SOL de la carrera queda en el pozo on-chain hasta la liquidación. La membresía se paga on-chain en USDC. Mirá Legal para privacidad y notas del programa.",
 };

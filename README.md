@@ -3,14 +3,14 @@
 ZKCTF is a platform for profitable on-chain capture-the-flag puzzles powered by Groth16. It targets a real problem in cybersecurity education: good training is expensive and rarely built on real incidents. ZKCTF offers affordable, high-quality lessons built from reproduced real-life hack cases.
 
 - **Academy (weekly):** AI-assisted, human-reviewed lessons in **cybersecurity** and **math for cybersecurity**, published every week. Each security lesson rebuilds a real incident; each math lesson teaches the math that broke or protected a real system. Membership is paid in **USDC on-chain** (10 / 27 / 90 USDC for 1 / 3 / 12 months). **Founding members** (first 100 wallets) get 50% off for as long as they renew, a Founding badge, and 24-hour early access to lessons.
-- **Saturday race:** 24 hours, Saturday 15:00 UTC = 12:00 Buenos Aires. **5 USDC** to enter. 20% treasury, 80% to the first 10 with a fixed table. The flag you type **never goes on-chain**: a Groth16 proof shows you solved it.
+- **Saturday race:** 24 hours, Saturday 15:00 UTC = 12:00 Buenos Aires. **0.05 SOL** to enter. 20% treasury, 80% to the first 10 with a fixed table. The flag you type **never goes on-chain**: a Groth16 proof shows you solved it.
 - **Pseudonym:** first-time players pick a public name (independent of Academy); the weekly board shows names, not only wallets.
 - **Week-winner NFT:** after settle, top finishers get a **soulbound** Token-2022 badge for that week (transferable collections deferred).
 - **Academy gift:** clear **3** full races (Finisher balance) → claim **1** free Academy month **once** per wallet (no USDC).
 
 Not “another Solana CTF app.” Structural locks: [STRUCTURAL_LOCKS.md](STRUCTURAL_LOCKS.md).
 
-- Play: weekly curated official puzzles after this week’s 5 USDC entry · on-chain `submit` + `split_pot`.
+- Play: weekly curated official puzzles after this week’s 0.05 SOL entry · on-chain `submit` + `split_pot`.
 - Learn: `/learn` serves lessons from `$ZKCTF_DATA_DIR/lessons/published` (full) merged over public stubs in `backend/content/lessons/published/` (no flags in git). Lessons and membership never write the race board or pot. Seal/migrate with `node scripts/seal-lessons.mjs`.
 - **Ops (AI keys, weekly bot, USDC, deploy):** [docs/OPS.md](docs/OPS.md) — keep keypairs, PDA/ATA addresses, and host secrets out of this README.
 - How it works: [frontend docs](frontend/components/DocsView.tsx) and [protocol/README.md](protocol/README.md).
@@ -71,12 +71,12 @@ cargo build-sbf --manifest-path programs/zkctf/Cargo.toml
 solana program deploy target/deploy/zkctf.so --program-id target/deploy/zkctf-keypair.json
 # Right after deploy: initialize + create_round (authority from backend/.env)
 cd backend && node ../scripts/init-devnet.mjs && cd ..
-# Create the pot USDC ATA for the pot vault PDA if missing (script prints the command).
+# Pot vault PDA is created lazily on first enter (native SOL). No USDC ATA needed for the race.
 ```
 
-**Play on Devnet:** Phantom → Devnet. Fund SOL from [faucet.solana.com](https://faucet.solana.com) and Circle Devnet USDC from [faucet.circle.com](https://faucet.circle.com/) (Solana Devnet). Program id and USDC mint are in `backend/.env.example` / the live `/zk-api/health` response — do not paste authority keypairs or vault ATAs into public docs.
+**Play on Devnet:** Phantom → Devnet. Fund SOL from [faucet.solana.com](https://faucet.solana.com) for race entry. Academy membership still needs Circle Devnet USDC from [faucet.circle.com](https://faucet.circle.com/). Program id is in `backend/.env.example` / the live `/zk-api/health` response — do not paste authority keypairs into public docs.
 
-Join → Enter (5 USDC) → Play. (`enter_round` rejects any other mint.)
+Join → Enter (0.05 SOL) → Play. (`enter_round` moves native SOL into the pot vault.)
 
 ```bash
 node scripts/judge-loop.mjs

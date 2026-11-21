@@ -11,7 +11,7 @@ Amaç: Ekonomik “mucize kurtarma” değil; **dürüst, dar, tutulabilir** for
 ### Mevcut ürün (README / protocol / STRUCTURAL_LOCKS)
 | Parça | Bugün |
 | --- | --- |
-| Cumartesi yarışı | 5 USDC, 24s, %20 hazine / %80 ilk 10, Groth16, flag zincire gitmez |
+| Cumartesi yarışı | 0.05 SOL, 24s, %20 hazine / %80 ilk 10, Groth16, flag zincire gitmez |
 | Academy `/learn` | Haftalık AI taslak + insan review JSON; 10/27/90 USDC üyelik; Founding %50 |
 | Gift | 3 Finisher → 1 ay Academy (bir kez) |
 | NFT | Soulbound hafta rozeti |
@@ -123,7 +123,7 @@ Ne yapılmaz: Yeni yarış formatı kodlamak zorunda değilsin; önce vaat + gü
 
 | | Faz 1’de |
 | --- | --- |
-| **Ana / tek canlı tür** | **Haftalık resmi CTF** (bugünkü Cumartesi 24s yarışının dar hali: davetli, 5 USDC veya sponsor pot, basit–orta puzzle, deneme limiti, açık istatistik) |
+| **Ana / tek canlı tür** | **Haftalık resmi CTF** (bugünkü Cumartesi 24s yarışının dar hali: davetli, 0.05 SOL veya sponsor pot, basit–orta puzzle, deneme limiti, açık istatistik) |
 | **Cumartesi “Agent / Solver” özel formatı** | Faz 1’de **yok** veya en fazla **ayda 1 deneme** — varsayılan değil |
 | **Yaratıcı UGC CTF** | Faz 1’de **kapalı** (sadece kalite kurallarını tasarla; canlı açma) |
 | **`/learn` UGC video** | Faz 1’de **kapalı**; mevcut JSON dersler read-only kalabilir |
@@ -139,7 +139,7 @@ Faz 1 checklist:
 - Aynı anda ikinci yarış türü açma
 
 ### Faz 2 — Açık dar + üretici CTF + Learn UGC (pilot Keep’ten sonra)
-- **Üretici programı (şimdi değil):** hafta boyunca oyuncu CTF üretir; “en çok / en kaliteli üreten” pay alır; **deneme sınırı**; kalite eşiği (yeterli farklı deneme + ≥1 çözülme); self-farm yok. Giriş **~10 USDC** bu tasarımla (veya resmi 5 USDC + ayrı üretici ligi) — Docs’ta “Sırada ne var / What’s next”.
+- **Üretici programı (şimdi değil):** hafta boyunca oyuncu CTF üretir; “en çok / en kaliteli üreten” pay alır; **deneme sınırı**; kalite eşiği (yeterli farklı deneme + ≥1 çözülme); self-farm yok. Giriş **~0.1 SOL** bu tasarımla (veya resmi 0.05 SOL + ayrı üretici ligi) — Docs’ta “Sırada ne var / What’s next”.
 - `/learn` video komisyon (GnosisLand fee sade): örn. brüt **%15 protokol / %85 üretici** (optimize sayı PR’da netleşir)
 - Custom CTF hizmeti = **yan kanal**, ana ürün değil
 - Cumartesi agent = ayda 1

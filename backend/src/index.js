@@ -7,6 +7,7 @@ import { publicLevels, levelById, readRound, roundOpen } from "./roundStore.js";
 import { getEntry, putEntry, listEntries, lessonSolves, recordLessonSolve, DATA_DIR, dataPath, load } from "./store.js";
 import { dataPersistent } from "./dataDir.js";
 import {
+  ENTRY_SOL,
   ENTRY_USDC,
   ENTRY_ATOMS,
   N_WINNERS,
@@ -49,8 +50,8 @@ import {
   recentTx,
   PROGRAM_ID,
   enterRoundIx,
+  potVaultPda,
   ata,
-  potAta,
   USDC_MINT,
   entryForRound,
   rankClearsOnChain,
@@ -113,6 +114,7 @@ app.get("/health", async (_req, res) => {
     ok: true,
     product: "ZKCTF",
     membership: "usdc",
+    race: "sol",
     rpc: RPC,
     program: PROGRAM_ID.toBase58(),
     authority: auth.server,
@@ -121,7 +123,8 @@ app.get("/health", async (_req, res) => {
     authoritySource: auth.source,
     groth16: artifactsReady(),
     window: WINDOW,
-    entryUsdc: ENTRY_USDC,
+    entrySol: ENTRY_SOL,
+    entryUsdc: ENTRY_USDC, // legacy alias (= entrySol)
     asset: ASSET,
     nWinners: N_WINNERS,
     treasuryBps: TREASURY_BPS,
@@ -194,12 +197,12 @@ app.get("/leaderboard", async (_req, res) => {
   const emojis = emojisFor(wallets);
   const paidSlots = Math.min(top.length, N_WINNERS);
   const { pays, treasury } = splitPot(potAtoms, paidSlots);
-  const paysUsdc = pays.map((a) => a / 1e6);
+  const paysSol = pays.map((a) => a / 1e9);
   res.json({
     levels: levels.map((l) => ({ level: l.id, title: l.title })),
     ranked: top.map((r, i) => {
       const place = i + 1;
-      const prizeUsdc = i < paidSlots ? paysUsdc[i] : 0;
+      const prizeSol = i < paidSlots ? paysSol[i] : 0;
       return {
         ...r,
         place,
@@ -207,14 +210,19 @@ app.get("/leaderboard", async (_req, res) => {
         displayName: labels[r.wallet] ?? displayName(r.wallet),
         imageUrl: images[r.wallet] ?? null,
         emoji: emojis[r.wallet] ?? null,
-        prizeUsdc,
-        paid: prizeUsdc > 0,
+        prizeSol,
+        prizeUsdc: prizeSol,
+        paid: prizeSol > 0,
       };
     }),
-    potUsdc: potAtoms / 1e6,
-    treasuryUsdc: treasury / 1e6,
-    prizePoolUsdc: (potAtoms - treasury) / 1e6,
+    potSol: potAtoms / 1e9,
+    potUsdc: potAtoms / 1e9,
+    treasurySol: treasury / 1e9,
+    treasuryUsdc: treasury / 1e9,
+    prizePoolSol: (potAtoms - treasury) / 1e9,
+    prizePoolUsdc: (potAtoms - treasury) / 1e9,
     nWinners: N_WINNERS,
+    entrySol: ENTRY_SOL,
     entryUsdc: ENTRY_USDC,
     asset: ASSET,
     treasuryBps: TREASURY_BPS,
@@ -222,7 +230,7 @@ app.get("/leaderboard", async (_req, res) => {
     rule: "linear",
     source,
     payoutSource: "on-chain Groth16 submit PDAs + settle/split_pot",
-    note: "Projected USDC from the current pot and finishers (same weights as settle). Final payout is on-chain only.",
+    note: "Projected SOL from the current pot and finishers (same weights as settle). Final payout is on-chain only.",
   });
 });
 
@@ -300,7 +308,8 @@ app.get("/u/:name", async (req, res) => {
         winMap.set(rk, {
           round: rk,
           rank: c.rank,
-          prizeUsdc: c.prizeUsdc,
+          prizeSol: c.prizeSol ?? c.prizeUsdc,
+          prizeUsdc: c.prizeSol ?? c.prizeUsdc,
           at: c.at ?? c.claimedAt,
           mint: null,
           title: "ZKCTF Saturday race",
@@ -310,7 +319,8 @@ app.get("/u/:name", async (req, res) => {
       } else {
         winMap.set(rk, {
           ...prev,
-          prizeUsdc: Number(prev.prizeUsdc) > 0 ? prev.prizeUsdc : c.prizeUsdc,
+          prizeSol: Number(prev.prizeSol ?? prev.prizeUsdc) > 0 ? (prev.prizeSol ?? prev.prizeUsdc) : (c.prizeSol ?? c.prizeUsdc),
+          prizeUsdc: Number(prev.prizeSol ?? prev.prizeUsdc) > 0 ? (prev.prizeSol ?? prev.prizeUsdc) : (c.prizeSol ?? c.prizeUsdc),
           rank: prev.rank || c.rank,
           claimStatus: c.status,
           claimSig: c.claimSig ?? prev.claimSig,
@@ -321,22 +331,24 @@ app.get("/u/:name", async (req, res) => {
     const firstPlaces = wins.filter((n) => n.rank === 1).length;
     const secondPlaces = wins.filter((n) => n.rank === 2).length;
     const thirdPlaces = wins.filter((n) => n.rank === 3).length;
-    const payouts = wins.filter((n) => Number(n.prizeUsdc) > 0).length;
-    const earnedUsdc = wins.reduce((s, n) => {
+    const payouts = wins.filter((n) => Number(n.prizeSol ?? n.prizeUsdc) > 0).length;
+    const earnedSol = wins.reduce((s, n) => {
       const st = n.claimStatus || claimByRound.get(Number(n.round))?.status;
       if (st === "claimable" || st === "claiming") return s;
-      return s + Number(n.prizeUsdc || 0);
+      return s + Number(n.prizeSol ?? n.prizeUsdc || 0);
     }, 0);
     const activity = wins.slice(0, 40).map((n) => {
       const claim = claimByRound.get(Number(n.round));
       const status = n.claimStatus || claim?.status || null;
+      const prizeSol = Number(n.prizeSol ?? n.prizeUsdc || claim?.prizeSol || claim?.prizeUsdc || 0);
       return {
         at: n.at ?? n.round * 1000,
         date: new Date(n.at ?? n.round * 1000).toISOString().slice(0, 7),
         day: new Date(n.round * 1000).toISOString().slice(0, 10),
         round: n.round,
         rank: n.rank,
-        prizeUsdc: Number(n.prizeUsdc || claim?.prizeUsdc || 0),
+        prizeSol,
+        prizeUsdc: prizeSol,
         mint: n.mint,
         title: n.title || "ZKCTF Saturday race",
         host: n.host || { id: "zkctf", name: "ZKCTF", logo: "/logo.png" },
@@ -354,6 +366,7 @@ app.get("/u/:name", async (req, res) => {
         day: new Date(startMs).toISOString().slice(0, 10),
         round: Math.floor(startMs / 1000),
         rank: liveWeek.place,
+        prizeSol: 0,
         prizeUsdc: 0,
         title: "This week’s race (live)",
         host: { id: "zkctf", name: "ZKCTF", logo: "/logo.png" },
@@ -385,7 +398,8 @@ app.get("/u/:name", async (req, res) => {
         first: firstPlaces,
         second: secondPlaces,
         third: thirdPlaces,
-        earnedUsdc: Math.round(earnedUsdc * 1e6) / 1e6,
+        earnedSol: Math.round(earnedSol * 1e9) / 1e9,
+        earnedUsdc: Math.round(earnedSol * 1e9) / 1e9,
       },
       activity,
       prizeClaims,
@@ -443,7 +457,7 @@ app.post("/prize/claim", express.json(), async (req, res) => {
       ...out,
       claims: claimsFor(wallet),
       claimable: claimableFor(wallet),
-      note: "Prize sent from treasury USDC to your wallet ATA.",
+      note: "Prize sent as SOL from the treasury wallet.",
     });
   } catch (e) {
     res.status(502).json({ error: String(e.message ?? e) });
@@ -892,11 +906,12 @@ app.get("/entry/:wallet", async (req, res) => {
   } catch {
     /* RPC blip — fall back to host index */
   }
-  // Live race unlock = paid on-chain Entry for this round (5 USDC). Host row alone is not enough.
+  // Live race unlock = paid on-chain Entry for this round (0.05 SOL). Host row alone is not enough.
   const entered = Boolean(onChain) || (Boolean(row) && process.env.ALLOW_HOST_ENTRY === "1");
   res.json({
     entered,
     paidOnChain: Boolean(onChain),
+    entrySol: ENTRY_SOL,
     entryUsdc: ENTRY_USDC,
     asset: ASSET,
     nWinners: N_WINNERS,
@@ -915,6 +930,7 @@ app.post("/enter", express.json(), async (req, res) => {
   }
   const meta = windowMeta();
   const row = putEntry(wallet, {
+    sol: ENTRY_SOL,
     usdc: ENTRY_USDC,
     asset: ASSET,
     start: meta.start,
@@ -930,11 +946,9 @@ app.post("/enter", express.json(), async (req, res) => {
     try {
       const blocked = await enterChainBlockers(connection);
       if (blocked) {
-        chainNote = `Host entry saved; on-chain USDC skipped — ${blocked}`;
+        chainNote = `Host entry saved; on-chain SOL skipped — ${blocked}`;
       } else {
-        const playerAta = ata(wallet);
-        const pot = potAta();
-        const ix = enterRoundIx({ player: wallet, playerAta, potUsdcAta: pot });
+        const ix = enterRoundIx({ player: wallet });
         const tx = await recentTx(connection, wallet);
         tx.add(ix);
         const sim = await connection.simulateTransaction(tx);
@@ -944,7 +958,7 @@ app.post("/enter", express.json(), async (req, res) => {
           txB64 = tx
             .serialize({ requireAllSignatures: false, verifySignatures: false })
             .toString("base64");
-          chainNote = `Sign to move ${ENTRY_USDC} USDC into the pot. Host Play unlock is already saved.`;
+          chainNote = `Sign to move ${ENTRY_SOL} SOL into the pot. Host Play unlock is already saved.`;
         }
       }
     } catch (e) {
@@ -958,22 +972,22 @@ app.post("/enter", express.json(), async (req, res) => {
   } catch {
     /* ignore */
   }
+  const [pot] = potVaultPda();
   res.json({
     ok: true,
     demo: !txB64 && !paidOnChain,
-    // Play unlocks only after the 5 USDC enter_round tx (or an existing on-chain Entry).
+    // Play unlocks only after the 0.05 SOL enter_round tx (or an existing on-chain Entry).
     entered: paidOnChain,
     paidOnChain,
     ...row,
     nWinners: N_WINNERS,
     tx: txB64,
-    usdcMint: USDC_MINT.toBase58(),
-    potAta: potAta().toBase58(),
+    potVault: pot.toBase58(),
     note:
       chainNote ??
       (paidOnChain
         ? "Already entered on-chain for this round."
-        : "Sign the 5 USDC enter transaction — Play unlocks only after it confirms."),
+        : "Sign the 0.05 SOL enter transaction — Play unlocks only after it confirms."),
   });
 });
 
@@ -983,7 +997,7 @@ app.post("/prove-assist", express.json(), async (req, res) => {
   const flag = String(req.body?.c ?? req.body?.flag ?? "");
   const nonceHex = String(req.body?.n ?? req.body?.nonce ?? "");
   const meta = windowMeta();
-  // Hard gate: on-chain Entry for this round exists only after enter_round moved 5 USDC into the pot.
+  // Hard gate: on-chain Entry for this round exists only after enter_round moved 0.05 SOL into the pot.
   let paid = null;
   try {
     paid = await entryForRound(connection, wallet);
@@ -993,7 +1007,7 @@ app.post("/prove-assist", express.json(), async (req, res) => {
   }
   if (!paid && process.env.ALLOW_HOST_ENTRY !== "1") {
     res.status(403).json({
-      error: "Pay the 5 USDC entry on-chain before submitting. Host-only enter does not unlock the live race.",
+      error: "Pay the 0.05 SOL entry on-chain before submitting. Host-only enter does not unlock the live race.",
     });
     return;
   }
@@ -1094,7 +1108,7 @@ app.post("/confirm-solve", express.json(), async (req, res) => {
     const row = await entryForRound(connection, wallet);
     if (!row) {
       res.status(403).json({
-        error: "Pay the 5 USDC entry on-chain before submitting.",
+        error: "Pay the 0.05 SOL entry on-chain before submitting.",
       });
       return;
     }
@@ -1223,6 +1237,7 @@ function windowMeta() {
     start: start.toISOString(),
     end: end.toISOString(),
     label: "Saturday 15:00 UTC / 12:00 Buenos Aires · 24 hours",
+    entrySol: ENTRY_SOL,
     entryUsdc: ENTRY_USDC,
     asset: ASSET,
     nWinners: N_WINNERS,

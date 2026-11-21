@@ -34,6 +34,7 @@ export function potVaultPda() {
   return pda([Buffer.from("pot")]);
 }
 
+/** @deprecated Race pot is native SOL in the pot vault PDA; kept for Academy USDC helpers. */
 export function potAta() {
   if (process.env.POT_USDC_ATA) return new PublicKey(process.env.POT_USDC_ATA);
   const [vault] = potVaultPda();
@@ -184,9 +185,10 @@ export function createRoundIx({ payer, authority, start, end, levelCount, commit
   });
 }
 
-export function enterRoundIx({ player, playerAta, potUsdcAta }) {
+export function enterRoundIx({ player }) {
   const [round] = roundPda();
   const [entry] = entryPda(player);
+  const [pot] = potVaultPda();
   return new TransactionInstruction({
     programId: PROGRAM_ID,
     keys: [
@@ -194,30 +196,26 @@ export function enterRoundIx({ player, playerAta, potUsdcAta }) {
       { pubkey: round, isSigner: false, isWritable: true },
       { pubkey: entry, isSigner: false, isWritable: true },
       { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-      { pubkey: new PublicKey(playerAta), isSigner: false, isWritable: true },
-      { pubkey: new PublicKey(potUsdcAta), isSigner: false, isWritable: true },
-      { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+      { pubkey: pot, isSigner: false, isWritable: true },
     ],
     data: disc("enter_round"),
   });
 }
 
-export function settleIx({ authority, treasuryAta, winnerAtas, k }) {
+/** Settle pays native SOL from the pot vault PDA to treasury + winner wallets. */
+export function settleIx({ authority, treasury, winners, k }) {
   const [config] = configPda();
   const [round] = roundPda();
-  const [vault] = potVaultPda();
-  const pot = potAta();
+  const [pot] = potVaultPda();
   const keys = [
     { pubkey: new PublicKey(authority), isSigner: true, isWritable: false },
     { pubkey: config, isSigner: false, isWritable: false },
     { pubkey: round, isSigner: false, isWritable: true },
     { pubkey: pot, isSigner: false, isWritable: true },
-    { pubkey: vault, isSigner: false, isWritable: false },
-    { pubkey: new PublicKey(treasuryAta), isSigner: false, isWritable: true },
-    { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+    { pubkey: new PublicKey(treasury), isSigner: false, isWritable: true },
   ];
-  for (const a of winnerAtas.slice(0, k)) {
-    keys.push({ pubkey: new PublicKey(a), isSigner: false, isWritable: true });
+  for (const w of winners.slice(0, k)) {
+    keys.push({ pubkey: new PublicKey(w), isSigner: false, isWritable: true });
   }
   return new TransactionInstruction({
     programId: PROGRAM_ID,
@@ -258,10 +256,7 @@ export async function enterChainBlockers(connection) {
   if (!(await connection.getAccountInfo(round))) {
     return `Round PDA missing (${round.toBase58()}). Run: CHAIN_DEPLOY=1 node scripts/weekly-challenge-bot.mjs`;
   }
-  const pot = potAta();
-  if (!(await connection.getAccountInfo(pot))) {
-    return `Pot USDC ATA missing (${pot.toBase58()}). Create the vault ["pot"] ATA for mint ${USDC_MINT.toBase58()}.`;
-  }
+  // Pot vault PDA is created lazily on first enter_round — no pre-create required.
   const onChain = await onChainRound(connection);
   if (onChain) {
     const now = Math.floor(Date.now() / 1000);
