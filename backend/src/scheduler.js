@@ -385,8 +385,20 @@ export function startScheduler({ connection, authority, authorityStatus }) {
         await notify(`published round ${row.start} on chain, tx ${sig}`);
       } else if (round?.start === startS) {
         const host = roundCommitments().map((b) => b.toString("hex"));
-        if (host.some((h, i) => h !== round.commitments[i]))
-          await notify(`on-chain commitments for ${row.start} differ from this server's round.json: valid flags will fail on chain. Was the round published from another machine?`, "commit");
+        const mismatch = host.some((h, i) => h !== round.commitments[i]);
+        if (mismatch && canWrite && !round.settled && now < endS) {
+          // Same window: program refreshes commitments only (keeps entries/pot).
+          // Host round.json is what players see — chain must follow this server.
+          const sig = await createRoundOnChain({ connection, authority, row });
+          s.rounds[startS] = { ...s.rounds[startS], refreshed: sig };
+          remember(s, "refresh_commitments", { start: row.start, sig });
+          await notify(`refreshed on-chain commitments for ${row.start} from this server's round.json, tx ${sig}`, "commit");
+        } else if (mismatch) {
+          await notify(
+            `on-chain commitments for ${row.start} differ from this server's round.json: valid flags will fail on chain. Was the round published from another machine? Set BOT_CHAIN=1 to auto-refresh, or run: node scripts/rescue-round.mjs`,
+            "commit",
+          );
+        }
       }
 
       if (Date.now() - lastFounderSync > 3600_000) {
